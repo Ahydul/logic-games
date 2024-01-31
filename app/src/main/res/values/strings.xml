@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TFG</string>
+    <string name="title_activity_active_game_view">ActiveGameView</string>
+</resources>
