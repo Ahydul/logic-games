@@ -16,6 +16,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -109,15 +111,18 @@ fun TopSection(modifier: Modifier = Modifier) {
         }
     }
 }
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BottomSection(modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
+        // Actions
         Row {
             Text(
                 text = "Hakyuu"
             )
-        }
-        Row {
+        } // Values
+        FlowRow {
             Text(
                 text = "Dificultad"
             )
@@ -132,7 +137,7 @@ fun Cell(value: Int, isSelected: Boolean,
          modifier: Modifier = Modifier) {
     Log.d("TAG", "CELLcurrentRecomposeScope $currentRecomposeScope")
 
-    val color = colorResource(id = R.color.section_border)
+    val borderColor = colorResource(id = R.color.section_border)
 
     Box(
         modifier = modifier
@@ -146,26 +151,22 @@ fun Cell(value: Int, isSelected: Boolean,
             fontSize = 30.sp,
             modifier = Modifier.align(Alignment.Center)
         )
-        Canvas(
-            modifier = Modifier
-                .matchParentSize()
-        ) {
+        //Paints region borders and selecting UI
+        Canvas(modifier = Modifier.matchParentSize()) {
             val borderSize = 1.dp.toPx()
-            val drawHorizontalDivider = { y:Float ->
+            val drawDivider = {start: Offset, end: Offset ->
                 drawLine(
-                    color = color,
-                    start = Offset(0f, y),
-                    end = Offset(size.width, y),
+                    color = borderColor,
+                    start = start,
+                    end = end,
                     strokeWidth = borderSize
                 )
             }
+            val drawHorizontalDivider = { y:Float ->
+                drawDivider(Offset(0f, y), Offset(size.width, y))
+            }
             val drawVerticalDivider = { x:Float ->
-                drawLine(
-                    color = color,
-                    start = Offset(x, size.width),
-                    end = Offset(x, 0f),
-                    strokeWidth = borderSize
-                )
+                drawDivider(Offset(x, size.width), Offset(x, 0f))
             }
 
             if (drawDividerUp) drawHorizontalDivider(0f + borderSize / 2)
@@ -182,10 +183,9 @@ fun Cell(value: Int, isSelected: Boolean,
 
 @Composable
 fun Board(board: Board, modifier: Modifier = Modifier) {
-
     Log.d("TAG", "BOARDcurrentRecomposeScope $currentRecomposeScope")
 
-    //Int -> flatten index of a cell in the board
+    // Int = flatten index of a cell in the board
     var selectedTiles = remember { mutableStateListOf<Int>() }
 
     val getRow = { y: Float, height: Int ->
@@ -199,9 +199,13 @@ fun Board(board: Board, modifier: Modifier = Modifier) {
         else null
     }
 
+    // Boolean to control selecting/deselecting behaviour
     var selecting = true
 
-    Column(modifier = modifier
+    Column(
+        modifier = modifier
+        // Tap -> removes all selections and selects the cell
+        // Long press -> keeps selections. Selects or deselects the cell if cell was deselected or selected
         .pointerInput(Unit) {
             detectTapGestures(
                 onLongPress = { offset ->
@@ -225,12 +229,13 @@ fun Board(board: Board, modifier: Modifier = Modifier) {
                 }
             )
         }
-
+        // Normal drag -> removes all selections and selects the cells
         .pointerInput(Unit) {
             detectDragGestures(
                 onDragStart = { selectedTiles.removeAll { true } },
                 onDrag = { change, _ ->
-                    val index = getIndex(change.position.x, size.width, change.position.y, size.height,)
+                    val index =
+                        getIndex(change.position.x, size.width, change.position.y, size.height,)
 
                     if (index != null && !selectedTiles.contains(index)) {
                         selectedTiles.add(index)
@@ -238,6 +243,7 @@ fun Board(board: Board, modifier: Modifier = Modifier) {
                 }
             )
         }
+        //Long press drag -> keeps selections. Select or deselect the cells depending if first cell was deselected or selected
         .pointerInput(Unit) {
             detectDragGesturesAfterLongPress(
                 onDragStart = { offset ->
@@ -334,7 +340,6 @@ fun GreetingPreview() {
 
 @Composable
 fun CustomBoxWithDrawing(modifier: Modifier = Modifier) {
-
     Box(modifier = modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.matchParentSize()) {
             drawCircle(
