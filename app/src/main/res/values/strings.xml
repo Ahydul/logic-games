@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">TFG</string>
     <string name="title_activity_active_game_view">ActiveGameView</string>
+    <string name="brush_action">Paint cells</string>
+    <string name="erase_action">Erase</string>
+    <string name="edit_action">Edit</string>
+    <string name="undo_action">Undo</string>
+    <string name="redo_action">Redo</string>
 </resources>

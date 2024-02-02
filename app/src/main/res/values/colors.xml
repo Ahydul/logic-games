@@ -9,8 +9,10 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="section_border">#FF000000</color>
-    <color name="board_grid">#FF444444</color>
-    <color name="cell_background">#FF888888</color>
+    <color name="board_grid">#FF222222</color>
+    <color name="cell_background">#FF333333</color>
+    <color name="cell_value">#FF888888</color>
     <color name="primary_background">#FF222222</color>
+    <color name="primary_color">#FF999999</color>
 
 </resources>
