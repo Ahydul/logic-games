@@ -12,7 +12,19 @@
     <color name="board_grid">#FF222222</color>
     <color name="cell_background">#FF333333</color>
     <color name="cell_value">#FF888888</color>
-    <color name="primary_background">#FF222222</color>
+    <color name="cell_note">#FF777777</color>
     <color name="primary_color">#FF999999</color>
+    <color name="note_color">#FF295438</color>
+
+    <color name="primary_background">#FF222222</color>
+    <color name="background2">#FF456724</color>
+    <color name="background3">#FF893454</color>
+    <color name="background4">#FF394857</color>
+    <color name="background5">#FF295438</color>
+    <color name="background6">#FF983674</color>
+    <color name="background7">#FF547893</color>
+    <color name="background8">#FF634892</color>
+    <color name="background9">#FF293666</color>
+    <color name="background10">#FF552616</color>
 
 </resources>
