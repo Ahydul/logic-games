@@ -2,13 +2,16 @@ package com.example.tfg.common
 
 import com.example.tfg.games.GameType
 import com.example.tfg.games.hakyuu.Hakyuu
+import java.time.LocalDateTime
 
 class Game(
     val gameType: GameType,
     val difficulty: Difficulty,
     var state: List<GameState>,
     //var solution: Nose<GameTypeValue>,
-    var numErrors: Int = 0,
+    val startDate: LocalDateTime = LocalDateTime.now(),
+    val endDate: LocalDateTime? = null,
+    var errors: List<Move> = emptyList(),
     var numClues: Int = 0
 ) : GameType by gameType {
 
@@ -17,14 +20,15 @@ class Game(
         fun create(board: Board): Game {
             val gameState = GameState(board = board)
 
-            return Game(gameType = Hakyuu(), Difficulty.EASY, listOf(gameState))
+            return Game(gameType = Hakyuu(), difficulty = Difficulty.EASY, state = listOf(gameState))
         }
+
+        fun example(): Game {
+            return Hakyuu.create(
+                board = Board.example()
+            )
+        }
+
     }
-
-    fun pruebas() {
-        create(Board.example())
-
-    }
-
 }
 

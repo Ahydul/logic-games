@@ -1,23 +1,46 @@
 package com.example.tfg.common
+
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntSize
+
 /*
 * Board manages the indexes of the different cells and the sections that may contain several cells
 * */
-class Board(
+data class Board(
     val numColumns: Int,
     val numRows: Int,
     private val cells: Array<Cell>, // numColumns * numRows
     private val sections: IntArray // numColumns * numRows
 ) {
 
+
     fun indexToInt(row: Int, column: Int) : Int? {
-        if(row < 0 || column < 0 || row >= numRows || column >= numColumns) return null
-        return row * numColumns + column
+        return Board.indexToInt(row = row, column = column, numRows = numRows, numColumns = numColumns)
     }
 
-    private fun getCell(row: Int, column: Int): Cell {
-        val index: Int = indexToInt(row,column) !!
+    fun getCell(index: Int): Cell {
         return cells[index]
     }
+    fun getCell(row: Int, column: Int): Cell {
+        return cells[indexToInt(row,column)!!]
+    }
+    fun setCellValue(index: Int, value: Int) {
+        var newCell = cells[index]
+        newCell.value = value
+        cells[index] = newCell
+    }
+    fun setCellColor(index: Int, color: Color) {
+        var newCell = cells[index]
+        newCell.backGroundColor = color
+        cells[index] = newCell
+    }
+    fun setCellNote(index: Int, noteIndex: Int, note: Int) {
+        var newCell = cells[index]
+        newCell.notes[noteIndex] = note
+        cells[index] = newCell
+    }
+
     fun getCellValue(row: Int, column: Int): Int {
         val index: Int = indexToInt(row,column) !!
         return cells[index].value
@@ -47,6 +70,19 @@ class Board(
         return drawDivisor(row,column,row - 1,column)
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Board
+
+        return cells.contentEquals(other.cells)
+    }
+
+    override fun hashCode(): Int {
+        return cells.contentHashCode()
+    }
+
 
     companion object {
         fun create(numColumns: Int, numRows: Int, cellValues: IntArray, sections: IntArray) : Board{
@@ -61,7 +97,7 @@ class Board(
             )
         }
 
-        fun example(): Board{
+        fun example(): Board {
             val cellValues = IntArray(size = 6*6, init = { 0 })
             cellValues[4] = 2
             cellValues[16] = 3
@@ -83,6 +119,23 @@ class Board(
                 cellValues = cellValues,
                 sections = sections
             )
+        }
+        private fun indexToInt(row: Int, column: Int, numRows: Int, numColumns: Int) : Int? {
+            if(row < 0 || column < 0 || row >= numRows || column >= numColumns) return null
+            return row * numColumns + column
+        }
+        private fun getColumn(x: Float, width: Int, numColumns: Int) : Int {
+            return  (x * numColumns / width).toInt()
+        }
+        fun getRow(y: Float, height: Int, numRows: Int) : Int {
+            return (y * numRows / height).toInt()
+        }
+        fun getIndex(size: IntSize, position: Offset, numColumns: Int, numRows: Int) : Int? {
+            return Board.indexToInt(
+                row = getRow(y = position.y, height = size.height, numRows = numRows),
+                column = getColumn(x = position.x, width = size.width, numColumns = numColumns),
+                numColumns = numColumns,
+                numRows = numRows)
         }
     }
 
