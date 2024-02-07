@@ -45,6 +45,8 @@ import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.theme.TFGTheme
 
 class ActiveGameView : ComponentActivity() {
+    val viewModel: ActiveGameViewModel = ActiveGameViewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -56,6 +58,7 @@ class ActiveGameView : ComponentActivity() {
                 ) {
                     TFGTheme {
                         ActiveGameScreen(
+                            viewModel = viewModel,
                             modifier = Modifier
                                 .background(colorResource(id = R.color.primary_background))
                                 .fillMaxWidth()
@@ -68,27 +71,20 @@ class ActiveGameView : ComponentActivity() {
 }
 
 @Composable
-fun ActiveGameScreen(modifier: Modifier = Modifier) {
+fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
+
     val shape = RoundedCornerShape(8.dp)
     val game = remember { Game.example() } // Doesnt update on recomposition
 
-
-    var actualState = remember { mutableStateOf(0) } //Points to the current board state
-    val state = game.state.get(actualState.value)
-
-    var board: MutableState<Board> = remember { mutableStateOf(state.board) }
-
-    // Int = flatten index of a cell in the board
-    // The indexes in the list are selected
-    var selectedTiles = remember { mutableStateListOf<Int>() }
-
     Column(modifier = modifier) {
         TopSection(
+            viewModel = viewModel,
             modifier = modifier
                 .then(addDebugBorder)
                 .weight(1f)
         )
         MiddleSection(
+            viewModel = viewModel,
             modifier = modifier
                 .then(addDebugBorder)
                 .border(
@@ -106,9 +102,8 @@ fun ActiveGameScreen(modifier: Modifier = Modifier) {
                 .weight(4f)
         )
         BottomSection(
+            viewModel = viewModel,
             gameType = game.gameType.type,
-            board = board,
-            selectedTiles = selectedTiles,
             modifier = modifier
                 .then(addDebugBorder)
                 .weight(3f)
@@ -117,14 +112,13 @@ fun ActiveGameScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TopSection(viewModel: ActiveGameViewModel = ActiveGameViewModel(), modifier: Modifier = Modifier) {
+fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
     Log.d("TAG", "TOPcurrentRecomposeScope $currentRecomposeScope")
 
     Column(modifier = modifier) {
         Row {
             Text(
-                color = Color.Red,
-                text = "${viewModel.getCell(0).value}"
+                text = ""
             )
         }
         Row {
@@ -148,14 +142,11 @@ fun TopSection(viewModel: ActiveGameViewModel = ActiveGameViewModel(), modifier:
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BottomSection(
+    viewModel: ActiveGameViewModel,
     gameType: Games,
-    board: MutableState<Board>,
-    selectedTiles: SnapshotStateList<Int>,
     modifier: Modifier = Modifier)
 {
     Log.d("TAG", "BOTTOMcurrentRecomposeScope $currentRecomposeScope")
-    var isNote by remember { mutableStateOf(false) }
-    var isPaint by remember  { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -163,21 +154,15 @@ fun BottomSection(
     ) {
         // Actions
         TopActionRow(
-            isNote = isNote,
-            isPaint = isPaint,
-            setNote = { isNote = !isNote },
-            setPaint = { isPaint = !isPaint },
+            viewModel = viewModel,
             modifier = Modifier
                 .weight(2f)
                 .padding(2.dp)
                 .then(addDebugBorder)
         )
         BottomActionRow(
+            viewModel = viewModel,
             gameType = gameType,
-            board = board,
-            selectedTiles = selectedTiles,
-            isNote = isNote,
-            isPaint = isPaint,
             modifier = Modifier
                 .padding(4.dp)
                 .weight(5f)
@@ -189,6 +174,7 @@ fun BottomSection(
 
 @Composable
 fun MiddleSection(
+    viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier
 ) {
     Log.d("TAG", "MIDDLEcurrentRecomposeScope $currentRecomposeScope")
@@ -197,7 +183,7 @@ fun MiddleSection(
         contentAlignment = Alignment.Center,
         modifier = modifier
     ){
-        Board(modifier = Modifier)
+        Board(viewModel=viewModel, modifier = Modifier)
     }
 }
 
@@ -210,7 +196,9 @@ val addDebugBorder = Modifier.border(
 @Composable
 fun GreetingPreview() {
     TFGTheme {
-        ActiveGameScreen(modifier = Modifier
+        ActiveGameScreen(
+            viewModel = ActiveGameViewModel(),
+            modifier = Modifier
             .background(colorResource(id = R.color.primary_background))
             .fillMaxWidth()
         )

@@ -1,7 +1,5 @@
 package com.example.tfg.common
 
-import androidx.compose.ui.graphics.Color
-
 /*
 * Board manages the indexes of the different cells and the sections that may contain several cells
 * */
@@ -13,35 +11,14 @@ data class Board(
 ) {
 
 
-    fun indexToInt(row: Int, column: Int) : Int? {
-        if(row < 0 || column < 0 || row >= numRows || column >= numColumns) return null
-        return row * numColumns + column
-    }
-
     fun getCell(index: Int): Cell {
         return cells[index]
     }
-    fun getCell(row: Int, column: Int): Cell {
-        return cells[indexToInt(row,column)!!]
+    fun getCell(coordinate: Coordinate): Cell {
+        return cells[coordinate.toIndex(numRows = numRows, numColumns = numColumns)!!]
     }
-    fun setCellValue(index: Int, value: Int) {
-        var newCell = cells[index]
-        newCell.value = value
-        cells[index] = newCell
-    }
-    fun setCellColor(index: Int, color: Color) {
-        var newCell = cells[index]
-        newCell.backGroundColor = color
-        cells[index] = newCell
-    }
-    fun setCellNote(index: Int, noteIndex: Int, note: Int) {
-        var newCell = cells[index]
-        newCell.notes[noteIndex] = note
-        cells[index] = newCell
-    }
-
-    fun getCellValue(row: Int, column: Int): Int {
-        val index: Int = indexToInt(row,column) !!
+    fun getCellValue(coordinate: Coordinate): Int {
+        val index: Int = coordinate.toIndex(numRows = numRows, numColumns = numColumns) !!
         return cells[index].value
     }
 
@@ -49,24 +26,24 @@ data class Board(
         return sections[index1] == sections[index2]
     }
 
-    private fun drawDivisor(row: Int, column: Int, row2: Int, column2: Int): Boolean {
-        val index: Int = indexToInt(row = row, column = column) !!
-        val index2: Int? = indexToInt(row = row2, column = column2)
+    private fun drawDivisorBetween(coordinate1: Coordinate, coordinate2: Coordinate): Boolean {
+        val index: Int = coordinate1.toIndex(numRows = numRows, numColumns = numColumns)!!
+        val index2: Int? = coordinate2.toIndex(numRows = numRows, numColumns = numColumns)
 
         return !(index2 == null || fromSameSection(index, index2))
     }
 
-    fun drawDividerRight(row: Int, column: Int): Boolean {
-        return drawDivisor(row,column,row,column + 1)
+    fun drawDividerRight(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate, coordinate.moveRight())
     }
-    fun drawDividerDown(row: Int, column: Int): Boolean {
-        return drawDivisor(row,column,row + 1,column)
+    fun drawDividerDown(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate, coordinate.moveDown())
     }
-    fun drawDividerLeft(row: Int, column: Int): Boolean {
-        return drawDivisor(row,column,row,column - 1)
+    fun drawDividerLeft(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate,coordinate.moveLeft())
     }
-    fun drawDividerUp(row: Int, column: Int): Boolean {
-        return drawDivisor(row,column,row - 1,column)
+    fun drawDividerUp(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate, coordinate.moveUp())
     }
 
     override fun equals(other: Any?): Boolean {
