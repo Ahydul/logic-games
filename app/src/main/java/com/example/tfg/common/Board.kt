@@ -1,8 +1,6 @@
 package com.example.tfg.common
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.IntSize
 
 /*
 * Board manages the indexes of the different cells and the sections that may contain several cells
@@ -10,13 +8,14 @@ import androidx.compose.ui.unit.IntSize
 data class Board(
     val numColumns: Int,
     val numRows: Int,
-    private val cells: Array<Cell>, // numColumns * numRows
+    val cells: Array<Cell>, // numColumns * numRows
     private val sections: IntArray // numColumns * numRows
 ) {
 
 
     fun indexToInt(row: Int, column: Int) : Int? {
-        return Board.indexToInt(row = row, column = column, numRows = numRows, numColumns = numColumns)
+        if(row < 0 || column < 0 || row >= numRows || column >= numColumns) return null
+        return row * numColumns + column
     }
 
     fun getCell(index: Int): Cell {
@@ -119,23 +118,6 @@ data class Board(
                 cellValues = cellValues,
                 sections = sections
             )
-        }
-        private fun indexToInt(row: Int, column: Int, numRows: Int, numColumns: Int) : Int? {
-            if(row < 0 || column < 0 || row >= numRows || column >= numColumns) return null
-            return row * numColumns + column
-        }
-        private fun getColumn(x: Float, width: Int, numColumns: Int) : Int {
-            return  (x * numColumns / width).toInt()
-        }
-        fun getRow(y: Float, height: Int, numRows: Int) : Int {
-            return (y * numRows / height).toInt()
-        }
-        fun getIndex(size: IntSize, position: Offset, numColumns: Int, numRows: Int) : Int? {
-            return Board.indexToInt(
-                row = getRow(y = position.y, height = size.height, numRows = numRows),
-                column = getColumn(x = position.x, width = size.width, numColumns = numColumns),
-                numColumns = numColumns,
-                numRows = numRows)
         }
     }
 

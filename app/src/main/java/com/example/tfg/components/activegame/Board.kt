@@ -1,50 +1,25 @@
-package com.example.tfg.components.activeGame
+package com.example.tfg.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import com.example.tfg.R
-import com.example.tfg.common.Board
+import com.example.tfg.state.ActiveGameViewModel
+/*
 
-
-//Tap -> removes all selections and selects the cell
-//Long press -> keeps selections. Selects or deselects the cell if cell was deselected or selected
-private fun Modifier.customTapGestures(selectedTiles: MutableList<Int>, numColumns: Int, numRows: Int): Modifier {
+private fun Modifier.customTapGestures(onLongPres: (Offset) -> Unit, onTap: (Offset) -> Unit ): Modifier {
     return this then Modifier.pointerInput(Unit) {
-
-        val action = { offset: Offset, resetSelects: Boolean  ->
-            val index = Board.getIndex(size = size, position = offset, numColumns = numColumns, numRows = numRows)
-
-            //True -> Action=select ; False -> Action=deselect
-            val selecting = !selectedTiles.contains(index)
-            Log.d("TAG", "onLongPress: $selecting")
-
-            if (!selecting) {
-                if (resetSelects) selectedTiles.removeAll { true }
-                else selectedTiles.remove(index)
-            }
-            else selectedTiles.add(index!!)//Shoudn't be out of bounds
-        }
         detectTapGestures(
-            onLongPress = { offset ->
-                action(offset, false)
-            },
-            onTap = { offset ->
-                action(offset, true)
-            }
+            onLongPress = onLongPres,
+            onTap = onTap
         )
     }
 }
@@ -65,6 +40,8 @@ private fun Modifier.customDragGestures(selectedTiles: MutableList<Int>, numColu
     }
 }
 
+
+
 //Long press drag -> keeps selections. Select or deselect the cells depending if first cell was deselected or selected
 private fun Modifier.customDragGesturesAfterLongPress(selectedTiles: MutableList<Int>, numColumns: Int, numRows: Int): Modifier {
     return this then Modifier.pointerInput(Unit) {
@@ -73,7 +50,6 @@ private fun Modifier.customDragGesturesAfterLongPress(selectedTiles: MutableList
         detectDragGesturesAfterLongPress(
             onDragStart = { offset ->
                 val index = Board.getIndex(size = size, position = offset, numColumns = numColumns, numRows = numRows)
-
                 //True -> Action=select ; False -> Action=deselect
                 selecting = !selectedTiles.contains(index)
             },
@@ -89,36 +65,44 @@ private fun Modifier.customDragGesturesAfterLongPress(selectedTiles: MutableList
             }
         )
     }
-}
+}*/
 
 @Composable
 fun Board(
-    board: MutableState<Board>,
-    selectedTiles: SnapshotStateList<Int>,
+    viewModel: ActiveGameViewModel = ActiveGameViewModel(),
     modifier: Modifier = Modifier
 ) {
     Log.d("TAG", "BOARDcurrentRecomposeScope $currentRecomposeScope")
+    val boardState by viewModel.board.collectAsState()
 
-    val numColumns = board.value.numColumns
-    val numRows = board.value.numRows
+    val numColumns = viewModel.getNumColumns()
+    val numRows = viewModel.getNumRows()
 
     Column(
         modifier = modifier
-            .customTapGestures(
-                selectedTiles = selectedTiles,
-                numColumns = numColumns,
-                numRows = numRows
-            )
-            .customDragGestures(
-                selectedTiles = selectedTiles,
-                numColumns = numColumns,
-                numRows = numRows
-            )
-            .customDragGesturesAfterLongPress(
-                selectedTiles = selectedTiles,
-                numColumns = numColumns,
-                numRows = numRows
-            )
+            //Tap -> removes all selections and selects the cell
+            //Long press -> keeps selections. Selects or deselects the cell if cell was deselected or selected
+           /* .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        Log.d("TAG", "LongPress $it $size")
+                        viewModel.setSelections(
+                            position = it,
+                            size = size,
+                            resetSelects = false
+                        )
+                    },
+                    onTap = {
+                        Log.d("TAG", "Tap $it $size")
+                        viewModel.setSelections(
+                            position = it,
+                            size = size,
+                            resetSelects = true
+                        )
+                    }
+                )
+            }*/
+
     ) {
         val cellModifier = modifier
             .weight(1f)
@@ -130,15 +114,11 @@ fun Board(
             Row(modifier = modifier.weight(1f)) {
 
                 for (col in 0..<numColumns) {
-
+                    val coordinate = Coordinate(row = row, column = col)
                     Cell(
-                        cell = board.value.getCell(row = row, column = col),
-                        isSelected = selectedTiles.contains(board.value.indexToInt(row = row, column = col)!!),
-                        drawDividerRight = board.value.drawDividerRight(row = row, column = col),
-                        drawDividerDown = board.value.drawDividerDown(row = row, column = col),
-                        drawDividerLeft = board.value.drawDividerLeft(row = row, column = col),
-                        drawDividerUp = board.value.drawDividerUp(row = row, column = col),
-
+                        cell = viewModel.getCell(row = row, column = col),
+                        isSelected = false,
+                        dividersToDraw = viewModel.dividersToDraw(row = row, column = col),
                         modifier = cellModifier
                     )
                 }

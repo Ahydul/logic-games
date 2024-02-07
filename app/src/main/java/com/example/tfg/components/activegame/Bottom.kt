@@ -1,6 +1,5 @@
-package com.example.tfg.components.activeGame
+package com.example.tfg.components.activegame
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +26,7 @@ import com.example.tfg.common.Board
 import com.example.tfg.components.common.HorizontalGrid
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.HakyuuValue
+import com.example.tfg.state.ActiveGameViewModel
 
 
 @Composable
@@ -52,6 +52,7 @@ fun Action(
 
 @Composable
 fun TopActionRow(
+    viewModel: ActiveGameViewModel = ActiveGameViewModel(),
     isNote: Boolean,
     isPaint: Boolean,
     setNote: ()->Unit,
@@ -72,7 +73,10 @@ fun TopActionRow(
             modifier = actionModifier
         )
         Action( //Erase
-            onClick = { /*TODO*/ },
+            onClick = {
+                Log.d("PUTA","It enters here")
+                viewModel.setCellValue(0,5)
+            },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
             contentDescription = stringResource(id = R.string.erase_action),
             modifier = actionModifier
@@ -84,7 +88,9 @@ fun TopActionRow(
             modifier = actionModifier
         )
         Action( //Undo
-            onClick = { /*TODO*/ },
+            onClick = {
+                Log.d("PUTA","${viewModel.getCellValue(0,5)}")
+            },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier
@@ -101,6 +107,7 @@ fun TopActionRow(
 
 @Composable
 fun BottomActionRow(
+    viewModel: ActiveGameViewModel = ActiveGameViewModel(),
     gameType: Games,
     board: MutableState<Board>,
     selectedTiles: SnapshotStateList<Int>,
