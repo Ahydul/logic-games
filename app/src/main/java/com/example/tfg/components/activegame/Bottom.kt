@@ -8,9 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.currentRecomposeScope
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -22,7 +20,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.addDebugBorder
-import com.example.tfg.common.Board
 import com.example.tfg.components.common.HorizontalGrid
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.HakyuuValue
@@ -52,11 +49,7 @@ fun Action(
 
 @Composable
 fun TopActionRow(
-    viewModel: ActiveGameViewModel = ActiveGameViewModel(),
-    isNote: Boolean,
-    isPaint: Boolean,
-    setNote: ()->Unit,
-    setPaint: ()->Unit,
+    viewModel: ActiveGameViewModel,
     modifier: Modifier
 ){
     val actionModifier = Modifier
@@ -67,14 +60,13 @@ fun TopActionRow(
         modifier = modifier
     ) {
         Action( //Paint
-            onClick = setPaint,
+            onClick = { viewModel.setIsPaint() },
             imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),
             contentDescription = stringResource(id = R.string.brush_action),
             modifier = actionModifier
         )
         Action( //Erase
             onClick = {
-                Log.d("PUTA","It enters here")
                 viewModel.setCellValue(0,5)
             },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
@@ -82,15 +74,13 @@ fun TopActionRow(
             modifier = actionModifier
         )
         Action( //Note
-            onClick = setNote,
+            onClick = { viewModel.setIsNote() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier
         )
         Action( //Undo
-            onClick = {
-                Log.d("PUTA","${viewModel.getCellValue(0,5)}")
-            },
+            onClick = { /*TODO*/ },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier
@@ -107,25 +97,19 @@ fun TopActionRow(
 
 @Composable
 fun BottomActionRow(
-    viewModel: ActiveGameViewModel = ActiveGameViewModel(),
+    viewModel: ActiveGameViewModel,
     gameType: Games,
-    board: MutableState<Board>,
-    selectedTiles: SnapshotStateList<Int>,
-    isNote: Boolean,
-    isPaint: Boolean,
     modifier: Modifier
 ) {
     Log.d("TAG", "BottomActionRow $currentRecomposeScope")
 
     val colorIds = integerArrayResource(id = R.array.cell_background_color_ints)
     val backgroundColors = colorIds.map { Color(it) }
+    val cellBackground = colorResource(id = R.color.cell_background)
 
-    val numRows = when(gameType) {
-        Games.HAKYUU -> 2
-    }
 
     HorizontalGrid(
-        rows = numRows,
+        rows = 2,
         modifier = modifier
     ) {
         val shape = RoundedCornerShape(15.dp)
@@ -137,32 +121,11 @@ fun BottomActionRow(
                 shape = shape
             )
 
-        val noteAction = { value: Int ->
-            for (tile in selectedTiles){
-                val cell = board.value.getCell(index = tile)
-                if(!cell.readOnly) board.value.setCellNote(index = tile, note = value, noteIndex = value)
-            }
-        }
-        val paintAction = { value: Int ->
-            for (tile in selectedTiles)
-                board.value.setCellColor(index = tile, color = backgroundColors[value])
-        }
-        val writeAction = { value: Int ->
-            if(selectedTiles.size == 1) {
-                val cell = board.value.getCell(index = selectedTiles[0])
-                if(!cell.readOnly){
-                    board.value.setCellValue(index = selectedTiles[0], value = value)
-                    selectedTiles.removeAll{ true }
-                }
-            }
-        }
 
-        val action = if(isNote) noteAction else writeAction
-
-        if(isPaint){
+        if(viewModel.isPaint()){
             backgroundColors.forEachIndexed { index, color ->
                 Action(
-                    onClick = { paintAction(index) },
+                    onClick = { viewModel.paintAction(color = backgroundColors[index], defaultColor = cellBackground)},
                     imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
                     iconColor = color,
                     contentDescription = "Color $index",
@@ -173,11 +136,11 @@ fun BottomActionRow(
         else when(gameType) {
             Games.HAKYUU -> {
                 HakyuuValue.entries.forEach {
-                    val iconColor = if(isNote) colorResource(id = R.color.note_color)
+                    val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
                         else colorResource(id = R.color.primary_color)
 
                     Action(
-                        onClick = { action(it.value) },
+                        onClick = { viewModel.action(it.value) },
                         imageVector = ImageVector.vectorResource(id = it.icon),
                         iconColor = iconColor,
                         contentDescription = null,

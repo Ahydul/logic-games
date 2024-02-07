@@ -9,11 +9,16 @@ data class Cell private constructor(
     var backGroundColor: Color = Color.DarkGray,
 ) {
     companion object {
-        private fun emptyCell() = Cell(value = 0, notes = IntArray(9){1}, readOnly = false)
+        private fun emptyCell() = Cell(value = 0, notes = IntArray(9){0}, readOnly = false)
         private fun readOnlyCell(value: Int) = Cell(value = value, notes = IntArray(0), readOnly = true)
 
+        private fun allNotes(): Cell {
+            var arr = arrayOf(1,2,3,4,5,6,7,8,9)
+            return Cell(value = 0, notes = arr.toIntArray(), readOnly = false)
+        }
+
         fun create(value: Int) : Cell {
-            if (value == 0) return emptyCell()
+            if (value == 0) return allNotes()
             else return readOnlyCell(value)
         }
     }
