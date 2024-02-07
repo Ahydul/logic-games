@@ -1,4 +1,4 @@
-package com.example.tfg.components.activeGame
+package com.example.tfg.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.Canvas
@@ -17,13 +17,13 @@ import androidx.compose.ui.unit.sp
 import com.example.tfg.R
 import com.example.tfg.common.Cell
 import com.example.tfg.components.common.HorizontalGrid
+import com.example.tfg.utils.Quadruple
 
 
 @Composable
 fun Cell(
     cell: Cell, isSelected: Boolean,
-    drawDividerDown: Boolean, drawDividerUp: Boolean,
-    drawDividerRight: Boolean, drawDividerLeft: Boolean,
+    dividersToDraw: Quadruple<Boolean>,
     modifier: Modifier = Modifier
 ) {
     Log.d("TAG", "CELLcurrentRecomposeScope $currentRecomposeScope")
@@ -57,6 +57,9 @@ fun Cell(
                 )
             }
         }
+
+
+
         //Paints region borders and selecting UI
         Canvas(modifier = Modifier.matchParentSize()) {
             val borderSize = 1.dp.toPx()
@@ -75,10 +78,10 @@ fun Cell(
                 drawDivider(Offset(x, size.width), Offset(x, 0f))
             }
 
-            if (drawDividerUp) drawHorizontalDivider(0f + borderSize / 2)
-            if (drawDividerDown) drawHorizontalDivider(size.height - borderSize / 2)
-            if (drawDividerRight) drawVerticalDivider(size.width - borderSize / 2)
-            if (drawDividerLeft) drawVerticalDivider(0f + borderSize / 2)
+            if (dividersToDraw.up) drawHorizontalDivider(0f + borderSize / 2)
+            if (dividersToDraw.down) drawHorizontalDivider(size.height - borderSize / 2)
+            if (dividersToDraw.right) drawVerticalDivider(size.width - borderSize / 2)
+            if (dividersToDraw.left) drawVerticalDivider(0f + borderSize / 2)
 
             if(isSelected){
                 drawOval(color = Color.Red)
