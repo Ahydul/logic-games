@@ -33,7 +33,7 @@ fun HorizontalGrid(
 
         val placeables = measurables.map { it.measure(itemConstraints) }
 
-        val horizontalSpaceBetween = (layoutWidth - numChildrenRow*childrenSize) / (numChildrenRow - 1)
+        val horizontalSpaceBetween = if (numChildrenRow == 1) {0} else { (layoutWidth - numChildrenRow*childrenSize) / (numChildrenRow - 1) }
         val verticalSpaceBetween = (layoutHeight - rows*childrenSize) / rows
 
         layout(

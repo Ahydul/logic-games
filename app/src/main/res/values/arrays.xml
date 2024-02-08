@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer-array name="cell_background_color_ints">
-        <item>@color/primary_background</item>
+        <item>@color/cell_background</item>
         <item>@color/background2</item>
         <item>@color/background3</item>
         <item>@color/background4</item>

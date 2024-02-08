@@ -68,7 +68,7 @@ data class Board(
             return Board(
                 numColumns = numColumns,
                 numRows = numRows,
-                cells = Array(size = numColumns*numRows, init = { Cell.create(cellValues[it]) }),
+                cells = Array(size = numColumns*numRows, init = { Cell.create2(cellValues[it]) }),
                 sections = sections
             )
         }
