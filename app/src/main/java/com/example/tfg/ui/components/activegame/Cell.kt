@@ -2,8 +2,10 @@ package com.example.tfg.ui.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -23,23 +25,27 @@ import com.example.tfg.ui.components.common.HorizontalGrid
 
 @Composable
 fun Cell(
-    cell: Cell, isSelected: () -> Boolean,
+    cell: Cell,
+    isSelected: () -> Boolean,
     dividersToDraw: Quadruple<Boolean>,
     modifier: Modifier = Modifier
 ) {
-    Log.d("cell", "CELLcurrentRecomposeScope $currentRecomposeScope")
-    //val cell = setCell()
+    Log.d("cell", "CELL currentRecomposeScope $currentRecomposeScope")
 
-    val value = cell.value
+    val gridColor = colorResource(id = R.color.board_grid)
+    val backgroundColor = Color(cell.backGroundColor)
+
     val borderColor = colorResource(id = R.color.section_border)
     val cellValueColor = colorResource(id = R.color.cell_value)
     val cellNoteValueColor = colorResource(id = R.color.cell_note)
+    val value = cell.value
 
     Box(
         modifier = modifier
+            .background(color = backgroundColor)
             .border(
                 width = 0.2.dp,
-                color = colorResource(id = R.color.board_grid)
+                color = gridColor
             )
     ) {
         //Main value
@@ -60,6 +66,9 @@ fun Cell(
                         contentDescription = "Value $it",
                         modifier = Modifier.padding(5.dp)
                     )
+                }
+                else {
+                    Spacer(modifier = Modifier.padding(5.dp))
                 }
             }
         }

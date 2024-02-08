@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tfg.common.Coordinate
@@ -51,7 +52,6 @@ class ActiveGameView : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     TFGTheme {
-                        Log.d("cell", "${viewModel.getCellValue(Coordinate(0,0))}")
                         ActiveGameScreen(
                             viewModel = viewModel,
                             modifier = Modifier
@@ -109,7 +109,7 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
 @Composable
 fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
     Log.d("TAG", "TOPcurrentRecomposeScope $currentRecomposeScope")
-
+/*
     Column(modifier = modifier) {
         Row {
             Text(
@@ -131,6 +131,9 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
             )
         }
     }
+    
+ */
+    Text(text = "${viewModel.tmp()}", color = Color.White)
 }
 
 
@@ -194,8 +197,8 @@ fun GreetingPreview() {
         ActiveGameScreen(
             viewModel = ActiveGameViewModel(),
             modifier = Modifier
-            .background(colorResource(id = R.color.primary_background))
-            .fillMaxWidth()
+                .background(colorResource(id = R.color.primary_background))
+                .fillMaxWidth()
         )
     }
 }

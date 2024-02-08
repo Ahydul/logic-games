@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import com.example.tfg.common.Board
@@ -18,18 +17,23 @@ class ActiveGameViewModel : ViewModel() {
 
     private val board = Board.example()
 
-    private var cells = mutableStateOf(board.cells)
+    private val cells = mutableStateListOf<Cell>()
 
     private var isNote = mutableStateOf(false)
-    private var isPaint = mutableStateOf(false)
+    private var isPaint = mutableStateOf(true)
 
     //private val _moves = MutableStateFlow(_game.state[0].moves)
     //val moves: StateFlow<List<Move>> = _moves.asStateFlow()
 
     private var selectedTiles = mutableStateListOf<Coordinate>()
 
+    fun tmp(): List<Int> {
+        return cells.map { it.value }
+    }
+
     init {
         Log.d("VM","ViewModel")
+        cells.addAll(board.cells)
     }
 
     fun getNumColumns(): Int {
@@ -39,66 +43,72 @@ class ActiveGameViewModel : ViewModel() {
         return board.numRows
     }
 
-    fun setCellValue(index: Int, value: Int) {
+    private fun eraseValue(index: Int) {
+        if (!getCell(index).isEmpty()) cells[index] = Cell.create(0)
+    }
+
+    private fun setCellValue(index: Int, value: Int) {
         Log.d("action", "index:$index value:$value")
 
-        val newCell = cells.value[index]
-        newCell.value = if (newCell.value == value) { 0 } else { value }
-        cells.value[index] = newCell
+        val newCell = cells[index].copy(
+            value = if (cells[index].value == value) { 0 } else { value }
+        )
+        cells[index] = newCell
 
         Log.d("action", "new cell:${getCell(index)}")
     }
 
-    private fun setCellColor(index: Int, color: Color, defaultColor: Color) {
-        /*
-        Log.d("action", "index:$index ")
-        val cells = board.cells
-        val newCell = cells[index]
-        if (newCell.backGroundColor != color) newCell.backGroundColor = color
-        else newCell.backGroundColor = defaultColor
+    private fun setCellColor(index: Int, color: Int, defaultColor: Int) {
+        Log.d("action", "setCellColor index:$index")
+
+        val newCell = cells[index].copy(
+            backGroundColor = if (cells[index].backGroundColor == color) { defaultColor } else { color }
+        )
         cells[index] = newCell
 
-        board = board.copy(cells = cells)
-        Log.d("action", "new board:$board")
-
-         */
+        Log.d("action", "new cell:${getCell(index)}")
     }
     private fun setCellNote(index: Int, noteIndex: Int, note: Int) {
-        /*Log.d("action", "index:$index noteIndex:$noteIndex note:$note")
-        val cells = board.cells
-        val newCell = cells[index]
-        if (newCell.notes[noteIndex] == 0) newCell.notes[noteIndex] = note
+        Log.d("action", "setCellNote index:$index noteIndex:$noteIndex note:$note")
+
+        val newCell = if (note == 0) {
+            cells[index].copy(notes = Cell.emptyNotes())
+        } else if (cells[index].getNote(noteIndex) == note) {
+            cells[index].copy(noteIndex = noteIndex, noteValue = 0)
+        } else {
+            cells[index].copy(noteIndex = noteIndex, noteValue = note)
+        }
         cells[index] = newCell
 
-        board = board.copy(cells = cells)
-        Log.d("action", "new board:$board")
+        Log.d("action", "new cell:${getCell(index)}")
+    }
+
+    private fun setCellNote(index: Int, note: Int) {
+        /*TODO*/
+
+        /* Log.d("action","$index, $note")
+         val cells = board.cells
+         val newCell = cells[index]
+         if (note == 0)
+             newCell.notes.forEachIndexed { _: Int, i: Int ->
+                 newCell.notes[i] = 0
+             }
+         else
+             newCell.notes.forEachIndexed { n: Int, i: Int ->
+                 if (n == 0) newCell.notes[i] = note
+             }
+
+         board = board.copy(cells = cells)
 
          */
-    }
-    private fun setCellNote(index: Int, note: Int) {
-       /* Log.d("action","$index, $note")
-        val cells = board.cells
-        val newCell = cells[index]
-        if (note == 0)
-            newCell.notes.forEachIndexed { _: Int, i: Int ->
-                newCell.notes[i] = 0
-            }
-        else
-            newCell.notes.forEachIndexed { n: Int, i: Int ->
-                if (n == 0) newCell.notes[i] = note
-            }
-
-        board = board.copy(cells = cells)
-
-        */
     }
 
 
     fun getCell(coordinate: Coordinate): Cell {
-        return cells.value[coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!]
+        return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
     }
     private fun getCell(index: Int): Cell {
-        return cells.value[index]
+        return cells[index]
     }
     fun getCellValue(coordinate: Coordinate): Int {
         return getCell(coordinate).value
@@ -202,7 +212,7 @@ class ActiveGameViewModel : ViewModel() {
         isNote.value = !isNote()
     }
 
-    fun paintAction (color: Color, defaultColor: Color ) {
+    fun paintAction(color: Int, defaultColor: Int ) {
         for (tile in selectedTiles)
             setCellColor(
                 index = tile.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!,
@@ -211,25 +221,17 @@ class ActiveGameViewModel : ViewModel() {
             )
     }
 
-    private fun noteAction (value: Int, ordered: Boolean = true) {
+    private fun noteAction(value: Int, ordered: Boolean = true) {
         for (tile in selectedTiles){
             val cell = getCell(value)
-            if(!cell.readOnly) {
-                val tile = tile.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
-                if (ordered) setCellNote(
-                    index = tile,
-                    note = value,
-                    noteIndex = value
-                )
-                else setCellNote(
-                    index = tile,
-                    note = value)
+            if(cell.readOnly) return
 
-                selectedTiles.removeAll{ true }
-            }
+            val tile = tile.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+            if (ordered) setCellNote(index = tile, note = value, noteIndex = value - 1)
+            else setCellNote(index = tile, note = value)
         }
     }
-    private fun writeAction (value: Int) {
+    private fun writeAction(value: Int) {
         if(selectedTiles.size == 1) {
             val index = selectedTiles[0].toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
             val cell = getCell(index = index)
@@ -240,11 +242,19 @@ class ActiveGameViewModel : ViewModel() {
         }
     }
 
+    fun eraseAction() {
+        for (tile in selectedTiles){
+            val cell = getCell(tile)
+            if(!cell.readOnly) {
+                eraseValue(tile.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!)
+            }
+        }
+        removeSelections()
+    }
+
     fun action(value: Int) {
         if (isNote()) noteAction(value = value)
         else writeAction(value)
     }
-
-
 
 }

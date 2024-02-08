@@ -66,9 +66,7 @@ fun TopActionRow(
             modifier = actionModifier
         )
         Action( //Erase
-            onClick = {
-                viewModel.setCellValue(0,5)
-            },
+            onClick = { viewModel.eraseAction() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
             contentDescription = stringResource(id = R.string.erase_action),
             modifier = actionModifier
@@ -103,10 +101,9 @@ fun BottomActionRow(
 ) {
     Log.d("TAG", "BottomActionRow $currentRecomposeScope")
 
-    val colorIds = integerArrayResource(id = R.array.cell_background_color_ints)
-    val backgroundColors = colorIds.map { Color(it) }
-    val cellBackground = colorResource(id = R.color.cell_background)
-
+    val backgroundColorIds = integerArrayResource(id = R.array.cell_background_color_ints)
+    val defaultCellBackground = backgroundColorIds[0]
+    Log.d("ASD", "BottomActionRow $defaultCellBackground")
 
     HorizontalGrid(
         rows = 2,
@@ -117,17 +114,17 @@ fun BottomActionRow(
             .padding(8.dp)
             .clip(shape)
             .background(
-                color = colorResource(id = R.color.cell_background),
+                color = Color(defaultCellBackground),
                 shape = shape
             )
 
 
         if(viewModel.isPaint()){
-            backgroundColors.forEachIndexed { index, color ->
+            backgroundColorIds.forEachIndexed { index, color ->
                 Action(
-                    onClick = { viewModel.paintAction(color = backgroundColors[index], defaultColor = cellBackground)},
+                    onClick = { viewModel.paintAction(color = backgroundColorIds[index], defaultColor = defaultCellBackground)},
                     imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
-                    iconColor = color,
+                    iconColor = Color(color),
                     contentDescription = "Color $index",
                     modifier = modifierValueButtons
                 )

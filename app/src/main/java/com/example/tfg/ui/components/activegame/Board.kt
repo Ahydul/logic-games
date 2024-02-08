@@ -1,7 +1,6 @@
 package com.example.tfg.ui.components.activegame
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -13,8 +12,6 @@ import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.colorResource
-import com.example.tfg.R
 import com.example.tfg.common.Coordinate
 import com.example.tfg.state.ActiveGameViewModel
 
@@ -23,7 +20,7 @@ fun Board(
     viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    Log.d("TAG", "BOARDcurrentRecomposeScope $currentRecomposeScope")
+    Log.d("cell", "BOARDcurrentRecomposeScope $currentRecomposeScope")
 
     val numColumns = viewModel.getNumColumns()
     val numRows = viewModel.getNumRows()
@@ -82,11 +79,13 @@ fun Board(
                     }
                 )
             }
+
+
     ) {
         val cellModifier = modifier
             .weight(1f)
             .fillMaxHeight()
-            .background(colorResource(id = R.color.cell_background))
+
 
         for (row in 0..<numRows) {
 
@@ -98,10 +97,19 @@ fun Board(
 
                     Cell(
                         cell = viewModel.getCell(coordinate),
-                        dividersToDraw = remember(viewModel) { viewModel.dividersToDraw(coordinate) },
-                        isSelected = remember(viewModel) { { viewModel.isTileSelected(coordinate) } },
+                        dividersToDraw = remember { viewModel.dividersToDraw(coordinate) },
+                        isSelected = remember { { viewModel.isTileSelected(coordinate) } },
                         modifier = cellModifier
                     )
+
+                    /*
+                                        Cell(
+                                            cell = cell,
+                                            dividersToDraw = Quadruple(false,false,false,false),
+                                            isSelected = { false },
+                                            modifier = cellModifier
+                                        )
+                     */
 
                 }
             }
