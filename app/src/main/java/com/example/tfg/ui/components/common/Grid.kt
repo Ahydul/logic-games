@@ -1,18 +1,15 @@
-package com.example.tfg.components.common
+package com.example.tfg.ui.components.common
 
-import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
-import kotlin.math.ceil
-import kotlin.math.floor
 import kotlin.math.min
 
 @Composable
 fun HorizontalGrid(
     modifier: Modifier = Modifier,
     rows: Int = 2,
+    placement: GridPlacement = GridPlacement.HORIZONTAL,
     content: @Composable () -> Unit
 ) {
     Layout(
@@ -46,7 +43,11 @@ fun HorizontalGrid(
             val rowX = Array(rows) { 0 }
 
             placeables.forEachIndexed { index, placeable ->
-                val row = index % rows
+                val row = if (placement == GridPlacement.HORIZONTAL) {
+                    index / numChildrenRow
+                }else {
+                    index % rows
+                }
                 placeable.placeRelative(
                     x = rowX[row],
                     y = row * childrenSize + verticalSpaceBetween

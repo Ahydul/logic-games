@@ -1,10 +1,8 @@
 package com.example.tfg.state
 
 import android.util.Log
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
@@ -12,13 +10,16 @@ import androidx.lifecycle.ViewModel
 import com.example.tfg.common.Board
 import com.example.tfg.common.Cell
 import com.example.tfg.common.Coordinate
-import com.example.tfg.utils.Quadruple
+import com.example.tfg.common.utils.Quadruple
 
 class ActiveGameViewModel : ViewModel() {
 
     //private val _game = Game.example()
 
-    private var board by mutableStateOf(Board.example())
+    private val board = Board.example()
+
+    private var cells = mutableStateOf(board.cells)
+
     private var isNote = mutableStateOf(false)
     private var isPaint = mutableStateOf(false)
 
@@ -39,16 +40,18 @@ class ActiveGameViewModel : ViewModel() {
     }
 
     fun setCellValue(index: Int, value: Int) {
-        val cells = board.cells
-        val newCell = cells[index]
+        Log.d("action", "index:$index value:$value")
 
+        val newCell = cells.value[index]
         newCell.value = if (newCell.value == value) { 0 } else { value }
-        cells[index] = newCell
+        cells.value[index] = newCell
 
-        board = board.copy(cells = cells)
+        Log.d("action", "new cell:${getCell(index)}")
     }
 
     private fun setCellColor(index: Int, color: Color, defaultColor: Color) {
+        /*
+        Log.d("action", "index:$index ")
         val cells = board.cells
         val newCell = cells[index]
         if (newCell.backGroundColor != color) newCell.backGroundColor = color
@@ -56,17 +59,24 @@ class ActiveGameViewModel : ViewModel() {
         cells[index] = newCell
 
         board = board.copy(cells = cells)
+        Log.d("action", "new board:$board")
+
+         */
     }
     private fun setCellNote(index: Int, noteIndex: Int, note: Int) {
+        /*Log.d("action", "index:$index noteIndex:$noteIndex note:$note")
         val cells = board.cells
         val newCell = cells[index]
         if (newCell.notes[noteIndex] == 0) newCell.notes[noteIndex] = note
         cells[index] = newCell
 
         board = board.copy(cells = cells)
+        Log.d("action", "new board:$board")
+
+         */
     }
     private fun setCellNote(index: Int, note: Int) {
-        Log.d("setCellNote","$index, $note")
+       /* Log.d("action","$index, $note")
         val cells = board.cells
         val newCell = cells[index]
         if (note == 0)
@@ -79,14 +89,19 @@ class ActiveGameViewModel : ViewModel() {
             }
 
         board = board.copy(cells = cells)
+
+        */
     }
 
 
     fun getCell(coordinate: Coordinate): Cell {
-        return board.cells[coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!]
+        return cells.value[coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!]
     }
     private fun getCell(index: Int): Cell {
-        return board.cells[index]
+        return cells.value[index]
+    }
+    fun getCellValue(coordinate: Coordinate): Int {
+        return getCell(coordinate).value
     }
 
     fun dividersToDraw(coordinate: Coordinate): Quadruple<Boolean> {
@@ -150,6 +165,16 @@ class ActiveGameViewModel : ViewModel() {
             else selectedTiles.remove(coordinate)
         }
     }
+    fun setSelectionRemoveOthers(size: IntSize, position: Offset) {
+        val coordinate = coordinateFromPosition(size = size, position = position)
+        if(coordinate!=null){
+            //If actual tile is selected the action is to deselect and vice versa
+            val selecting = !isSelected(coordinate)
+            removeSelections()
+            if (selecting) selectedTiles.add(coordinate)
+        }
+    }
+
 
     private fun getColumn(x: Float, width: Int) : Int {
         return  (x * getNumColumns() / width).toInt()
@@ -199,6 +224,8 @@ class ActiveGameViewModel : ViewModel() {
                 else setCellNote(
                     index = tile,
                     note = value)
+
+                selectedTiles.removeAll{ true }
             }
         }
     }
@@ -217,5 +244,7 @@ class ActiveGameViewModel : ViewModel() {
         if (isNote()) noteAction(value = value)
         else writeAction(value)
     }
+
+
 
 }

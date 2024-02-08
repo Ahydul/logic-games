@@ -1,4 +1,4 @@
-package com.example.tfg.components.activegame
+package com.example.tfg.ui.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
@@ -42,17 +43,16 @@ fun Board(
                     },
                     onTap = {
                         Log.d("Gesture", "Tap $it $size")
-                        viewModel.removeSelections()
-                        viewModel.selectTile(
+                        viewModel.setSelectionRemoveOthers(
                             position = it,
-                            size = size,
+                            size = size
                         )
                     }
                 )
             }
             //Normal drag -> removes all selections and selects the cells
             .pointerInput(Unit) {
-                detectDragGestures (
+                detectDragGestures(
                     onDragStart = {
                         Log.d("Gesture", "DragStart $it $size")
                         viewModel.removeSelections()
@@ -93,13 +93,16 @@ fun Board(
             Row(modifier = modifier.weight(1f)) {
 
                 for (col in 0..<numColumns) {
+
                     val coordinate = Coordinate(row = row, column = col)
+
                     Cell(
                         cell = viewModel.getCell(coordinate),
-                        isSelected = viewModel.isTileSelected(coordinate),
-                        dividersToDraw = viewModel.dividersToDraw(coordinate),
+                        dividersToDraw = remember(viewModel) { viewModel.dividersToDraw(coordinate) },
+                        isSelected = remember(viewModel) { { viewModel.isTileSelected(coordinate) } },
                         modifier = cellModifier
                     )
+
                 }
             }
         }
