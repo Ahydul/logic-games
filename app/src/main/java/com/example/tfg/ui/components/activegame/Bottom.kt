@@ -1,4 +1,4 @@
-package com.example.tfg.components.activegame
+package com.example.tfg.ui.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -20,10 +20,10 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.addDebugBorder
-import com.example.tfg.components.common.HorizontalGrid
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.HakyuuValue
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.ui.components.common.HorizontalGrid
 
 
 @Composable
