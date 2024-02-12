@@ -27,13 +27,13 @@ import com.example.tfg.ui.components.common.HorizontalGrid
 fun Cell(
     cell: Cell,
     isSelected: () -> Boolean,
+    backgroundColor: () -> Color,
     dividersToDraw: Quadruple<Boolean>,
     modifier: Modifier = Modifier
 ) {
     Log.d("cell", "CELL currentRecomposeScope $currentRecomposeScope")
 
     val gridColor = colorResource(id = R.color.board_grid)
-    val backgroundColor = Color(cell.backGroundColor)
 
     val borderColor = colorResource(id = R.color.section_border)
     val cellValueColor = colorResource(id = R.color.cell_value)
@@ -42,7 +42,7 @@ fun Cell(
 
     Box(
         modifier = modifier
-            .background(color = backgroundColor)
+            .background(color = backgroundColor())
             .border(
                 width = 0.2.dp,
                 color = gridColor
@@ -99,7 +99,7 @@ fun Cell(
             if (dividersToDraw.left) drawVerticalDivider(0f + borderSize / 2)
 
             if(isSelected()){
-                drawOval(color = Color.Red)
+                drawOval(color = Color.Red, alpha = 0.2f)
             }
         }
     }

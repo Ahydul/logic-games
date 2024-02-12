@@ -12,6 +12,8 @@ import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.colorResource
+import com.example.tfg.R
 import com.example.tfg.common.Coordinate
 import com.example.tfg.state.ActiveGameViewModel
 
@@ -85,7 +87,7 @@ fun Board(
         val cellModifier = modifier
             .weight(1f)
             .fillMaxHeight()
-
+        val defaultTileBackground = colorResource(id = R.color.cell_background)
 
         for (row in 0..<numRows) {
 
@@ -94,22 +96,13 @@ fun Board(
                 for (col in 0..<numColumns) {
 
                     val coordinate = Coordinate(row = row, column = col)
-
                     Cell(
                         cell = viewModel.getCell(coordinate),
                         dividersToDraw = remember { viewModel.dividersToDraw(coordinate) },
                         isSelected = remember { { viewModel.isTileSelected(coordinate) } },
+                        backgroundColor = remember { { viewModel.getTileColor(coordinate, defaultTileBackground) } },
                         modifier = cellModifier
                     )
-
-                    /*
-                                        Cell(
-                                            cell = cell,
-                                            dividersToDraw = Quadruple(false,false,false,false),
-                                            isSelected = { false },
-                                            modifier = cellModifier
-                                        )
-                     */
 
                 }
             }

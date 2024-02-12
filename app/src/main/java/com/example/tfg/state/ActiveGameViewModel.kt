@@ -2,8 +2,10 @@ package com.example.tfg.state
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import com.example.tfg.common.Board
@@ -20,12 +22,14 @@ class ActiveGameViewModel : ViewModel() {
     private val cells = mutableStateListOf<Cell>()
 
     private var isNote = mutableStateOf(false)
-    private var isPaint = mutableStateOf(true)
+    private var isPaint = mutableStateOf(false)
 
     //private val _moves = MutableStateFlow(_game.state[0].moves)
     //val moves: StateFlow<List<Move>> = _moves.asStateFlow()
 
     private var selectedTiles = mutableStateListOf<Coordinate>()
+    private var coloredTiles = mutableStateMapOf<Coordinate, Color>()
+
 
     fun tmp(): List<Int> {
         return cells.map { it.value }
@@ -47,7 +51,7 @@ class ActiveGameViewModel : ViewModel() {
         if (!getCell(index).isEmpty()) cells[index] = Cell.create(0)
     }
 
-    private fun setCellValue(index: Int, value: Int) {
+    fun setCellValue(index: Int, value: Int) {
         Log.d("action", "index:$index value:$value")
 
         val newCell = cells[index].copy(
@@ -58,16 +62,6 @@ class ActiveGameViewModel : ViewModel() {
         Log.d("action", "new cell:${getCell(index)}")
     }
 
-    private fun setCellColor(index: Int, color: Int, defaultColor: Int) {
-        Log.d("action", "setCellColor index:$index")
-
-        val newCell = cells[index].copy(
-            backGroundColor = if (cells[index].backGroundColor == color) { defaultColor } else { color }
-        )
-        cells[index] = newCell
-
-        Log.d("action", "new cell:${getCell(index)}")
-    }
     private fun setCellNote(index: Int, noteIndex: Int, note: Int) {
         Log.d("action", "setCellNote index:$index noteIndex:$noteIndex note:$note")
 
@@ -84,23 +78,23 @@ class ActiveGameViewModel : ViewModel() {
     }
 
     private fun setCellNote(index: Int, note: Int) {
-        /*TODO*/
+        Log.d("action", "setCellNote index:$index note:$note")
 
-        /* Log.d("action","$index, $note")
-         val cells = board.cells
-         val newCell = cells[index]
-         if (note == 0)
-             newCell.notes.forEachIndexed { _: Int, i: Int ->
-                 newCell.notes[i] = 0
-             }
-         else
-             newCell.notes.forEachIndexed { n: Int, i: Int ->
-                 if (n == 0) newCell.notes[i] = note
-             }
+        val cell = getCell(index)
+        val newCell = if (note == 0) {
+            cell.copy(notes = Cell.emptyNotes())
+        } else{
+            val noteIndex = cell.findNote(note)
+            if (noteIndex != -1) { //Note exists
+                cell.copy(notes = cell.removeNote(noteIndex))
+            } else { //Note doesn't exist
+                cell.copy(notes = cell.addNote(note))
+            }
+        }
 
-         board = board.copy(cells = cells)
+        cells[index] = newCell
 
-         */
+        Log.d("action", "new cell:${getCell(index)}")
     }
 
 
@@ -185,6 +179,14 @@ class ActiveGameViewModel : ViewModel() {
         }
     }
 
+    private fun setTileColor(coordinate: Coordinate, color: Color) {
+        coloredTiles[coordinate] = color
+    }
+    private fun removeTileColor(coordinate: Coordinate) {
+        coloredTiles.remove(coordinate)
+    }
+
+
 
     private fun getColumn(x: Float, width: Int) : Int {
         return  (x * getNumColumns() / width).toInt()
@@ -195,6 +197,10 @@ class ActiveGameViewModel : ViewModel() {
 
     fun isTileSelected(coordinate: Coordinate): Boolean {
         return selectedTiles.contains(coordinate!!)
+    }
+
+    fun getTileColor(coordinate: Coordinate, defaultColor: Color): Color {
+        return coloredTiles.getOrDefault(coordinate, defaultColor)
     }
 
     fun isPaint(): Boolean {
@@ -212,25 +218,25 @@ class ActiveGameViewModel : ViewModel() {
         isNote.value = !isNote()
     }
 
-    fun paintAction(color: Int, defaultColor: Int ) {
+    //As I don't know how to properly get the default background color from resources outside composable I use a boolean
+    fun paintAction(color: Color, removeColor: Boolean) {
         for (tile in selectedTiles)
-            setCellColor(
-                index = tile.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!,
-                color = color,
-                defaultColor = defaultColor
-            )
+            if (removeColor || coloredTiles[tile]?.equals(color) == true) removeTileColor(tile)
+            else setTileColor(coordinate = tile, color = color)
     }
 
     private fun noteAction(value: Int, ordered: Boolean = true) {
         for (tile in selectedTiles){
-            val cell = getCell(value)
+            val tile = tile.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+            val cell = getCell(tile)
+
             if(cell.readOnly) return
 
-            val tile = tile.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
             if (ordered) setCellNote(index = tile, note = value, noteIndex = value - 1)
             else setCellNote(index = tile, note = value)
         }
     }
+
     private fun writeAction(value: Int) {
         if(selectedTiles.size == 1) {
             val index = selectedTiles[0].toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!

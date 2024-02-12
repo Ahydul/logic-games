@@ -78,7 +78,7 @@ fun TopActionRow(
             modifier = actionModifier
         )
         Action( //Undo
-            onClick = { /*TODO*/ },
+            onClick = { viewModel.setCellValue(0,1) },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier
@@ -101,8 +101,8 @@ fun BottomActionRow(
 ) {
     Log.d("TAG", "BottomActionRow $currentRecomposeScope")
 
-    val backgroundColorIds = integerArrayResource(id = R.array.cell_background_color_ints)
-    val defaultCellBackground = backgroundColorIds[0]
+    val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints).map { Color(it) }
+    val defaultCellBackground = backgroundColors[0]
     Log.d("ASD", "BottomActionRow $defaultCellBackground")
 
     HorizontalGrid(
@@ -114,17 +114,17 @@ fun BottomActionRow(
             .padding(8.dp)
             .clip(shape)
             .background(
-                color = Color(defaultCellBackground),
+                color = defaultCellBackground,
                 shape = shape
             )
 
 
         if(viewModel.isPaint()){
-            backgroundColorIds.forEachIndexed { index, color ->
-                Action(
-                    onClick = { viewModel.paintAction(color = backgroundColorIds[index], defaultColor = defaultCellBackground)},
+            backgroundColors.forEachIndexed { index, color ->
+                Action(                                                 //First color is remove the background
+                    onClick = { viewModel.paintAction(color = color, removeColor = index == 0)},
                     imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
-                    iconColor = Color(color),
+                    iconColor = color,
                     contentDescription = "Color $index",
                     modifier = modifierValueButtons
                 )
