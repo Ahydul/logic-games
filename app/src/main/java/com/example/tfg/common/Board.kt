@@ -1,12 +1,15 @@
 package com.example.tfg.common
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+
 /*
 * Manages the indexes of the different cells and the sections that may contain several cells
 * */
-data class Board(
+data class Board private constructor(
     val numColumns: Int,
     val numRows: Int,
-    val cells: Array<Cell>, // numColumns * numRows
+    val cells: SnapshotStateList<Cell>, // numColumns * numRows
     private val sections: IntArray // numColumns * numRows
 ) {
 
@@ -35,17 +38,23 @@ data class Board(
         return drawDivisorBetween(coordinate, coordinate.moveUp())
     }
 
+    fun clone(): Board {
+        val newCells = mutableStateListOf<Cell>()
+        newCells.addAll(cells)
+        return this.copy(cells = newCells)
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as Board
 
-        return cells.contentEquals(other.cells)
+        return cells == other.cells
     }
 
     override fun hashCode(): Int {
-        return cells.contentHashCode()
+        return cells.hashCode()
     }
 
 
@@ -54,10 +63,14 @@ data class Board(
             require(numColumns*numRows == cellValues.size) {
                 "Array must be of size $numColumns * $numRows = ${numColumns * numRows}"
             }
+
+            val cells = mutableStateListOf<Cell>()
+            cells.addAll(Array(size = numColumns*numRows, init = { Cell.create2(cellValues[it]) }))
+
             return Board(
                 numColumns = numColumns,
                 numRows = numRows,
-                cells = Array(size = numColumns*numRows, init = { Cell.create2(cellValues[it]) }),
+                cells = cells,
                 sections = sections
             )
         }

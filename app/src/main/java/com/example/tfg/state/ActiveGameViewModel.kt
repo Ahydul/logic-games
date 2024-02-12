@@ -1,9 +1,11 @@
 package com.example.tfg.state
 
 import android.util.Log
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
@@ -11,63 +13,97 @@ import androidx.lifecycle.ViewModel
 import com.example.tfg.common.Board
 import com.example.tfg.common.Cell
 import com.example.tfg.common.Coordinate
+import com.example.tfg.common.Game
+import com.example.tfg.common.GameState
 import com.example.tfg.common.utils.Quadruple
 
 class ActiveGameViewModel : ViewModel() {
 
-    //private val _game = Game.example()
-
-    private val board = Board.example()
-    
-    private val cells = mutableStateListOf<Cell>()
-
-    private var isNote = mutableStateOf(false)
-    private var isPaint = mutableStateOf(false)
-
-    //private val _moves = MutableStateFlow(_game.state[0].moves)
-    //val moves: StateFlow<List<Move>> = _moves.asStateFlow()
-
-    private var selectedTiles = mutableStateListOf<Coordinate>()
-    private var coloredTiles = mutableStateMapOf<Coordinate, Color>()
+    private val game = mutableStateOf(Game.example())
+    private var statePointer = mutableIntStateOf(0)
+    private val isNote = mutableStateOf(false)
+    private val isPaint = mutableStateOf(false)
+    private val selectedTiles = mutableStateListOf<Coordinate>()
+    private val coloredTiles = mutableStateMapOf<Coordinate, Color>()
 
 
     fun tmp(): List<Int> {
-        return cells.map { it.value }
+        return getCells().map { it.value }
     }
 
     init {
         Log.d("VM","ViewModel")
-        cells.addAll(board.cells)
+    }
+
+//  Main getters
+
+    private fun getGameState(): SnapshotStateList<GameState> {
+        return game.value.state
+    }
+
+    private fun getActualState(): GameState {
+        return getGameState()[statePointer.intValue]
+    }
+
+    private fun getBoard(): Board {
+        return getActualState().board
     }
 
     fun getNumColumns(): Int {
-        return board.numColumns
-    }
-    fun getNumRows(): Int {
-        return board.numRows
+        return getBoard().numColumns
     }
 
-//  Cell functions
+    fun getNumRows(): Int {
+        return getBoard().numRows
+    }
+
+    private fun getCells(): SnapshotStateList<Cell> {
+        return getBoard().cells
+    }
+
+
+/*
+    GameState functions
+ */
+
+    //Actual state is updated with unsync data and cloned into a new GameState
+    fun newGameState() {
+        Log.d("state", "${getActualState()}")
+        getGameState().add(getActualState().clone())
+    }
+
+    //Actual state is updated with unsync data and actual state is changed
+    fun setActualState(pointer: Int) {
+        Log.d("state", "Changing to $pointer")
+        if (pointer < getGameState().size && pointer != statePointer.intValue){
+            statePointer.intValue = pointer
+            Log.d("state", "${getActualState()}")
+        }
+    }
+
+/*
+    Cell fuctions
+ */
 
     fun getCell(coordinate: Coordinate): Cell {
         return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
     }
 
     private fun getCell(index: Int): Cell {
-        return cells[index]
+        return getCells()[index]
     }
 
     private fun eraseValue(index: Int) {
-        if (!getCell(index).isEmpty()) cells[index] = Cell.create(0)
+        if (!getCell(index).isEmpty()) getCells()[index] = Cell.create(0)
     }
 
-    fun setCellValue(index: Int, value: Int) {
+    private fun setCellValue(index: Int, value: Int) {
         Log.d("action", "index:$index value:$value")
 
-        val newCell = cells[index].copy(
-            value = if (cells[index].value == value) { 0 } else { value }
+        val newCell = getCells()[index].copy(
+            value = if (getCells()[index].value == value) { 0 } else { value }
         )
-        cells[index] = newCell
+        getCells()[index] = newCell
 
         Log.d("action", "new cell:${getCell(index)}")
     }
@@ -76,13 +112,13 @@ class ActiveGameViewModel : ViewModel() {
         Log.d("action", "setCellNote index:$index noteIndex:$noteIndex note:$note")
 
         val newCell = if (note == 0) {
-            cells[index].copy(notes = Cell.emptyNotes())
-        } else if (cells[index].getNote(noteIndex) == note) {
-            cells[index].copy(noteIndex = noteIndex, noteValue = 0)
+            getCells()[index].copy(notes = Cell.emptyNotes())
+        } else if (getCells()[index].getNote(noteIndex) == note) {
+            getCells()[index].copy(noteIndex = noteIndex, noteValue = 0)
         } else {
-            cells[index].copy(noteIndex = noteIndex, noteValue = note)
+            getCells()[index].copy(noteIndex = noteIndex, noteValue = note)
         }
-        cells[index] = newCell
+        getCells()[index] = newCell
 
         Log.d("action", "new cell:${getCell(index)}")
     }
@@ -102,12 +138,14 @@ class ActiveGameViewModel : ViewModel() {
             }
         }
 
-        cells[index] = newCell
+        getCells()[index] = newCell
 
         Log.d("action", "new cell:${getCell(index)}")
     }
 
-//  Selected tiles functions
+/*
+    SelectedTiles functions
+ */
 
     private fun coordinateFromPosition(size: IntSize, position: Offset): Coordinate? {
         val coordinate = Coordinate(
@@ -156,6 +194,10 @@ class ActiveGameViewModel : ViewModel() {
         }
     }
 
+    /*
+    Color functions
+     */
+
     private fun setTileColor(coordinate: Coordinate, color: Color) {
         coloredTiles[coordinate] = color
     }
@@ -178,6 +220,10 @@ class ActiveGameViewModel : ViewModel() {
         return coloredTiles.getOrDefault(coordinate, defaultColor)
     }
 
+    /*
+    Other
+     */
+
     fun isPaint(): Boolean {
         return isPaint.value
     }
@@ -189,9 +235,23 @@ class ActiveGameViewModel : ViewModel() {
     fun setIsPaint() {
         isPaint.value = !isPaint()
     }
+
     fun setIsNote() {
         isNote.value = !isNote()
     }
+
+    fun dividersToDraw(coordinate: Coordinate): Quadruple<Boolean> {
+        return Quadruple(
+            up = getBoard().drawDividerUp(coordinate),
+            down = getBoard().drawDividerDown(coordinate),
+            left = getBoard().drawDividerLeft(coordinate),
+            right = getBoard().drawDividerRight(coordinate)
+        )
+    }
+
+    /*
+    Game Actions
+     */
 
     //As I don't know how to properly get the default background color from resources outside composable I use a boolean
     fun paintAction(color: Color, removeColor: Boolean) {
@@ -238,13 +298,5 @@ class ActiveGameViewModel : ViewModel() {
         else writeAction(value)
     }
 
-    fun dividersToDraw(coordinate: Coordinate): Quadruple<Boolean> {
-        return Quadruple(
-            up = board.drawDividerUp(coordinate),
-            down = board.drawDividerDown(coordinate),
-            left = board.drawDividerLeft(coordinate),
-            right = board.drawDividerRight(coordinate)
-        )
-    }
 
 }

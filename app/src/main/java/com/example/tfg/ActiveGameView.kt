@@ -133,7 +133,6 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
     }
     
  */
-    Text(text = "${viewModel.tmp()}", color = Color.White)
 }
 
 

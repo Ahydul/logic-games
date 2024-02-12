@@ -6,7 +6,7 @@ import androidx.compose.runtime.Stable
 * Manages the content of a cell
 * */
 @Stable
-class Cell private constructor(
+data class Cell private constructor(
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,

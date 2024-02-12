@@ -72,19 +72,19 @@ fun TopActionRow(
             modifier = actionModifier
         )
         Action( //Note
-            onClick = { viewModel.setIsNote() },
+            onClick = { viewModel.newGameState() }, //viewModel.setIsNote() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier
         )
         Action( //Undo
-            onClick = { viewModel.setCellValue(0,1) },
+            onClick = { viewModel.setActualState(0) },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier
         )
         Action( //Redo
-            onClick = { /*TODO*/ },
+            onClick = { viewModel.setActualState(1) },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
             modifier = actionModifier
