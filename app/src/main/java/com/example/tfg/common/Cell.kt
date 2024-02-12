@@ -1,6 +1,12 @@
 package com.example.tfg.common
 
-data class Cell private constructor(
+import androidx.compose.runtime.Stable
+
+/*
+* Manages the content of a cell
+* */
+@Stable
+class Cell private constructor(
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,
@@ -14,13 +20,16 @@ data class Cell private constructor(
         return notes[index]
     }
 
-    fun findNote(note: Int): Int {
+    //Find index of note or null
+    fun findNote(note: Int): Int? {
         notes.forEachIndexed { index, n -> if (n == note) return index }
-        return -1
+        return null
     }
-
+    //Find last empty index or null
     private fun lastEmptyIndex() : Int? {
-        return notes.indexOfFirst { it == 0 }
+        val res = notes.indexOfFirst { it == 0 }
+        return if (res == -1) null
+            else res
     }
 
     private fun copyNotesChanging(index: Int, value: Int): IntArray {
@@ -29,19 +38,13 @@ data class Cell private constructor(
         return newNotes
     }
 
-    fun copy(value: Int = this.value, notes: IntArray = this.notes): Cell {
-        return Cell(value = value, notes = notes, readOnly = false)
-    }
-    fun copy(noteIndex: Int, noteValue: Int): Cell {
-        return Cell(value = value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false)
-    }
-
     fun addNote(note: Int): IntArray {
         val index = lastEmptyIndex() ?: return notes
         val newNotes = copyNotesChanging(index = index, value = note)
         newNotes.sort(toIndex = index+1)
         return newNotes
     }
+
     fun removeNote(index: Int): IntArray {
         val newNotes = notes.copyOf()
         newNotes.forEachIndexed { i, _ ->
@@ -51,6 +54,14 @@ data class Cell private constructor(
                     else newNotes[i+1]
         }
         return newNotes
+    }
+
+    fun copy(value: Int = this.value, notes: IntArray = this.notes): Cell {
+        return Cell(value = value, notes = notes, readOnly = false)
+    }
+
+    fun copy(noteIndex: Int, noteValue: Int): Cell {
+        return Cell(value = value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false)
     }
 
     override fun equals(other: Any?): Boolean {

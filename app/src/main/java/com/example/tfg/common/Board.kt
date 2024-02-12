@@ -1,7 +1,7 @@
 package com.example.tfg.common
 
 /*
-* Board manages the indexes of the different cells and the sections that may contain several cells
+* Manages the indexes of the different cells and the sections that may contain several cells
 * */
 data class Board(
     val numColumns: Int,
@@ -10,17 +10,6 @@ data class Board(
     private val sections: IntArray // numColumns * numRows
 ) {
 
-
-    fun getCell(index: Int): Cell {
-        return cells[index]
-    }
-    fun getCell(coordinate: Coordinate): Cell {
-        return cells[coordinate.toIndex(numRows = numRows, numColumns = numColumns)!!]
-    }
-    fun getCellValue(coordinate: Coordinate): Int {
-        val index: Int = coordinate.toIndex(numRows = numRows, numColumns = numColumns) !!
-        return cells[index].value
-    }
 
     private fun fromSameSection(index1: Int, index2: Int): Boolean{
         return sections[index1] == sections[index2]

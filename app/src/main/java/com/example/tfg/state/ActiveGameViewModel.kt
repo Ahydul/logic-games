@@ -1,7 +1,6 @@
 package com.example.tfg.state
 
 import android.util.Log
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -14,13 +13,12 @@ import com.example.tfg.common.Cell
 import com.example.tfg.common.Coordinate
 import com.example.tfg.common.utils.Quadruple
 
-@Stable
 class ActiveGameViewModel : ViewModel() {
 
     //private val _game = Game.example()
 
     private val board = Board.example()
-
+    
     private val cells = mutableStateListOf<Cell>()
 
     private var isNote = mutableStateOf(false)
@@ -47,6 +45,16 @@ class ActiveGameViewModel : ViewModel() {
     }
     fun getNumRows(): Int {
         return board.numRows
+    }
+
+//  Cell functions
+
+    fun getCell(coordinate: Coordinate): Cell {
+        return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
+    }
+
+    private fun getCell(index: Int): Cell {
+        return cells[index]
     }
 
     private fun eraseValue(index: Int) {
@@ -87,7 +95,7 @@ class ActiveGameViewModel : ViewModel() {
             cell.copy(notes = Cell.emptyNotes())
         } else{
             val noteIndex = cell.findNote(note)
-            if (noteIndex != -1) { //Note exists
+            if (noteIndex != null) { //Note exists
                 cell.copy(notes = cell.removeNote(noteIndex))
             } else { //Note doesn't exist
                 cell.copy(notes = cell.addNote(note))
@@ -99,25 +107,8 @@ class ActiveGameViewModel : ViewModel() {
         Log.d("action", "new cell:${getCell(index)}")
     }
 
+//  Selected tiles functions
 
-    fun getCell(coordinate: Coordinate): Cell {
-        return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
-    }
-    private fun getCell(index: Int): Cell {
-        return cells[index]
-    }
-    fun getCellValue(coordinate: Coordinate): Int {
-        return getCell(coordinate).value
-    }
-
-    fun dividersToDraw(coordinate: Coordinate): Quadruple<Boolean> {
-        return Quadruple(
-            up = board.drawDividerUp(coordinate),
-            down = board.drawDividerDown(coordinate),
-            left = board.drawDividerLeft(coordinate),
-            right = board.drawDividerRight(coordinate)
-        )
-    }
     private fun coordinateFromPosition(size: IntSize, position: Offset): Coordinate? {
         val coordinate = Coordinate(
             row = getRow(y = position.y, height = size.height),
@@ -127,57 +118,41 @@ class ActiveGameViewModel : ViewModel() {
             else {coordinate}
     }
 
-    private fun indexFromPosition(size: IntSize, position: Offset) : Int? {
-        val coordinate = Coordinate(
-            row = getRow(y = position.y, height = size.height),
-            column = getColumn(x = position.x, width = size.width)
-        )
-        return coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())
-    }
-
     fun isSelected(size: IntSize, position: Offset): Boolean {
         val coordinate = coordinateFromPosition(size = size, position = position)
+        return isSelected(coordinate)
+    }
+
+    private fun isSelected(coordinate: Coordinate?): Boolean {
         return selectedTiles.contains(coordinate)
     }
-    private fun isSelected(coordinate: Coordinate): Boolean {
-        return selectedTiles.contains(coordinate)
-    }
+
     fun removeSelections() {
         selectedTiles.removeAll { true }
     }
 
+    //If tile is not selected and not a null coordinate select it
     fun selectTile(size: IntSize, position: Offset) {
         val coordinate = coordinateFromPosition(size = size, position = position)
-        if(coordinate!=null){
-            //If actual tile is not selected select it
-            if (!isSelected(coordinate)) selectedTiles.add(coordinate)
-        }
+        if (coordinate!=null && !isSelected(coordinate)) selectedTiles.add(coordinate)
     }
+
+    //If tile is selected and not a null coordinate deselect it
     fun deselectTile(size: IntSize, position: Offset) {
         val coordinate = coordinateFromPosition(size = size, position = position)
-        if(coordinate!=null){
-            //If actual tile is selected deselect it
-            if (isSelected(coordinate)) selectedTiles.remove(coordinate)
-        }
+        if (isSelected(coordinate)) selectedTiles.remove(coordinate)
     }
 
-    fun setSelection(size: IntSize, position: Offset) {
+    //If tile is selected the action is to deselect and vice versa
+    fun setSelection(size: IntSize, position: Offset, removePrevious: Boolean = false) {
         val coordinate = coordinateFromPosition(size = size, position = position)
         if(coordinate!=null){
-            //If actual tile is selected the action is to deselect and vice versa
             val selecting = !isSelected(coordinate)
 
+            if (removePrevious) removeSelections()
+
             if (selecting) selectedTiles.add(coordinate)
-            else selectedTiles.remove(coordinate)
-        }
-    }
-    fun setSelectionRemoveOthers(size: IntSize, position: Offset) {
-        val coordinate = coordinateFromPosition(size = size, position = position)
-        if(coordinate!=null){
-            //If actual tile is selected the action is to deselect and vice versa
-            val selecting = !isSelected(coordinate)
-            removeSelections()
-            if (selecting) selectedTiles.add(coordinate)
+            else if (!removePrevious) selectedTiles.remove(coordinate)
         }
     }
 
@@ -188,8 +163,6 @@ class ActiveGameViewModel : ViewModel() {
         coloredTiles.remove(coordinate)
     }
 
-
-
     private fun getColumn(x: Float, width: Int) : Int {
         return  (x * getNumColumns() / width).toInt()
     }
@@ -198,7 +171,7 @@ class ActiveGameViewModel : ViewModel() {
     }
 
     fun isTileSelected(coordinate: Coordinate): Boolean {
-        return selectedTiles.contains(coordinate!!)
+        return selectedTiles.contains(coordinate)
     }
 
     fun getTileColor(coordinate: Coordinate, defaultColor: Color): Color {
@@ -263,6 +236,15 @@ class ActiveGameViewModel : ViewModel() {
     fun action(value: Int) {
         if (isNote()) noteAction(value = value)
         else writeAction(value)
+    }
+
+    fun dividersToDraw(coordinate: Coordinate): Quadruple<Boolean> {
+        return Quadruple(
+            up = board.drawDividerUp(coordinate),
+            down = board.drawDividerDown(coordinate),
+            left = board.drawDividerLeft(coordinate),
+            right = board.drawDividerRight(coordinate)
+        )
     }
 
 }

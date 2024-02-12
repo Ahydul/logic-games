@@ -42,9 +42,10 @@ fun Board(
                     },
                     onTap = {
                         Log.d("Gesture", "Tap $it $size")
-                        viewModel.setSelectionRemoveOthers(
+                        viewModel.setSelection(
                             position = it,
-                            size = size
+                            size = size,
+                            removePrevious = true,
                         )
                     }
                 )
