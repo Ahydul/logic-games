@@ -1,8 +1,5 @@
 package com.example.tfg.common
 
-import androidx.compose.runtime.Stable
-
-@Stable
 data class Cell private constructor(
     var value: Int,
     var notes: IntArray,

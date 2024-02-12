@@ -1,6 +1,7 @@
 package com.example.tfg.state
 
 import android.util.Log
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,7 @@ import com.example.tfg.common.Cell
 import com.example.tfg.common.Coordinate
 import com.example.tfg.common.utils.Quadruple
 
+@Stable
 class ActiveGameViewModel : ViewModel() {
 
     //private val _game = Game.example()
