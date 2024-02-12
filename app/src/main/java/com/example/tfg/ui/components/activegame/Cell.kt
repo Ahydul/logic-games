@@ -27,7 +27,7 @@ import com.example.tfg.ui.components.common.HorizontalGrid
 fun Cell(
     cell: Cell,
     isSelected: () -> Boolean,
-    backgroundColor: () -> Color,
+    backgroundColor: Color,
     dividersToDraw: Quadruple<Boolean>,
     modifier: Modifier = Modifier
 ) {
@@ -42,7 +42,7 @@ fun Cell(
 
     Box(
         modifier = modifier
-            .background(color = backgroundColor())
+            .background(color = backgroundColor)
             .border(
                 width = 0.2.dp,
                 color = gridColor
