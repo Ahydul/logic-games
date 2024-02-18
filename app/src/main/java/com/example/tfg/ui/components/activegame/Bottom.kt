@@ -59,20 +59,8 @@ fun TopActionRow(
         rows = 1,
         modifier = modifier
     ) {
-        Action( //Paint
-            onClick = { viewModel.setIsPaint() },
-            imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),
-            contentDescription = stringResource(id = R.string.brush_action),
-            modifier = actionModifier
-        )
-        Action( //Erase
-            onClick = { viewModel.eraseAction() },
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
-            contentDescription = stringResource(id = R.string.erase_action),
-            modifier = actionModifier
-        )
         Action( //Note
-            onClick = { viewModel.newGameState() }, //viewModel.setIsNote() },
+            onClick = { viewModel.newGameState() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier
@@ -89,6 +77,36 @@ fun TopActionRow(
             contentDescription = stringResource(id = R.string.redo_action),
             modifier = actionModifier
         )
+        Action( //Paint
+            onClick = { viewModel.setIsPaint() },
+            imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),
+            contentDescription = stringResource(id = R.string.brush_action),
+            modifier = actionModifier
+        )
+        Action( //Erase
+            onClick = { viewModel.eraseAction() },
+            imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
+            contentDescription = stringResource(id = R.string.erase_action),
+            modifier = actionModifier
+        )
+        Action( //Note
+            onClick = { viewModel.setIsNote() },
+            imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
+            contentDescription = stringResource(id = R.string.edit_action),
+            modifier = actionModifier
+        )
+        Action( //Undo
+            onClick = { viewModel.undoMove() },
+            imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
+            contentDescription = stringResource(id = R.string.undo_action),
+            modifier = actionModifier
+        )
+        Action( //Redo
+            onClick = { viewModel.redoMove() },
+            imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
+            contentDescription = stringResource(id = R.string.redo_action),
+            modifier = actionModifier
+        )
     }
 }
 
@@ -101,8 +119,8 @@ fun BottomActionRow(
 ) {
     Log.d("TAG", "BottomActionRow $currentRecomposeScope")
 
-    val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints).map { Color(it) }
-    val defaultCellBackground = backgroundColors[0]
+    val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
+    val defaultCellBackground = Color(backgroundColors[0])
     Log.d("ASD", "BottomActionRow $defaultCellBackground")
 
     HorizontalGrid(
@@ -122,9 +140,9 @@ fun BottomActionRow(
         if(viewModel.isPaint()){
             backgroundColors.forEachIndexed { index, color ->
                 Action(                                                 //First color is remove the background
-                    onClick = { viewModel.paintAction(color = color, removeColor = index == 0)},
+                    onClick = { viewModel.paintAction(colorInt = color, removeColor = index == 0)},
                     imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
-                    iconColor = color,
+                    iconColor = Color(color),
                     contentDescription = "Color $index",
                     modifier = modifierValueButtons
                 )
@@ -137,7 +155,7 @@ fun BottomActionRow(
                         else colorResource(id = R.color.primary_color)
 
                     Action(
-                        onClick = { viewModel.action(it.value) },
+                        onClick = { viewModel.noteOrWriteAction(it.value) },
                         imageVector = ImageVector.vectorResource(id = it.icon),
                         iconColor = iconColor,
                         contentDescription = null,
