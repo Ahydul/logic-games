@@ -97,13 +97,12 @@ class ActiveGameViewModel : ViewModel() {
  */
 
     // Getters
+    private fun getCell(index: Int): Cell {
+        return getCells()[index]
+    }
 
     fun getCell(coordinate: Coordinate): Cell {
         return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
-    }
-
-    private fun getCell(index: Int): Cell {
-        return getCells()[index]
     }
 
     private fun getCells(coordinates: List<Coordinate>): List<Cell> {
@@ -115,18 +114,21 @@ class ActiveGameViewModel : ViewModel() {
     }
 
     private fun isReadOnly(coordinate: Coordinate): Boolean {
-        return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!).readOnly
+        return isReadOnly(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
+    }
+
+    private fun getCellColor(index: Int): Int {
+        return getCell(index).backgroundColor
     }
 
     fun getCellColor(coordinate: Coordinate): Int {
-        return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!).backgroundColor
-    //return coloredTiles.getOrDefault(coordinate, defaultColor)
+        return getCellColor(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
     }
 
     // Setters
 
     private fun eraseValue(index: Int) {
-        if (!getCell(index).isEmpty()) setCell(index = index, newCell = Cell.create(0))
+        if (!getCell(index).isEmpty()) setCell(index = index, newCell = Cell.createWithBackground(backgroundColor = 0))
     }
 
     private fun setCellValue(index: Int, value: Int) {
@@ -179,7 +181,6 @@ class ActiveGameViewModel : ViewModel() {
         Log.d("action", "index:$index color:$color")
 
         val newCell = getCells()[index].copy(
-            value = getCell(coordinate).value,
             backgroundColor = if (getCells()[index].backgroundColor == color) { 0 } else { color }
         )
         setCell(index = index, newCell = newCell)
@@ -314,13 +315,13 @@ class ActiveGameViewModel : ViewModel() {
     }
 
     fun applyMove(move: Move) {
-        for (i in 0..move.coordinates.size) {
+        for (i in 0..move.coordinates.size - 1) {
             setCell(coordinate = move.coordinates[i], newCell = move.newCells[i])
         }
     }
 
     fun unapplyMove(move: Move) {
-        for (i in 0..move.coordinates.size) {
+        for (i in 0..move.coordinates.size - 1) {
             setCell(coordinate = move.coordinates[i], newCell = move.previousCells[i])
         }
     }

@@ -6,7 +6,7 @@ import androidx.compose.runtime.Stable
 * Manages the content of a cell
 * */
 @Stable
-data class Cell private constructor(
+class Cell private constructor(
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,
@@ -58,7 +58,7 @@ data class Cell private constructor(
     }
 
     fun copy(value: Int = this.value, notes: IntArray = this.notes, backgroundColor: Int = this.backgroundColor): Cell {
-        return Cell(value = value, notes = notes, readOnly = false, backgroundColor = backgroundColor)
+        return Cell(value = value, notes = notes, readOnly = this.readOnly, backgroundColor = backgroundColor)
     }
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {
@@ -86,8 +86,11 @@ data class Cell private constructor(
     }
 
     companion object {
-        private fun emptyCell() = Cell(value = 0, notes = emptyNotes(), readOnly = false, backgroundColor = 0)
-        private fun readOnlyCell(value: Int) = Cell(value = value, notes = IntArray(0), readOnly = true, backgroundColor = 0)
+        private fun emptyCell(backgroundColor: Int = 0) =
+            Cell(value = 0, notes = emptyNotes(), readOnly = false, backgroundColor = backgroundColor)
+
+        private fun readOnlyCell(value: Int) =
+            Cell(value = value, notes = IntArray(0), readOnly = true, backgroundColor = 0)
 
         private fun allNotes(): Cell {
             val arr = arrayOf(1,2,3,4,5,6,7,8,9)
@@ -98,10 +101,13 @@ data class Cell private constructor(
             return IntArray(9){0}
         }
 
+        fun createWithBackground(backgroundColor: Int) = emptyCell(backgroundColor)
+
         fun create(value: Int) : Cell {
             return if (value == 0) emptyCell()
             else readOnlyCell(value)
         }
+
         fun create2(value: Int) : Cell {
             return if (value == 0) allNotes()
             else readOnlyCell(value)
