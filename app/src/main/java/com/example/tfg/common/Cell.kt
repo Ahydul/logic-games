@@ -10,6 +10,7 @@ data class Cell private constructor(
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,
+    val backgroundColor: Int = 0
 ) {
 
     fun isEmpty(): Boolean {

@@ -6,7 +6,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 data class GameState(
     var board: Board,
     var moves: SnapshotStateList<Move> = mutableStateListOf(),
-    var pointer: Int = 0,
+    var pointer: Int = -1,
 ) {
     fun clone(): GameState {
         return this.copy(board = board.clone())

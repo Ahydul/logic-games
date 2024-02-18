@@ -10,7 +10,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
-import com.example.tfg.common.Action
 import com.example.tfg.common.Board
 import com.example.tfg.common.Cell
 import com.example.tfg.common.Coordinate
@@ -46,9 +45,11 @@ class ActiveGameViewModel : ViewModel() {
     private fun getActualState(): GameState {
         return getGameStates()[statePointer.intValue]
     }
-    private fun getActualPointer(): Int {
+
+    private fun getActualMovesPointer(): Int {
         return getActualState().pointer
     }
+
     private fun getMoves(): SnapshotStateList<Move> {
         return getActualState().moves
     }
@@ -97,12 +98,18 @@ class ActiveGameViewModel : ViewModel() {
     Cell fuctions
  */
 
+    // Getters
+
     fun getCell(coordinate: Coordinate): Cell {
         return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
     }
 
     private fun getCell(index: Int): Cell {
         return getCells()[index]
+    }
+
+    private fun getCells(coordinates: List<Coordinate>): List<Cell> {
+        return coordinates.map { getCell(it) }
     }
 
     private fun isReadOnly(index: Int): Boolean {
@@ -113,8 +120,10 @@ class ActiveGameViewModel : ViewModel() {
         return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!).readOnly
     }
 
+    // Setters
+
     private fun eraseValue(index: Int) {
-        if (!getCell(index).isEmpty()) getCells()[index] = Cell.create(0)
+        if (!getCell(index).isEmpty()) setCell(index = index, newCell = Cell.create(0))
     }
 
     private fun setCellValue(index: Int, value: Int) {
@@ -123,7 +132,7 @@ class ActiveGameViewModel : ViewModel() {
         val newCell = getCells()[index].copy(
             value = if (getCells()[index].value == value) { 0 } else { value }
         )
-        getCells()[index] = newCell
+        setCell(index = index, newCell = newCell)
 
         Log.d("action", "new cell:${getCell(index)}")
     }
@@ -138,7 +147,7 @@ class ActiveGameViewModel : ViewModel() {
         } else {
             getCells()[index].copy(noteIndex = noteIndex, noteValue = note)
         }
-        getCells()[index] = newCell
+        setCell(index = index, newCell = newCell)
 
         Log.d("action", "new cell:${getCell(index)}")
     }
@@ -158,14 +167,53 @@ class ActiveGameViewModel : ViewModel() {
             }
         }
 
-        getCells()[index] = newCell
+        setCell(index = index, newCell = newCell)
 
         Log.d("action", "new cell:${getCell(index)}")
     }
 
-/*
-    SelectedTiles functions
- */
+    private fun setCell(index: Int, newCell: Cell) {
+        getCells()[index] = newCell
+    }
+
+    private fun setCell(coordinate: Coordinate, newCell: Cell) {
+        getCells()[coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!] = newCell
+    }
+
+    private fun setCellsNotes(note: Int, coordinates: List<Coordinate>, ordered: Boolean) {
+        coordinates.forEach {
+            val index = it.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+            if (ordered) setCellNote(index = index, note = note, noteIndex = note - 1)
+            else setCellNote(index = index, note = note)
+        }
+    }
+
+    private fun setCellsValues(value: Int, coordinates: List<Coordinate>) {
+        coordinates.forEach {
+            val index = it.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+            setCellValue(value = value, index = index)
+        }
+    }
+
+    private fun eraseCells(coordinates: List<Coordinate>) {
+        coordinates.forEach {
+            val index = it.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+            eraseValue(index)
+        }
+    }
+
+    private fun removeCellsColor(coordinates: List<Coordinate>) {
+        coordinates.forEach { removeTileColor(it) }
+    }
+
+    private fun setCellsColor(colorInt: Int, coordinates: List<Coordinate>) {
+        val color = Color(colorInt)
+        coordinates.forEach { setTileColor(color = color, coordinate = it) }
+    }
+
+    /*
+        SelectedTiles functions
+     */
 
     private fun coordinateFromPosition(size: IntSize, position: Offset): Coordinate? {
         val coordinate = Coordinate(
@@ -244,67 +292,62 @@ class ActiveGameViewModel : ViewModel() {
     Move functions
      */
 
-    private fun movePointerRight(): Boolean{
-        val canRedo = getActualPointer() < getActualState().moves.size
-        if (canRedo) getActualState().pointer += 1
-        return canRedo
+    private fun movePointerRight() {
+        getActualState().pointer = getActualState().pointer + 1
     }
 
-    private fun movePointerLeft(): Boolean{
-        val canUndo = getActualPointer() != 0
-        if (canUndo) getActualState().pointer -= 1
-        return canUndo
+    private fun movePointerLeft() {
+        getActualState().pointer = getActualState().pointer - 1
     }
 
     private fun addMove(move: Move) {
+        //Remove moves that won't be accesed anymore
+        if (getActualMovesPointer() < getMoves().size - 1) {
+            getMoves().removeRange(fromIndex = getActualMovesPointer() + 1, toIndex = getMoves().size)
+        }
+
+        Log.d("move","ADD moves:${getMoves().size} pointer:${getActualMovesPointer()}")
+
         getMoves().add(move)
         movePointerRight()
-    }
 
-    fun redoMove() {
-        val success = movePointerRight()
-        if (!success) return
-
-        Log.d("move","redo move")
-
-        applyMove(getMove(getActualPointer()))
-    }
-
-    fun undoMove() {
-        val success = movePointerLeft()
-        if (!success) return
-
-        Log.d("move","undo move")
-
-        applyMove(getMove(getActualPointer() ))
+        Log.d("move","moves:${getMoves().size} pointer:${getActualMovesPointer()}")
     }
 
     fun applyMove(move: Move) {
-        val value = move.value
-        val coordinates = move.coordinates
-
-        when (move.action) {
-            Action.PAINT -> paintAction(colorInt = value, coordinates = coordinates)
-            Action.WRITE -> writeAction(value = value, coordinates = coordinates)
-            Action.ORDERED_NOTE -> noteAction(value = value, coordinates = coordinates, ordered = true)
-            Action.UNORDERED_NOTE -> noteAction(value = value, coordinates = coordinates, ordered = false)
-            Action.REMOVE_PAINT -> removePaintAction(coordinates)
-            Action.ERASE -> eraseAction(coordinates)
+        for (i in 0..move.coordinates.size) {
+            setCell(coordinate = move.coordinates[0], newCell = move.newCells[0])
         }
     }
 
     fun unapplyMove(move: Move) {
-        val value = move.value
-        val coordinates = move.coordinates
-
-        when (move.action) {
-            Action.PAINT -> paintAction(colorInt = value, coordinates = coordinates)
-            Action.WRITE -> writeAction(value = value, coordinates = coordinates)
-            Action.ORDERED_NOTE -> noteAction(value = value, coordinates = coordinates, ordered = true)
-            Action.UNORDERED_NOTE -> noteAction(value = value, coordinates = coordinates, ordered = false)
-            Action.REMOVE_PAINT -> removePaintAction(coordinates)
-            Action.ERASE -> eraseAction(coordinates)
+        for (i in 0..move.coordinates.size) {
+            setCell(coordinate = move.coordinates[0], newCell = move.previousCells[0])
         }
+    }
+
+    fun redoMove() {
+        val canRedo = getActualMovesPointer() < getMoves().size - 1
+        if (!canRedo) return
+
+        Log.d("move","REDO moves:${getMoves().size} pointer:${getActualMovesPointer()}")
+
+        movePointerRight()
+        applyMove(getMove(getActualMovesPointer()))
+
+        Log.d("move","moves:${getMoves().size} pointer:${getActualMovesPointer()}")
+    }
+
+    fun undoMove() {
+        val canUndo = getActualMovesPointer() > -1
+        if (!canUndo) return
+
+        Log.d("move","UNDO moves:${getMoves().size} pointer:${getActualMovesPointer()}")
+
+        unapplyMove(getMove(getActualMovesPointer()))
+        movePointerLeft()
+
+        Log.d("move","moves:${getMoves().size} pointer:${getActualMovesPointer()}")
     }
 
     /*
@@ -340,74 +383,60 @@ class ActiveGameViewModel : ViewModel() {
     Game Actions
      */
 
-    private fun noteAction(value: Int, coordinates: List<Coordinate>, ordered: Boolean) {
-        coordinates.forEach {
-            val index = it.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
-            if (ordered) setCellNote(index = index, note = value, noteIndex = value - 1)
-            else setCellNote(index = index, note = value)
-        }
-    }
-
-    private fun writeAction(value: Int, coordinates: List<Coordinate>) {
-        coordinates.forEach {
-            val index = it.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
-            setCellValue(value = value, index = index)
-        }
-    }
-
     fun noteOrWriteAction(value: Int, ordered: Boolean = true) {
         val coordinates = selectedTiles.filter { !isReadOnly(it) }
         if (coordinates.isEmpty()) return
 
-        if (isNote()) {
-            noteAction(value = value, coordinates = coordinates, ordered = ordered)
+        val previousCells = getCells(coordinates)
 
-            addMove(Move.noteAction(coordinates = coordinates, value = value, ordered = ordered))
+        if (isNote()) {
+            setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
         }
         else if (coordinates.size == 1) {
-            writeAction(value, coordinates = coordinates)
+            setCellsValues(value, coordinates = coordinates)
             removeSelections()
-
-            addMove(Move.writeAction(coordinates = coordinates, value = value))
         }
-    }
 
-    private fun removePaintAction(coordinates: List<Coordinate>) {
-        coordinates.forEach { removeTileColor(it) }
-    }
-
-    private fun paintAction(colorInt: Int, coordinates: List<Coordinate>) {
-        val color = Color(colorInt)
-        coordinates.forEach { setTileColor(color = color, coordinate = it) }
+        val newCells = getCells(coordinates)
+        addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
     }
 
     fun paintAction(colorInt: Int, removeColor: Boolean) {
-        val coordinatesPaint = selectedTiles.filter { !isReadOnly(it) && !(removeColor || coloredTiles[it]?.equals(Color(colorInt)) == true) }
-        val coordinatesErase = selectedTiles.filter { !isReadOnly(it) && removeColor || coloredTiles[it]?.equals(Color(colorInt)) == true }
-        if (coordinatesPaint.isEmpty() || coordinatesErase.isEmpty()) return
+        val erasePaint: (Coordinate) -> Boolean  = { removeColor || coloredTiles[it]?.equals(Color(colorInt)) == true }
 
-        paintAction(colorInt = colorInt, coordinates = coordinatesPaint)
-        removePaintAction(coordinates = coordinatesErase)
+        val coordinatesErase = selectedTiles.filter { !isReadOnly(it) && erasePaint(it) }
+        val coordinatesPaint = selectedTiles.filter { !isReadOnly(it) && !erasePaint(it) }
 
-        addMove(Move.paintAction(coordinates = coordinatesPaint, value = colorInt))
-        addMove(Move.removePaintAction(coordinatesErase))
-    }
+        if (coordinatesPaint.isEmpty() && coordinatesErase.isEmpty()) return
 
-    private fun eraseAction(coordinates: List<Coordinate>) {
-        coordinates.forEach {
-            val index = it.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
-            eraseValue(index)
+            val coordinates = coordinatesErase + coordinatesPaint
+        val previousCells = getCells(coordinates)
+
+        if (!coordinatesPaint.isEmpty()) {
+            setCellsColor(colorInt = colorInt, coordinates = coordinatesPaint)
         }
+
+        if (!coordinatesErase.isEmpty()) {
+            removeCellsColor(coordinates = coordinatesErase)
+        }
+
+
+        val newCells = getCells(coordinates)
+        addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
     }
 
     fun eraseAction() {
         val coordinates = selectedTiles.filter { !isReadOnly(it) }
         if (coordinates.isEmpty()) return
 
-        eraseAction(coordinates)
+        val previousCells = getCells(coordinates)
+
+        eraseCells(coordinates)
         removeSelections()
 
-        addMove(Move.eraseAction(coordinates))
+        val newCells = getCells(coordinates)
+
+        addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
     }
 
 }
