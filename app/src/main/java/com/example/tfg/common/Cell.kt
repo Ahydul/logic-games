@@ -10,7 +10,7 @@ data class Cell private constructor(
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,
-    val backgroundColor: Int = 0
+    val backgroundColor: Int,
 ) {
 
     fun isEmpty(): Boolean {
@@ -57,12 +57,12 @@ data class Cell private constructor(
         return newNotes
     }
 
-    fun copy(value: Int = this.value, notes: IntArray = this.notes): Cell {
-        return Cell(value = value, notes = notes, readOnly = false)
+    fun copy(value: Int = this.value, notes: IntArray = this.notes, backgroundColor: Int = this.backgroundColor): Cell {
+        return Cell(value = value, notes = notes, readOnly = false, backgroundColor = backgroundColor)
     }
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {
-        return Cell(value = value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false)
+        return Cell(value = this.value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false, backgroundColor = this.backgroundColor)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -73,23 +73,25 @@ data class Cell private constructor(
 
         if (value != other.value) return false
         if (!notes.contentEquals(other.notes)) return false
-        return readOnly == other.readOnly
+        if (readOnly != other.readOnly) return false
+        return backgroundColor == other.backgroundColor
     }
 
     override fun hashCode(): Int {
         var result = value
         result = 31 * result + notes.contentHashCode()
         result = 31 * result + readOnly.hashCode()
+        result = 31 * result + backgroundColor
         return result
     }
 
     companion object {
-        private fun emptyCell() = Cell(value = 0, notes = emptyNotes(), readOnly = false)
-        private fun readOnlyCell(value: Int) = Cell(value = value, notes = IntArray(0), readOnly = true)
+        private fun emptyCell() = Cell(value = 0, notes = emptyNotes(), readOnly = false, backgroundColor = 0)
+        private fun readOnlyCell(value: Int) = Cell(value = value, notes = IntArray(0), readOnly = true, backgroundColor = 0)
 
         private fun allNotes(): Cell {
             val arr = arrayOf(1,2,3,4,5,6,7,8,9)
-            return Cell(value = 0, notes = arr.toIntArray(), readOnly = false)
+            return Cell(value = 0, notes = arr.toIntArray(), readOnly = false, backgroundColor = 0)
         }
 
         fun emptyNotes(): IntArray {

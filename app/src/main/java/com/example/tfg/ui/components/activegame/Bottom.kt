@@ -120,8 +120,7 @@ fun BottomActionRow(
     Log.d("TAG", "BottomActionRow $currentRecomposeScope")
 
     val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
-    val defaultCellBackground = Color(backgroundColors[0])
-    Log.d("ASD", "BottomActionRow $defaultCellBackground")
+    val defaultCellBackground = colorResource(id = R.color.cell_background)
 
     HorizontalGrid(
         rows = 2,
@@ -140,7 +139,7 @@ fun BottomActionRow(
         if(viewModel.isPaint()){
             backgroundColors.forEachIndexed { index, color ->
                 Action(                                                 //First color is remove the background
-                    onClick = { viewModel.paintAction(colorInt = color, removeColor = index == 0)},
+                    onClick = { viewModel.paintAction(colorInt = color)},
                     imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
                     iconColor = Color(color),
                     contentDescription = "Color $index",

@@ -101,7 +101,6 @@ fun Board(
                         cell = viewModel.getCell(coordinate),
                         dividersToDraw = remember { viewModel.dividersToDraw(coordinate) },
                         isSelected = remember { { viewModel.isTileSelected(coordinate) } },
-                        backgroundColor = viewModel.getTileColor(coordinate, defaultTileBackground),
                         modifier = cellModifier
                     )
 
