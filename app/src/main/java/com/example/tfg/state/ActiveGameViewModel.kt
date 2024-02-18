@@ -25,8 +25,6 @@ class ActiveGameViewModel : ViewModel() {
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
-    private val coloredTiles = mutableStateMapOf<Coordinate, Color>()
-
 
     fun tmp(): List<Int> {
         return getCells().map { it.value }
@@ -120,6 +118,11 @@ class ActiveGameViewModel : ViewModel() {
         return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!).readOnly
     }
 
+    fun getCellColor(coordinate: Coordinate): Int {
+        return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!).backgroundColor
+    //return coloredTiles.getOrDefault(coordinate, defaultColor)
+    }
+
     // Setters
 
     private fun eraseValue(index: Int) {
@@ -166,18 +169,30 @@ class ActiveGameViewModel : ViewModel() {
                 cell.copy(notes = cell.addNote(note))
             }
         }
-
         setCell(index = index, newCell = newCell)
 
         Log.d("action", "new cell:${getCell(index)}")
     }
 
-    private fun setCell(index: Int, newCell: Cell) {
-        getCells()[index] = newCell
+    private fun setCellColor(coordinate: Coordinate, color: Int) {
+        val index = coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+        Log.d("action", "index:$index color:$color")
+
+        val newCell = getCells()[index].copy(
+            value = getCell(coordinate).value,
+            backgroundColor = if (getCells()[index].backgroundColor == color) { 0 } else { color }
+        )
+        setCell(index = index, newCell = newCell)
+
+        Log.d("action", "new cell:${getCell(index)}")
     }
 
     private fun setCell(coordinate: Coordinate, newCell: Cell) {
         getCells()[coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!] = newCell
+    }
+
+    private fun setCell(index: Int, newCell: Cell) {
+        getCells()[index] = newCell
     }
 
     private fun setCellsNotes(note: Int, coordinates: List<Coordinate>, ordered: Boolean) {
@@ -202,13 +217,8 @@ class ActiveGameViewModel : ViewModel() {
         }
     }
 
-    private fun removeCellsColor(coordinates: List<Coordinate>) {
-        coordinates.forEach { removeTileColor(it) }
-    }
-
-    private fun setCellsColor(colorInt: Int, coordinates: List<Coordinate>) {
-        val color = Color(colorInt)
-        coordinates.forEach { setTileColor(color = color, coordinate = it) }
+    private fun setCellsColor(color: Int, coordinates: List<Coordinate>) {
+        coordinates.forEach { setCellColor(color = color, coordinate = it) }
     }
 
     /*
@@ -266,13 +276,6 @@ class ActiveGameViewModel : ViewModel() {
     Color functions
      */
 
-    private fun setTileColor(coordinate: Coordinate, color: Color) {
-        coloredTiles[coordinate] = color
-    }
-    private fun removeTileColor(coordinate: Coordinate) {
-        coloredTiles.remove(coordinate)
-    }
-
     private fun getColumn(x: Float, width: Int) : Int {
         return  (x * getNumColumns() / width).toInt()
     }
@@ -282,10 +285,6 @@ class ActiveGameViewModel : ViewModel() {
 
     fun isTileSelected(coordinate: Coordinate): Boolean {
         return selectedTiles.contains(coordinate)
-    }
-
-    fun getTileColor(coordinate: Coordinate, defaultColor: Color): Color {
-        return coloredTiles.getOrDefault(coordinate, defaultColor)
     }
 
     /*
@@ -316,13 +315,13 @@ class ActiveGameViewModel : ViewModel() {
 
     fun applyMove(move: Move) {
         for (i in 0..move.coordinates.size) {
-            setCell(coordinate = move.coordinates[0], newCell = move.newCells[0])
+            setCell(coordinate = move.coordinates[i], newCell = move.newCells[i])
         }
     }
 
     fun unapplyMove(move: Move) {
         for (i in 0..move.coordinates.size) {
-            setCell(coordinate = move.coordinates[0], newCell = move.previousCells[0])
+            setCell(coordinate = move.coordinates[i], newCell = move.previousCells[i])
         }
     }
 
@@ -401,25 +400,13 @@ class ActiveGameViewModel : ViewModel() {
         addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
     }
 
-    fun paintAction(colorInt: Int, removeColor: Boolean) {
-        val erasePaint: (Coordinate) -> Boolean  = { removeColor || coloredTiles[it]?.equals(Color(colorInt)) == true }
-
-        val coordinatesErase = selectedTiles.filter { !isReadOnly(it) && erasePaint(it) }
-        val coordinatesPaint = selectedTiles.filter { !isReadOnly(it) && !erasePaint(it) }
-
-        if (coordinatesPaint.isEmpty() && coordinatesErase.isEmpty()) return
-
-            val coordinates = coordinatesErase + coordinatesPaint
+    fun paintAction(colorInt: Int) {
+        val coordinates = selectedTiles.toList()
         val previousCells = getCells(coordinates)
 
-        if (!coordinatesPaint.isEmpty()) {
-            setCellsColor(colorInt = colorInt, coordinates = coordinatesPaint)
-        }
+        if (coordinates.isEmpty()) return
 
-        if (!coordinatesErase.isEmpty()) {
-            removeCellsColor(coordinates = coordinatesErase)
-        }
-
+        setCellsColor(color = colorInt, coordinates = coordinates)
 
         val newCells = getCells(coordinates)
         addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
