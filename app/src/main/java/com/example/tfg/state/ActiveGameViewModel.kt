@@ -248,6 +248,10 @@ class ActiveGameViewModel : ViewModel() {
         selectedTiles.removeAll { true }
     }
 
+    fun addSelections(coordinates: List<Coordinate>) {
+        selectedTiles.addAll(coordinates)
+    }
+
     //If tile is not selected and not a null coordinate select it
     fun selectTile(size: IntSize, position: Offset) {
         val coordinate = coordinateFromPosition(size = size, position = position)
@@ -318,12 +322,18 @@ class ActiveGameViewModel : ViewModel() {
         for (i in 0..move.coordinates.size - 1) {
             setCell(coordinate = move.coordinates[i], newCell = move.newCells[i])
         }
+
+        removeSelections()
+        addSelections(move.coordinates)
     }
 
     fun unapplyMove(move: Move) {
         for (i in 0..move.coordinates.size - 1) {
             setCell(coordinate = move.coordinates[i], newCell = move.previousCells[i])
         }
+
+        removeSelections()
+        addSelections(move.coordinates)
     }
 
     fun redoMove() {
