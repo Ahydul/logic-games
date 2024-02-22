@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import com.example.tfg.R
-import com.example.tfg.common.Coordinate
+import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.state.ActiveGameViewModel
 
 @Composable

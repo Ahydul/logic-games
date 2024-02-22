@@ -10,7 +10,7 @@ class Game private constructor(
     val gameType: GameType,
     val difficulty: Difficulty,
     val state: SnapshotStateList<GameState>,
-    //var solution: Nose<GameTypeValue>,
+    //val solution: List<Int>,
     val startDate: LocalDateTime = LocalDateTime.now(),
     val endDate: LocalDateTime? = null,
     var errors: List<Move> = emptyList(),
@@ -18,18 +18,49 @@ class Game private constructor(
 ) : GameType by gameType {
 
 
-    companion object Hakyuu {
-        fun create(board: Board): Game {
+    companion object {
+        private fun create(gameType: GameType, board: Board, difficulty: Difficulty): Game {
             val gameState = GameState(board = board)
-            return Game(gameType = Hakyuu(), difficulty = Difficulty.EASY, state = mutableStateListOf(gameState))
+            return Game(gameType = gameType, difficulty = difficulty, state = mutableStateListOf(gameState))
         }
 
         fun example(): Game {
-            return Hakyuu.create(
-                board = Board.example()
+            val numColumns = 10
+            val numRows = 10
+            val x: Int = ((numRows+numColumns) * 2)
+
+            val gameType = Hakyuu.create(numRows = numColumns, numColumns = numRows, minNumberOfRegions = x)
+
+            return create(
+                gameType = gameType,
+                board = emptyBoard(numColumns = numColumns, numRows = numRows),
+                difficulty = Difficulty.EASY,
             )
         }
 
+        private fun exampleBoard(): Board {
+            val cellValues = IntArray(size = 6*6, init = { 0 })
+            cellValues[4] = 2
+            cellValues[16] = 3
+            cellValues[19] = 3
+            cellValues[31] = 4
+
+            return Board.create(
+                numColumns = 6,
+                numRows = 6,
+                cellValues = cellValues,
+            )
+        }
+
+        private fun emptyBoard(numColumns: Int, numRows: Int): Board {
+            val cellValues = IntArray(size = numColumns*numRows, init = { 0 })
+            return Board.create(
+                numColumns = numColumns,
+                numRows = numRows,
+                cellValues = cellValues,
+            )
+
+        }
     }
 }
 
