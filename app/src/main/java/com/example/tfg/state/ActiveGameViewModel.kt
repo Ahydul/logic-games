@@ -3,20 +3,19 @@ package com.example.tfg.state
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import com.example.tfg.common.Board
 import com.example.tfg.common.Cell
-import com.example.tfg.common.Coordinate
+import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.Game
 import com.example.tfg.common.GameState
 import com.example.tfg.common.Move
 import com.example.tfg.common.utils.Quadruple
+import com.example.tfg.games.GameType
 
 class ActiveGameViewModel : ViewModel() {
 
@@ -38,6 +37,18 @@ class ActiveGameViewModel : ViewModel() {
 
     private fun getGameStates(): SnapshotStateList<GameState> {
         return game.value.state
+    }
+
+    private fun getGameType(): GameType {
+        return game.value.gameType
+    }
+
+    private fun getRegions(): Map<Int, List<Coordinate>> {
+        return getGameType().boardRegions
+    }
+
+    fun getRegionSize(): Int {
+        return getRegions().size
     }
 
     private fun getActualState(): GameState {
@@ -380,12 +391,45 @@ class ActiveGameViewModel : ViewModel() {
         isNote.value = !isNote()
     }
 
+    private fun findRegionID(coordinate: Coordinate): Int? {
+        for (entry in getRegions().entries)
+            if (entry.value.contains(coordinate)) return entry.key
+
+        return null
+    }
+
+    private fun fromSameRegion(coordinate1: Coordinate, coordinate2: Coordinate): Boolean{
+        val regionID = findRegionID(coordinate1)
+        return regionID != null && getRegions()[regionID]!!.contains(coordinate2)
+    }
+
+    private fun drawDivisorBetween(original: Coordinate, other: Coordinate?): Boolean {
+        return other != null && !fromSameRegion(original, other)
+    }
+
+    private fun drawDividerRight(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate, coordinate.moveRight(numColumns = getNumColumns()))
+    }
+
+    private fun drawDividerDown(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate, coordinate.moveDown(numRows = getNumRows()))
+    }
+
+    private fun drawDividerLeft(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate,coordinate.moveLeft())
+    }
+
+    private fun drawDividerUp(coordinate: Coordinate): Boolean {
+        return drawDivisorBetween(coordinate, coordinate.moveUp())
+    }
+
+
     fun dividersToDraw(coordinate: Coordinate): Quadruple<Boolean> {
         return Quadruple(
-            up = getBoard().drawDividerUp(coordinate),
-            down = getBoard().drawDividerDown(coordinate),
-            left = getBoard().drawDividerLeft(coordinate),
-            right = getBoard().drawDividerRight(coordinate)
+            up = drawDividerUp(coordinate),
+            down = drawDividerDown(coordinate),
+            left = drawDividerLeft(coordinate),
+            right = drawDividerRight(coordinate)
         )
     }
 
