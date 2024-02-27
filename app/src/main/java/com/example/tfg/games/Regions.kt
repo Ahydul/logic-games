@@ -25,17 +25,67 @@ class Regions(
     }
 
     private fun getLastRegionID(): Int {
-        return max(tempRegions.keys.maxOrNull() ?: 0, definitiveRegions.keys.max())
+        return max(tempRegions.keys.maxOrNull() ?: -1, definitiveRegions.keys.maxOrNull() ?: -1)
     }
 
     private fun randomPropagationNumber(): Int {
         return random.nextInt(maxRegionSize)
+        //return maxRegionSize * Curves.lessMoreLess(random.nextDouble(1.0)).toInt()
     }
 
-    private fun tryToMergeRegions(): Boolean {
 
-        return true
+    private fun mergeSomeRegionOfSizeOne() {
+        val regionsWithOnlyOne = definitiveRegions
+            .filterValues { it.size==1 }
+            .mapValues { it.value[0] }
+
+        for (region in regionsWithOnlyOne) {
+            //Check we haven't deleted it already
+            if (!definitiveRegions.containsKey(region.key)) continue
+
+            val position = region.value
+            //We try to merge to random adjacent regions that have only one position to 'region'
+            for (direction in Direction.entries.shuffled(random)) {
+                val coordinate = position.move(direction = direction, numRows = numRows, numColumns = numColumns)
+                val key = regionsWithOnlyOne.filter { it.value == coordinate }
+
+                //Must be just one k
+                for (k in key) {
+                    //if (definitiveRegions[region.key]!!.size == maxRegionSize) continue
+                    definitiveRegions[region.key]!!.add(k.value)
+                    definitiveRegions.remove(k.key)
+                }
+            }
+        }
     }
+
+/*
+    private fun tryMergeRegions() {
+        val position = remaining.last()
+        for (direction in Direction.entries.shuffled(random)) {
+            val coordinate = position.move(direction = direction, numRows = numRows, numColumns = numColumns)
+            val key = definitiveRegions.filterValues {
+                it.contains(coordinate) && it.size < maxRegionSize
+            }.keys
+            //Must be just one k
+            for (k in key) {
+                definitiveRegions[k]!!.add(position)
+                remaining.removeLast()
+                return
+            }
+        }
+        addNewSeedTo(position)
+    }
+
+
+    private fun addNewSeedTo(coordinate: Coordinate) {
+        val index = remaining.indexOf(coordinate)
+        val nextRegionID = getLastRegionID() + 1
+        tempRegions[nextRegionID] = mutableListOf(coordinate)
+        remaining.removeAt(index)
+    }
+
+ */
 
     private fun addNewSeedToRegions() {
         val position = remaining.last()
@@ -47,8 +97,6 @@ class Regions(
     // Propagate random region. If it fails, remove that region from regions and add it to definitiveRegions
     private fun propagateRandomRegion(numPropagations: Int = 1) {
         if (tempRegions.isEmpty()){
-            //val result = tryToMergeRegions()
-            //if (result) propagateRandomRegion(numPropagations)
             addNewSeedToRegions()
         }
 
@@ -94,6 +142,19 @@ class Regions(
         return false
     }
 
+    fun divideRegionsOptionA(): Map<Int, List<Coordinate>> {
+        reset()
+
+        // Propagate regions until there are no remaining positions without a regionID
+        while (remaining.isNotEmpty()) {
+            propagateRandomRegion(numPropagations = randomPropagationNumber())
+        }
+
+        definitiveRegions.putAll(tempRegions)
+
+        return definitiveRegions
+    }
+
     fun divideRegionsOptionB(minNumberOfRegions: Int): Map<Int, List<Coordinate>> {
         require(minNumberOfRegions in 1..<numPositions) { "$minNumberOfRegions must be less than the $numPositions" }
         reset()
@@ -111,9 +172,27 @@ class Regions(
         }
 
         definitiveRegions.putAll(tempRegions)
+        mergeSomeRegionOfSizeOne()
 
         return definitiveRegions
     }
+
+    fun divideRegionsOptionC(): Map<Int, List<Coordinate>> {
+        reset()
+
+        val propagations = randomRegionSizes()
+
+        // Propagate regions until there are no remaining positions without a regionID
+        while (propagations.isNotEmpty() && remaining.isNotEmpty()) {
+            propagateRandomRegion(numPropagations = propagations.last())
+            propagations.removeLast()
+        }
+
+        definitiveRegions.putAll(tempRegions)
+
+        return definitiveRegions
+    }
+
 
     private fun reset() {
         tempRegions.clear()
@@ -122,40 +201,17 @@ class Regions(
     }
 
 
-
-
-
-
-    //TODO
-    fun divideRegionsOptionA(numColumns: Int, numRows: Int, maxNumberPerRegions: Int): IntArray {
-        reset()
-
-        val regionNumber = randomRegionSizes(
-            maxRegionSize = maxRegionSize,
-            maxNumberPerRegions = maxNumberPerRegions,
-            numPositions = numPositions
-        )
-
-        var regionId = 0
-        while(remaining.isNotEmpty()){
-            val position = random.nextInt(maxRegionSize)
-            val propagation = regionNumber[random.nextInt(maxRegionSize)]
-            //propagateRegion(regionId, regions, position, propagation)
-            regionId += 1
-        }
-
-        return IntArray(maxRegionSize){0}
-    }
-
-    private fun randomRegionSizes(maxRegionSize: Int, numPositions: Int, maxNumberPerRegions: Int = maxRegionSize + 2): IntArray {
-        val result = IntArray(maxRegionSize){0}
+    private fun randomRegionSizes(maxNumberPerRegions: Int = maxRegionSize + 2): MutableList<Int> {
+        val regions = IntArray(maxRegionSize){ 0 }
+        val result = mutableListOf<Int>()
         var x = 0
         while (x != numPositions) {
-            val index = Random.nextInt(maxRegionSize) + 1
-            if (result[index-1] < maxNumberPerRegions && (x + index) <= numPositions)
-                result[index-1] += 1
+            val index = random.nextInt(maxRegionSize) + 1
+            if (regions[index-1] < maxNumberPerRegions && (x + index) <= numPositions) {
+                regions[index - 1] += 1
+                result.add(index)
+            }
             else continue
-
             x += index
         }
 

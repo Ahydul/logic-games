@@ -5,6 +5,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.tfg.games.GameType
 import com.example.tfg.games.hakyuu.Hakyuu
 import java.time.LocalDateTime
+import kotlin.random.Random
 
 class Game private constructor(
     val gameType: GameType,
@@ -25,11 +26,16 @@ class Game private constructor(
         }
 
         fun example(): Game {
-            val numColumns = 10
-            val numRows = 10
-            val x: Int = ((numRows+numColumns) * 2)
+            val numColumns = 8
+            val numRows = 8
+            val x: Int = ((numRows+numColumns) * 1.5).toInt()
+            val random = Random(46600748394535)
 
-            val gameType = Hakyuu.create(numRows = numColumns, numColumns = numRows, minNumberOfRegions = x)
+            val gameType = Hakyuu.create(
+                numRows = numColumns,
+                numColumns = numRows,
+                minNumberOfRegions = x,
+                random = random)
 
             return create(
                 gameType = gameType,
