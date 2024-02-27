@@ -53,6 +53,7 @@ class Hakyuu private constructor(
                 boardRegions = regions
             )
         }
+
         fun create(numColumns: Int, numRows: Int, minNumberOfRegions: Int, random: Random): Hakyuu {
             val regions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionB(minNumberOfRegions)
 
@@ -60,23 +61,5 @@ class Hakyuu private constructor(
                 boardRegions = regions
             )
         }
-
-        fun create2(numColumns: Int, numRows: Int, minNumberOfRegions: Int, random: Random): Hakyuu {
-            val regions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionA()
-
-            return Hakyuu(
-                boardRegions = regions
-            )
-        }
-
-        fun create3(numColumns: Int, numRows: Int, minNumberOfRegions: Int, random: Random): Hakyuu {
-            val regions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionC()
-
-            return Hakyuu(
-                boardRegions = regions
-            )
-        }
     }
-
-
 }

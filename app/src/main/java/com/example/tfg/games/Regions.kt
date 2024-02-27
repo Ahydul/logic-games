@@ -59,34 +59,6 @@ class Regions(
         }
     }
 
-/*
-    private fun tryMergeRegions() {
-        val position = remaining.last()
-        for (direction in Direction.entries.shuffled(random)) {
-            val coordinate = position.move(direction = direction, numRows = numRows, numColumns = numColumns)
-            val key = definitiveRegions.filterValues {
-                it.contains(coordinate) && it.size < maxRegionSize
-            }.keys
-            //Must be just one k
-            for (k in key) {
-                definitiveRegions[k]!!.add(position)
-                remaining.removeLast()
-                return
-            }
-        }
-        addNewSeedTo(position)
-    }
-
-
-    private fun addNewSeedTo(coordinate: Coordinate) {
-        val index = remaining.indexOf(coordinate)
-        val nextRegionID = getLastRegionID() + 1
-        tempRegions[nextRegionID] = mutableListOf(coordinate)
-        remaining.removeAt(index)
-    }
-
- */
-
     private fun addNewSeedToRegions() {
         val position = remaining.last()
         val nextRegionID = getLastRegionID() + 1
