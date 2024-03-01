@@ -1,6 +1,7 @@
 package com.example.tfg.games
 
 import com.example.tfg.common.utils.Coordinate
+import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Direction
 import kotlin.math.max
 import kotlin.math.min
@@ -28,9 +29,10 @@ class Regions(
         return max(tempRegions.keys.maxOrNull() ?: -1, definitiveRegions.keys.maxOrNull() ?: -1)
     }
 
+    //Get random number [1,maxRegionSize-1]
     private fun randomPropagationNumber(): Int {
-        return random.nextInt(maxRegionSize)
-        //return maxRegionSize * Curves.lessMoreLess(random.nextDouble(1.0)).toInt()
+        //return random.nextInt(maxRegionSize - 1) + 1
+        return ((maxRegionSize - 1) * Curves.moreProgressively(random.nextDouble(1.0))).toInt() + 1
     }
 
 
@@ -47,12 +49,12 @@ class Regions(
             //We try to merge to random adjacent regions that have only one position to 'region'
             for (direction in Direction.entries.shuffled(random)) {
                 val coordinate = position.move(direction = direction, numRows = numRows, numColumns = numColumns)
-                val key = regionsWithOnlyOne.filter { it.value == coordinate }
+                val key = definitiveRegions.filter { it.value.size == 1 && it.value[0] == coordinate }
 
                 //Must be just one k
                 for (k in key) {
                     //if (definitiveRegions[region.key]!!.size == maxRegionSize) continue
-                    definitiveRegions[region.key]!!.add(k.value)
+                    definitiveRegions[region.key]!!.add(k.value[0])
                     definitiveRegions.remove(k.key)
                 }
             }
@@ -77,8 +79,9 @@ class Regions(
 
         for (a in 1..numPropagations){
             val result = propagateRegionOnce(positions = positions)
-            //We remove regions that cant be propagated and add them to the definitive regions
-            if (!result){
+            // We remove regions that cant be propagated or propagated enough times
+            // and add them to the definitive regions
+            if (!result || tempRegions[regionID]!!.size > numPropagations){
                 definitiveRegions[regionID] = positions
                 tempRegions.remove(regionID)
                 return
@@ -144,7 +147,7 @@ class Regions(
         }
 
         definitiveRegions.putAll(tempRegions)
-        mergeSomeRegionOfSizeOne()
+        //mergeSomeRegionOfSizeOne()
 
         return definitiveRegions
     }
@@ -188,5 +191,11 @@ class Regions(
         }
 
         return result
+    }
+
+    companion object {
+        fun getRegionID(coordinate: Coordinate, regions: Map<Int, List<Coordinate>>): Int {
+            return regions.keys.find { regions[it]!!.contains(coordinate) }!!
+        }
     }
 }
