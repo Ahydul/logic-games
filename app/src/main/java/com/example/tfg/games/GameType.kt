@@ -1,6 +1,8 @@
 package com.example.tfg.games
 
+import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
+import kotlin.random.Random
 
 interface GameType {
     val type: Games
@@ -8,7 +10,12 @@ interface GameType {
     val url: String
     val noNotes: Boolean
     val boardRegions: Map<Int, List<Coordinate>>
-                                                                            // Value, Section
-    //fun createNewGame(difficulty: Difficulty, numRows: Int, numColumns: Int): List<Pair<Int,Int>>
+    val numColumns: Int
+    val numRows: Int
+
+    // Value, Section
+    fun createNewGame(difficulty: Difficulty, random: Random): Map<Coordinate, Int>
+
+
 
 }

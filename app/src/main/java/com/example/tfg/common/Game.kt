@@ -2,6 +2,7 @@ package com.example.tfg.common
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.GameType
 import com.example.tfg.games.hakyuu.Hakyuu
 import java.time.LocalDateTime
@@ -26,20 +27,20 @@ class Game private constructor(
         }
 
         fun example(): Game {
-            val numColumns = 8
-            val numRows = 8
+            val numColumns = 6
+            val numRows = 6
             val x: Int = ((numRows+numColumns) * 1.5).toInt()
             val random = Random(46600748394535)
 
-            val gameType = Hakyuu.create(
-                numRows = numColumns,
-                numColumns = numRows,
-                minNumberOfRegions = x,
-                random = random)
+            //val gameType = Hakyuu.example()
+            val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random, minNumberOfRegions = x)
+
+
+            val map = gameType.createNewGame(difficulty = Difficulty.EASY, random = random)
 
             return create(
                 gameType = gameType,
-                board = emptyBoard(numColumns = numColumns, numRows = numRows),
+                board = exampleRandomBoard(numColumns = numColumns, numRows = numRows, map = map),
                 difficulty = Difficulty.EASY,
             )
         }
@@ -57,6 +58,22 @@ class Game private constructor(
                 cellValues = cellValues,
             )
         }
+
+        private fun exampleRandomBoard(numColumns: Int, numRows: Int, map: Map<Coordinate, Int>): Board {
+            val cellValues = IntArray(
+                size = numColumns*numRows,
+                init = {
+                    map[Coordinate.fromIndex(index = it, numColumns = numColumns, numRows = numRows)]!!
+                }
+            )
+
+            return Board.create(
+                numColumns = numColumns,
+                numRows = numRows,
+                cellValues = cellValues,
+            )
+        }
+
 
         private fun emptyBoard(numColumns: Int, numRows: Int): Board {
             val cellValues = IntArray(size = numColumns*numRows, init = { 0 })

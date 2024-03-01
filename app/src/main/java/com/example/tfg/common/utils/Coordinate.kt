@@ -1,32 +1,33 @@
 package com.example.tfg.common.utils
 
 data class Coordinate(val row: Int, val column: Int) {
-    fun moveRight(numColumns: Int): Coordinate? {
-        if (column >= numColumns - 1) return null
-        return Coordinate(row, column + 1)
+    fun moveRight(numColumns: Int, value: Int = 1): Coordinate? {
+        if (column >= numColumns - value) return null
+        return Coordinate(row, column + value)
     }
 
-    fun moveLeft(): Coordinate? {
-        if (column <= 0) return null
-        return Coordinate(row, column - 1)
+    fun moveLeft(value: Int = 1): Coordinate? {
+        if (column <= value - 1) return null
+        return Coordinate(row, column - value)
     }
 
-    fun moveUp(): Coordinate? {
-        if (row <= 0) return null
-        return Coordinate(row - 1, column)
+    fun moveUp(value: Int = 1): Coordinate? {
+        require(value>0)
+        if (row <= value - 1) return null
+        return Coordinate(row - value, column)
     }
 
-    fun moveDown(numRows: Int): Coordinate? {
-        if (row >= numRows - 1) return null
-        return Coordinate(row + 1, column)
+    fun moveDown(numRows: Int, value: Int = 1): Coordinate? {
+        if (row >= numRows - value) return null
+        return Coordinate(row + value, column)
     }
 
-    fun move(direction: Direction, numRows: Int, numColumns: Int): Coordinate? {
+    fun move(direction: Direction, numRows: Int, numColumns: Int, value: Int = 1): Coordinate? {
         return when(direction){
-            Direction.NORTH -> moveUp()
-            Direction.EAST -> moveRight(numColumns)
-            Direction.WEST -> moveLeft()
-            Direction.SOUTH -> moveDown(numRows)
+            Direction.NORTH -> moveUp(value = value)
+            Direction.EAST -> moveRight(value = value, numColumns = numColumns)
+            Direction.WEST -> moveLeft(value = value)
+            Direction.SOUTH -> moveDown(value = value, numRows = numRows)
         }
     }
 
