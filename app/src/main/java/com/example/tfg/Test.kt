@@ -1,6 +1,6 @@
 package com.example.tfg
 
-import com.example.tfg.games.hakyuu.Hakyuu
+import com.example.tfg.common.utils.Coordinate
 import kotlin.random.Random
 
 fun logisticRandom(maxValue: Int, random: Random, f: (Double) -> Double): Int {
@@ -28,25 +28,56 @@ fun test(maxValue: Int, random: Random, f: (Double) -> Double) {
     println("$m")
 }
 
-fun main() {
-    //val maxValue = 25
-    //val random = Random(876458709876)
 
-    //test(maxValue = maxValue, random = random, f = { Curves.lessMoreLess(it) } )
-    val numColumns = 8
-    val numRows = 8
-    val x: Int = ((numRows+numColumns) * 1.5).toInt()
+private fun detectObviousTriples(region: List<Coordinate>, possibleValues: Map<Coordinate, List<Int>>): List<Triple<Coordinate, Coordinate, Coordinate>> {
+    require(!region.any { possibleValues.containsKey(it) })
+    if (region.size < 4) return emptyList()
 
-    repeat(1000000) {
-        val seed = (Math.random()*100000000).toInt()
-        val random = Random(seed)
-        val regions = Hakyuu.create(
-            numRows = numColumns,
-            numColumns = numRows,
-            minNumberOfRegions = x,
-            random = random
-        ).boardRegions
+    val res = mutableListOf<Triple<Coordinate, Coordinate, Coordinate>>()
+
+    // Obvious triples can only have size 2 or 3
+    val filteredRegion = region.filter { possibleValues[it]!!.size == 2 || possibleValues[it]!!.size == 3}
+
+    filteredRegion.forEachIndexed { index, coord1 ->
+        // Substract possible values: {coord2 values} - {coord1 values}
+        val pene = filteredRegion.drop(index + 1).map { coord2 ->
+            Pair(coord2, possibleValues[coord2]!!.subtract(possibleValues[coord1]!!))
+        }
+        // Find two coordinates whose substracted possible values are the same
+        val pito = pene.filter {
+            pene.any { it.second == it.second }
+        }
+        // If it was found add it
+        if (pito.size == 2) {
+            res.add(Triple(coord1, pito[0].first, pito[1].first))
+        }
     }
-    val pito = 2
+
+    return res
+}
+
+
+fun main() {
+    val region = listOf(
+        Coordinate(0,0),
+        Coordinate(0,1),
+        Coordinate(0,2), //Pair1
+        Coordinate(1,0),
+        Coordinate(1,1),
+        Coordinate(1,2), //Pair1
+        Coordinate(2,0),
+        Coordinate(2,1),
+        Coordinate(2,2),
+    )
+
+    val possibleValues = region.associateWith { listOf(1,2,3,4,5,6,7,8,9) }.toMutableMap()
+
+    possibleValues[region[2]] = listOf(5,6)
+    possibleValues[region[5]] = listOf(5,6)
+
+    possibleValues[region[8]] = listOf(2,3)
+    possibleValues[region[0]] = listOf(2,3)
+
+    //val detectedPairs = detectObviousPairs(possibleValues = possibleValues, region = region)
 
 }
