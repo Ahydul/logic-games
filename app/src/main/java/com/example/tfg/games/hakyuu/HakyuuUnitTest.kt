@@ -80,7 +80,7 @@ class HakyuuUnitTest {
 
 
     @RepeatedTest(10)
-    fun testDetectObviousTriples() {
+    fun testDetectObviousTriplesA() {
         val maxNumber = region.size - 1
         val list = (0..maxNumber).toMutableList()
 
@@ -98,6 +98,51 @@ class HakyuuUnitTest {
 
         assert(detectedTriples[0].toList().containsAll(arrayOf(coord1,coord2).toList()))
     }
+
+    @RepeatedTest(10)
+    fun testDetectObviousTriplesB() {
+        val maxNumber = region.size - 1
+        val list = (0..maxNumber).toMutableList()
+
+        val values1 = threeRandomDistinctInts(possibleValues=list).toList()
+        val coordinates = threeRandomDistinctInts(possibleValues=list)
+        val coord1 = region[coordinates.first]
+        val coord2 = region[coordinates.second]
+        val coord3 = region[coordinates.third]
+        possibleValues[coord1] = values1
+        possibleValues[coord2] = values1
+
+        //We delete a random number from values1 for the next values
+        possibleValues[coord3] = values1.subtract(listOf(values1.random(random)).toSet()).toList()
+
+
+        val detectedTriples = hakyuu.detectObviousTriples(possibleValues = possibleValues, region = region)
+
+        assert(detectedTriples[0].toList().containsAll(arrayOf(coord1,coord2).toList()))
+    }
+
+    @RepeatedTest(10)
+    fun testDetectObviousTriplesC() {
+        val maxNumber = region.size - 1
+        val list = (0..maxNumber).toMutableList()
+
+        val values1 = threeRandomDistinctInts(possibleValues=list).toList()
+        val coordinates = threeRandomDistinctInts(possibleValues=list)
+        val coord1 = region[coordinates.first]
+        val coord2 = region[coordinates.second]
+        val coord3 = region[coordinates.third]
+
+        //For values [a,b,c] we get [b,c];[a,c];[a,b]
+        possibleValues[coord1] = values1.subtract(listOf(values1[0]).toSet()).toList()
+        possibleValues[coord2] = values1.subtract(listOf(values1[1]).toSet()).toList()
+        possibleValues[coord3] = values1.subtract(listOf(values1[2]).toSet()).toList()
+
+
+        val detectedTriples = hakyuu.detectObviousTriples(possibleValues = possibleValues, region = region)
+
+        assert(detectedTriples[0].toList().containsAll(arrayOf(coord1,coord2).toList()))
+    }
+
 
 
 }
