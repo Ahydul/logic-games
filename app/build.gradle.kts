@@ -47,6 +47,11 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -60,7 +65,10 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
-    testImplementation("junit:junit:4.13.2")
+    //implementation("junit:junit:4.12")
+    implementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
@@ -70,4 +78,5 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.0-alpha02")
+    implementation("com.google.guava:guava:33.0.0-android")
 }
