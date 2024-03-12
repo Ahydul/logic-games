@@ -26,17 +26,31 @@ class Game private constructor(
             return Game(gameType = gameType, difficulty = difficulty, state = mutableStateListOf(gameState))
         }
 
+        fun exampleRandom(): Game {
+            val numColumns = 6
+            val numRows = 6
+            //val x: Int = ((numRows+numColumns) * 1.5).toInt()
+            val random = Random(46600748394535)
+
+            val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random)
+
+            val map = gameType.createNewGame(difficulty = Difficulty.EASY)
+
+            return create(
+                gameType = gameType,
+                board = exampleRandomBoard(numColumns = numColumns, numRows = numRows, map = map),
+                difficulty = Difficulty.EASY,
+            )
+        }
+
         fun example(): Game {
             val numColumns = 6
             val numRows = 6
-            val x: Int = ((numRows+numColumns) * 1.5).toInt()
-            val random = Random(46600748394535)
 
-            //val gameType = Hakyuu.example()
-            val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random, minNumberOfRegions = x)
+            val gameType = Hakyuu.example()
+            //val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random, minNumberOfRegions = x)
 
-
-            val map = gameType.createNewGame(difficulty = Difficulty.EASY, random = random)
+            val map = gameType.createNewGame(difficulty = Difficulty.EASY)
 
             return create(
                 gameType = gameType,
@@ -74,7 +88,6 @@ class Game private constructor(
             )
         }
 
-
         private fun emptyBoard(numColumns: Int, numRows: Int): Board {
             val cellValues = IntArray(size = numColumns*numRows, init = { 0 })
             return Board.create(
@@ -82,7 +95,6 @@ class Game private constructor(
                 numRows = numRows,
                 cellValues = cellValues,
             )
-
         }
     }
 }
