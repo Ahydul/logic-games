@@ -13,196 +13,330 @@ class Hakyuu private constructor(
     override val rules: List<String> = listOf(),
     override val url: String = "",
     override val noNotes: Boolean = true,
-    override val boardRegions: Map<Int, List<Coordinate>>,
+    override var boardRegions: Map<Int, List<Coordinate>>,
 
     override val numColumns: Int,
-    override val numRows: Int
+    override val numRows: Int,
+
+    override val random: Random
 ) : GameType {
 
     @Suppress("UnstableApiUsage")
     override fun createNewGame(
         difficulty: Difficulty,
-        random: Random
     ): Map<Coordinate, Int> {
         val result = mutableMapOf<Coordinate, Int>()
-        val resultTmp = mutableMapOf<Coordinate, Int>()
 
-        //Regions ordered by the size of its associated list
-        val orderedRegions = boardRegions.toList().sortedBy { it.second.size }.toMap()
+        val possibleValuesPerCoordinate = populatePossibleValues(actualValues = result)
+        val success = populateCells(possibleValues = possibleValuesPerCoordinate, actualValues = result)
 
-        // Populate coordinates
-        for (region in orderedRegions) {
-            val possibleValues = (1 .. region.value.size).shuffled(random).toMutableList()
-            for (coordinate in region.value) {
-                var value = possibleValues.find { possibleValue: Int ->
-                    isInvalidValueRule3(
-                        value = possibleValue,
-                        coordinate = coordinate,
-                        actualValues = resultTmp
-                    )
-                }
-                possibleValues.remove(value)
-                resultTmp.put(coordinate, value ?: 0)
-            }
+        if (!success) {
+            // Random regions provided can't make a playable game. We repeat the proccess with other regions.
+            boardRegions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionA()
+            return createNewGame(difficulty)
         }
 
-        result.putAll(resultTmp)
+        possibleValuesPerCoordinate.forEach {(c,v) ->
+            result.put(c,0)
+        }
+
         return result
     }
 
-    @Suppress("UnstableApiUsage")
-    fun createNewGame2(
-        difficulty: Difficulty,
-        random: Random
-    ): Map<Coordinate, Int> {
-        val result = mutableMapOf<Coordinate, Int>()
-
+    private fun populatePossibleValues(actualValues: MutableMap<Coordinate, Int>): MutableMap<Coordinate,MutableList<Int>> {
+        val possibleValues = mutableMapOf<Coordinate, MutableList<Int>>()
         val orderedRegions = boardRegions.toList().sortedBy { it.second.size }.toMap()
-        val possibleValuesPerCoordinate = mutableMapOf<Coordinate, MutableList<Int>>()
-        val coordinateRegionIDs = mutableMapOf<Coordinate, Int>()
 
-        // Populate possible values
         for (region in orderedRegions) {
-            val values = (1 .. region.value.size).toMutableList()
+            val values = (1 .. region.value.size).toList()
             for (coordinate in region.value) {
-                possibleValuesPerCoordinate.put(coordinate, values)
-                coordinateRegionIDs.put(coordinate, region.key)
+                if (values.size==1) actualValues.put(coordinate, values[0])
+                else {
+                    possibleValues.put(coordinate, values.toMutableList())
+                }
             }
         }
+        return possibleValues
+    }
 
 
-        for (entry in possibleValuesPerCoordinate)
-            if (entry.value.size==1) {
-                result.put(entry.key, entry.value[0])
-                possibleValuesPerCoordinate.remove(entry.key)
-            }
-
-        // Update the possible values and loop while it returns true (it updated some values)
-        while (
-            updatePossibleValues(
-                possibleValues = possibleValuesPerCoordinate,
-                coordinateRegionIDs = coordinateRegionIDs,
-                actualValues = result
-            )
-        )
+    private fun populateCells(possibleValues: MutableMap<Coordinate, MutableList<Int>>, actualValues: MutableMap<Coordinate, Int>): Boolean {
+        while (true)
         {
-            // Update values that logically only have one possibility
-            // Check if there is a contradiction (no possible value in a cell)
-            for (entry in possibleValuesPerCoordinate)
-                when(entry.value.size) {
-                    0 -> {
-                        //TODO manage error
+            // If ended populating return true
+            if (boardPopulated(actualValues)) return true
+
+            val possibleValuesUpdated = updatePossibleValues(
+                possibleValues = possibleValues,
+                actualValues = actualValues
+            )
+
+            // If possibleValues didn't update we need to brute force a value
+            if (!possibleValuesUpdated){
+                val minPossibleValues = possibleValues.minByOrNull { it.value.size }!!
+
+                val newActualValues = actualValues.toMutableMap()
+                val newPossibleValues = mutableMapOf<Coordinate,MutableList<Int>>()
+                possibleValues.forEach { (c,v) -> newPossibleValues.put(c,v.toMutableList())}
+
+                //Brute force
+                for(chosenValue in minPossibleValues.value) {
+                    newPossibleValues.remove(minPossibleValues.key)
+                    newActualValues[minPossibleValues.key] = chosenValue
+
+                    val res = populateCells(possibleValues = newPossibleValues, actualValues = newActualValues)
+                    if (res) {
+                        //SET POSSIBLE VALUES
+                        possibleValues.clear()
+                        possibleValues.putAll(newPossibleValues)
+                        //SET ACTUAL VALUES
+                        actualValues.putAll(newActualValues)
+                        return true
                     }
-                    1 -> {
-                        result.put(entry.key, entry.value[0])
-                        possibleValuesPerCoordinate.remove(entry.key)
-                    }
-                    else -> {}
                 }
+                return false
+            }
+
+            // Update values and check if found a contradiction
+            val noContradiction = updateValues(possibleValues = possibleValues, actualValues = actualValues)
+
+            // Found contradiction -> can't populate
+            if (!noContradiction) {
+                return false
+            }
         }
-
-        val resultTmp = mutableMapOf<Coordinate, Int>()
-        resultTmp.putAll(result)
-
-        result.putAll(resultTmp)
-        return result
     }
 
-    //Update possible values. Return true if the update changed the possible values.
-    internal fun updatePossibleValues(possibleValues: Map<Coordinate, MutableList<Int>>, coordinateRegionIDs:  Map<Coordinate, Int>, actualValues: Map<Coordinate, Int>): Boolean {
+    // Update values that logically only have one possibility
+    // Return false if a contradiction was found
+    private fun updateValues(possibleValues: MutableMap<Coordinate, MutableList<Int>>, actualValues: MutableMap<Coordinate, Int>): Boolean {
+        for (entry in possibleValues.toList())
+            when(entry.second.size) {
+                0 -> {
+                    return false
+                }
+                1 -> {
+                    actualValues.put(entry.first, entry.second.first())
+                    possibleValues.remove(entry.first)
+                }
+                else -> {}
+            }
+        return true
+    }
+
+    private fun getRegionID(coordinate: Coordinate): Int {
+        return boardRegions.filter { it.value.contains(coordinate) }.keys.first()
+    }
+
+    // Update possible values. Return true if the update changed the possible values.
+    internal fun updatePossibleValues(possibleValues: Map<Coordinate, MutableList<Int>>, actualValues: Map<Coordinate, Int>): Boolean {
         var possibleValuesChanged = false
         for (entry in possibleValues) {
             //Remove values that are invalid
             val coordinate = entry.key
             val values = entry.value
-            val region = boardRegions[coordinateRegionIDs[coordinate]]!!
-            for (value in values){
-                if (isInvalidValueRule2(value = value,  region = region, actualValues = actualValues) ||
-                        isInvalidValueRule3(value = value, coordinate = coordinate, actualValues = actualValues)) {
-                    values.remove(value)
-                    possibleValuesChanged = true
-                }
+            val region = boardRegions[getRegionID(coordinate)]!!
+
+            val valueChanged = values.removeIf { value ->
+                !(isValidValueRule2(value = value,  region = region, actualValues = actualValues) &&
+                        isValidValueRule3(value = value, coordinate = coordinate, actualValues = actualValues))
             }
+
+            if (valueChanged) possibleValuesChanged = true
         }
 
-        // Detect obvious pairs and triples
-        for (region in boardRegions.values) {
+        for (r in boardRegions.values) {
+            val region = r.filter { actualValues.containsKey(it) }
 
+            var valueChanged = cleanHiddenValues(region = region, possibleValues = possibleValues)
+
+            for ((c1,c2) in detectObviousPairs(region = region, possibleValues = possibleValues)) {
+                val values = possibleValues[c1]!!
+                possibleValues.filter { (c,_) -> region.contains(c) && c!=c1 && c!=c2 }.forEach { (c,v) ->
+                    valueChanged = valueChanged || v.removeAll(values)
+                }
+            }
+
+            for ((c1,c2,c3) in detectObviousTriples(region = region, possibleValues = possibleValues)) {
+                val values = possibleValues[c1]!!
+                possibleValues.filter { (c,_) -> region.contains(c) && c!=c1 && c!=c2 && c!=c3 }.forEach { (c,v) ->
+                    valueChanged = valueChanged || v.removeAll(values)
+                }
+            }
+
+            if (valueChanged) possibleValuesChanged = true
         }
 
         return possibleValuesChanged
     }
 
+    // Delete possible values to reveal hidden singles, pairs and triples.
+    // Singles are updated to actualValues
+    internal fun cleanHiddenValues(region: List<Coordinate>, possibleValues: Map<Coordinate, MutableList<Int>>): Boolean {
+        val coordsPerValue = getCoordinatesPerValues(region = region, possibleValues = possibleValues)
+
+        return cleanHiddenSingles(coordsPerValue = coordsPerValue, possibleValues = possibleValues) ||
+            cleanHiddenPairs(coordsPerValue = coordsPerValue, possibleValues = possibleValues) ||
+            cleanHiddenTriples(coordsPerValue = coordsPerValue, possibleValues = possibleValues)
+    }
+
+    internal fun getCoordinatesPerValues(region: List<Coordinate>, possibleValues: Map<Coordinate, MutableList<Int>>): Array<MutableList<Coordinate>> {
+        val coordsPerValue = Array(region.size) { mutableListOf<Coordinate>() }
+        possibleValues.filter { region.contains(it.key) }.forEach { (coordinate, values) ->
+            values.forEach { value -> coordsPerValue[value - 1].add(coordinate) }
+        }
+        return coordsPerValue
+    }
+
+    // Delete values to reveal hidden singles
+    internal fun cleanHiddenSingles(coordsPerValue:  Array<MutableList<Coordinate>>, possibleValues: Map<Coordinate, MutableList<Int>>): Boolean {
+        var res = false
+        coordsPerValue.withIndex().filter { it.value.size == 1 }
+            .forEach { (index, value) ->
+                // Remove all the possible values but the hidden single
+                val coordinate = value.first()
+                val coordActualValue = possibleValues[coordinate]!!
+                coordActualValue.clear()
+                coordActualValue.add(index + 1)
+
+                res = true
+            }
+        return res
+    }
+
+    // Delete values to reveal hidden pairs
+    internal fun cleanHiddenPairs(coordsPerValue:  Array<MutableList<Coordinate>>, possibleValues: Map<Coordinate, MutableList<Int>>): Boolean {
+        var res = false
+
+        val filteredPossiblePairs = coordsPerValue.withIndex().filter { it.value.size == 2 }
+        var drop = 0
+        filteredPossiblePairs.forEach { (index1, value) ->
+            drop++
+            val otherPair = filteredPossiblePairs.drop(drop).find { (_, value2) ->
+                value2 == value
+            }
+
+            if (otherPair != null) { //index1, index2 are pairs
+                val index2 = otherPair.index
+                // Remove from each coordinate the possible values that are not the hidden pairs
+                value.forEach {
+                        coordinate -> possibleValues[coordinate]!!.removeIf { it != index1+1 && it != index2+1 }
+                }
+                res = true
+            }
+        }
+        return res
+    }
+
+    // Delete values to reveal hidden triples
+    internal fun cleanHiddenTriples(coordsPerValue:  Array<MutableList<Coordinate>>, possibleValues: Map<Coordinate, MutableList<Int>>): Boolean {
+        var res = false
+        val filteredPossibleTriples = coordsPerValue.withIndex().filter { it.value.size == 2 || it.value.size == 3 }
+        var drop = 0
+        filteredPossibleTriples.forEach { (index1, value) ->
+            drop++
+            val union = filteredPossibleTriples.drop(drop).map { (i, v) ->
+                IndexedValue(index = i, value = v.union(value))
+            }
+
+            val otherTriples = union.filter { other ->
+                union.any { it.value == other.value && (it.value.size == 3 || it.value.size == 2)  }
+            }
+
+            if (otherTriples.size == 2) { //index1, index2 and index3 are triples
+                val index2 = otherTriples[0].index
+                val index3 = otherTriples[1].index
+                // Remove from each coordinate the possible values that are not the hidden triples
+                value.forEach {
+                        coordinate -> possibleValues[coordinate]!!.removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
+                }
+                res = true
+            }
+        }
+        return res
+    }
+
     internal fun detectObviousPairs(region: List<Coordinate>, possibleValues: Map<Coordinate, List<Int>>): List<Pair<Coordinate, Coordinate>> {
-        if (region.size < 3) return emptyList()
+        val filteredRegions = region.filter { possibleValues.containsKey(it) && possibleValues[it]!!.size == 2 }
 
         val res = mutableListOf<Pair<Coordinate, Coordinate>>()
-        val filteredRegions = region.filter { possibleValues[it]!!.size == 2 }
-        filteredRegions.forEachIndexed { index, coord1 ->
-            val coord2 = filteredRegions.drop(index + 1).find { coord2 -> possibleValues[coord2] == possibleValues[coord1] }
-            if (coord2 != null)
-                res.add(Pair(coord1, coord2))
+        filteredRegions.forEachIndexed { index, coordinate1 ->
+            val coordinate2 = filteredRegions.drop(index + 1).find { coord2 -> possibleValues[coord2] == possibleValues[coordinate1] }
+            if (coordinate2 != null)
+                res.add(Pair(coordinate1, coordinate2))
         }
 
         return res
     }
 
     internal fun detectObviousTriples(region: List<Coordinate>, possibleValues: Map<Coordinate, List<Int>>): List<Triple<Coordinate, Coordinate, Coordinate>> {
-        require(!region.any { !possibleValues.containsKey(it) })
-        if (region.size < 4) return emptyList()
+        val filteredRegions = region
+            .filter { possibleValues.containsKey(it) && (possibleValues[it]!!.size == 2 || possibleValues[it]!!.size == 3)}
+            .sortedBy { possibleValues[it]!!.size }
 
         val res = mutableListOf<Triple<Coordinate, Coordinate, Coordinate>>()
 
         // Obvious triples can only have size 2 or 3
-        val filteredRegion = region.filter { possibleValues[it]!!.size == 2 || possibleValues[it]!!.size == 3}
 
-        filteredRegion.forEachIndexed { index, coord1 ->
+        filteredRegions.forEachIndexed { index, coord1 ->
             // Substract possible values: {coord2 values} - {coord1 values}
-            val pene = filteredRegion.drop(index + 1).map { coord2 ->
-                Pair(coord2, possibleValues[coord2]!!.subtract(possibleValues[coord1]!!))
+            val union = filteredRegions.drop(index + 1).map { coord2 ->
+                Pair(coord2, possibleValues[coord2]!!.union(possibleValues[coord1]!!))
             }
             // Find two coordinates whose substracted possible values are the same
-            val pito = pene.filter {
-                pene.any { it.second == it.second }
+            val otherTriples = union.filter { other ->
+                union.any { it.second == other.second && (it.second.size == 3 || it.second.size == 2) }
             }
             // If it was found add it
-            if (pito.size == 2) {
-                res.add(Triple(coord1, pito[0].first, pito[1].first))
+            if (otherTriples.size == 2) {
+                res.add(Triple(coord1, otherTriples[0].first, otherTriples[1].first))
             }
         }
 
         return res
     }
 
+    // Rule 1. All cells must be populated
+    private fun boardPopulated(actualValues: Map<Coordinate, Int>): Boolean {
+        return actualValues.count() == numColumns*numRows
+    }
+
     // In every area of N fields, every number from the range 1~N must appear exactly once.
-    private fun isInvalidValueRule2(value: Int, region: List<Coordinate>, actualValues: Map<Coordinate, Int>): Boolean {
+    private fun isValidValueRule2(value: Int, region: List<Coordinate>, actualValues: Map<Coordinate, Int>): Boolean {
         for (coordinate in region) {
             if (actualValues.containsKey(coordinate) && actualValues[coordinate] == value)
-                return true
+                return false
         }
-        return false
+        return true
     }
 
     // If two fields in a row or column contain the same number Z, there must be at least Z fields with different numbers between these two fields.
-    private fun isInvalidValueRule3(value: Int, coordinate: Coordinate, actualValues: Map<Coordinate, Int>): Boolean {
+    private fun isValidValueRule3(value: Int, coordinate: Coordinate, actualValues: Map<Coordinate, Int>): Boolean {
         val errorNotFound = Direction.values().all { direction: Direction ->
             val errorNotFoundInDirection = (1..value)
-                //Null coordinates are out of bounds of the board and can be ignored
-                .mapNotNull { moveValue: Int ->
+                .map { moveValue: Int ->
                     coordinate.move(
                         direction = direction,
                         numRows = numRows,
                         numColumns = numColumns,
                         value = moveValue
                     )
-                }
-                .all { otherCoordinate: Coordinate ->
+                } //Null coordinates are out of bounds of the board and can be ignored
+                .all { otherCoordinate: Coordinate? ->
                     actualValues.get(otherCoordinate) != value
                 }
 
             errorNotFoundInDirection
         }
         return errorNotFound
+    }
+
+    internal fun boardMeetsRules(actualValues: Map<Coordinate, Int>): Boolean {
+        return actualValues.all { (coordinate, value) ->
+            val region = boardRegions[getRegionID(coordinate)]!!.filter { it!=coordinate }
+            isValidValueRule2(value = value, region = region, actualValues = actualValues) &&
+                    isValidValueRule3(value = value, coordinate = coordinate, actualValues = actualValues)
+        }
     }
 
     companion object {
@@ -242,19 +376,21 @@ class Hakyuu private constructor(
             return Hakyuu(
                 boardRegions = regions,
                 numRows = numRows,
-                numColumns = numColumns
+                numColumns = numColumns,
+                random = Random(1)
             )
         }
 
 
-        fun create(numColumns: Int, numRows: Int, random: Random, minNumberOfRegions: Int): Hakyuu {
+        fun create(numColumns: Int, numRows: Int, random: Random): Hakyuu {
             //val regions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionB(minNumberOfRegions)
             val regions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionA()
 
             return Hakyuu(
                 boardRegions = regions,
                 numRows = numRows,
-                numColumns = numColumns
+                numColumns = numColumns,
+                random = random
             )
         }
     }

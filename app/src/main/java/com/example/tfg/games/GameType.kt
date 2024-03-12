@@ -12,9 +12,10 @@ interface GameType {
     val boardRegions: Map<Int, List<Coordinate>>
     val numColumns: Int
     val numRows: Int
+    val random: Random
 
     // Value, Section
-    fun createNewGame(difficulty: Difficulty, random: Random): Map<Coordinate, Int>
+    fun createNewGame(difficulty: Difficulty): Map<Coordinate, Int>
 
 
 

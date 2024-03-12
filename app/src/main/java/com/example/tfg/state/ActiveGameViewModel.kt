@@ -20,7 +20,7 @@ import java.util.SortedMap
 
 class ActiveGameViewModel : ViewModel() {
 
-    private val game = mutableStateOf(Game.example())
+    private val game = mutableStateOf(Game.exampleRandom())
     private var statePointer = mutableIntStateOf(0)
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
