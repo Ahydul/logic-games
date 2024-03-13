@@ -256,38 +256,65 @@ class HakyuuUnitTest {
         assert(result)
     }
 
-    private val repeat = 5
+    private val repeat = 100
     @ParameterizedTest
-    @ValueSource(ints = [5, 6, 7, 8, 9, 10])
+    @ValueSource(ints = [5, 6, 7, 8])
     fun testOkRandomBoard1(input: Int, testInfo: TestInfo) {
         val iterations = IntArray(size = repeat)
+        val times = LongArray(size = repeat)
+        val seeds = LongArray(size = repeat)
 
         repeat(repeat) {
+            val startTime = System.currentTimeMillis()
+
             val seed = (Math.random()*10000000000).toLong()
             val random = Random(seed)
             val gameType = Hakyuu.create(numColumns = input, numRows = input, random = random)
-
             val actualValues = gameType.createNewGame(difficulty = Difficulty.EASY)
+
             val result = gameType.boardMeetsRules(actualValues)
 
+            val endTime = System.currentTimeMillis()
+
             iterations[it] = gameType.numIterations
+            times[it] = endTime - startTime
+            seeds[it] = seed
 
             assert(result) { "$it failed: random: $seed " }
         }
         println("Test with sizes ${input}x$input")
 
-        println("Iterations: ${testInfo.displayName}: ${iterations.joinToString()}")
-        iterations.sort()
-        println("Mid range: ${(iterations.first()+iterations.last()) / 2}")
-        println("Mean: ${iterations.average()}")
+        println("Test\tSeed\t\tNum Iterations\tTime (ms)")
 
-        val size = iterations.size
-        val median = if (size % 2 == 0) {
-            (iterations[size / 2 - 1] + iterations[size / 2]) / 2.0
-        } else {
-            iterations[size / 2]
+        (0..<repeat).forEach {
+            println("${it + 1}\t\t${seeds[it]}\t${iterations[it]}\t\t\t\t${times[it]}")
         }
-        println("Median: $median")
 
+        iterations.sort()
+        println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
+        println("Iterations Mean: ${iterations.average()}")
+        println("Iterations Median: ${median(iterations)}")
+
+        times.sort()
+        println("Times Mid range: ${(times.first()+times.last()) / 2}")
+        println("Times Mean: ${times.average()}")
+        println("Times Median: ${median(times)}")
     }
+
+    private fun median(arr: LongArray): Number {
+        return if (repeat % 2 == 0) {
+            (arr[repeat / 2 - 1] + arr[repeat / 2]) / 2.0
+        } else {
+            arr[repeat / 2]
+        }
+    }
+
+    private fun median(arr: IntArray): Number{
+        return if (repeat % 2 == 0) {
+            (arr[repeat / 2 - 1] + arr[repeat / 2]) / 2.0
+        } else {
+            arr[repeat / 2]
+        }
+    }
+
 }
