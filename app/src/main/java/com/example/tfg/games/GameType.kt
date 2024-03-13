@@ -1,6 +1,5 @@
 package com.example.tfg.games
 
-import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
 import kotlin.random.Random
 
@@ -13,9 +12,10 @@ interface GameType {
     val numColumns: Int
     val numRows: Int
     val random: Random
+    var numIterations: Int
 
     // Value, Section
-    fun createNewGame(difficulty: Difficulty): Map<Coordinate, Int>
+    //fun createNewGame(difficulty: Difficulty, iteration: Int): Map<Coordinate, Int>
 
 
 

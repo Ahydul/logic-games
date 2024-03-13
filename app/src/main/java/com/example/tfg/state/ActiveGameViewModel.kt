@@ -62,6 +62,10 @@ class ActiveGameViewModel : ViewModel() {
         return getRegions().size
     }
 
+    fun getNumIterationsToMakeGame(): Int {
+        return getGameType().numIterations
+    }
+
     private fun getActualState(): GameState {
         return getGameStates()[statePointer.intValue]
     }
