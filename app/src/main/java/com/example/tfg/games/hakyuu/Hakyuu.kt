@@ -14,16 +14,15 @@ class Hakyuu private constructor(
     override val url: String = "",
     override val noNotes: Boolean = true,
     override var boardRegions: Map<Int, List<Coordinate>>,
-
     override val numColumns: Int,
     override val numRows: Int,
-
-    override val random: Random
+    override val random: Random,
+    override var numIterations: Int = 1
 ) : GameType {
 
     @Suppress("UnstableApiUsage")
-    override fun createNewGame(
-        difficulty: Difficulty,
+    fun createNewGame(
+        difficulty: Difficulty
     ): Map<Coordinate, Int> {
         val result = mutableMapOf<Coordinate, Int>()
 
@@ -33,6 +32,7 @@ class Hakyuu private constructor(
         if (!success) {
             // Random regions provided can't make a playable game. We repeat the proccess with other regions.
             boardRegions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionA()
+            numIterations++
             return createNewGame(difficulty)
         }
 
@@ -75,12 +75,15 @@ class Hakyuu private constructor(
             if (!possibleValuesUpdated){
                 val minPossibleValues = possibleValues.minByOrNull { it.value.size }!!
 
-                val newActualValues = actualValues.toMutableMap()
-                val newPossibleValues = mutableMapOf<Coordinate,MutableList<Int>>()
-                possibleValues.forEach { (c,v) -> newPossibleValues.put(c,v.toMutableList())}
+                val c1 = Coordinate(2,0)
+                val c2 = Coordinate(2,1)
 
                 //Brute force
                 for(chosenValue in minPossibleValues.value) {
+                    val newActualValues = actualValues.toMutableMap()
+                    val newPossibleValues = mutableMapOf<Coordinate,MutableList<Int>>()
+                    possibleValues.forEach { (c,v) -> newPossibleValues.put(c,v.toMutableList())}
+
                     newPossibleValues.remove(minPossibleValues.key)
                     newActualValues[minPossibleValues.key] = chosenValue
 
@@ -92,8 +95,11 @@ class Hakyuu private constructor(
                         //SET ACTUAL VALUES
                         actualValues.putAll(newActualValues)
                         return true
+                    }else {
+                        possibleValues.remove(minPossibleValues.key)
                     }
                 }
+                // If brute force didn't solve the board this is an invalid state
                 return false
             }
 
@@ -121,6 +127,12 @@ class Hakyuu private constructor(
                 }
                 else -> {}
             }
+
+        // 2 values updated at the same instance can make a contradiction
+        if(!boardMeetsRules(actualValues)) {
+            return false
+        }
+
         return true
     }
 
