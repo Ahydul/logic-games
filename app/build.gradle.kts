@@ -45,13 +45,17 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
         }
     }
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.isReturnDefaultValues = true
+        execution = "ANDROIDX_TEST_ORCHESTRATOR"
     }
+
 }
 
 dependencies {
@@ -66,15 +70,17 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
     implementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+    implementation("org.junit.jupiter:junit-jupiter-params:5.7.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
-    //androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2") // Add this line
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
-    //androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.0-alpha02")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("com.google.guava:guava:33.0.0-android")
 }
