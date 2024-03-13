@@ -287,6 +287,8 @@ class HakyuuUnitTest {
         println("Test\tSeed\t\tNum Iterations\tTime (ms)")
 
         (0..<repeat).forEach {
+            var seed = seeds[it].toString()
+            seed += (" ".repeat(10 - seed.length))
             println("${it + 1}\t\t${seeds[it]}\t${iterations[it]}\t\t\t\t${times[it]}")
         }
 
