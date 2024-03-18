@@ -197,5 +197,17 @@ class Regions(
         fun getRegionID(coordinate: Coordinate, regions: Map<Int, List<Coordinate>>): Int {
             return regions.keys.find { regions[it]!!.contains(coordinate) }!!
         }
+
+        fun parseString(str: String): Map<Int, List<Coordinate>> {
+            val res = mutableMapOf<Int, List<Coordinate>>()
+            val lines = str.replace("[","").replace("]","").split('\n')
+
+            for (line in lines) {
+                val spl = line.split(':')
+                val coordinates = spl[1].split(", ").map { Coordinate.parseString(it) }
+                res[spl[0].toInt()] = coordinates
+            }
+            return res
+        }
     }
 }

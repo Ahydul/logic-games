@@ -31,6 +31,10 @@ data class Coordinate(val row: Int, val column: Int) {
         }
     }
 
+    override fun toString(): String {
+        return "($row,$column)"
+    }
+
     fun toIndex(numRows: Int, numColumns: Int): Int? {
         if (invalidParameters(row = row, column = column, numRows = numRows, numColumns = numColumns)) return null
         return row * numColumns + column
@@ -52,6 +56,11 @@ data class Coordinate(val row: Int, val column: Int) {
         }
         private fun invalidParameters(row: Int, column: Int, numRows: Int, numColumns: Int): Boolean {
             return (row < 0 || column < 0 || row >= numRows || column >= numColumns)
+        }
+
+        fun parseString(str: String): Coordinate {
+            val spl = str.substring(1,str.length-1).split(',')
+            return Coordinate(row = spl[0].toInt(), column = spl[1].toInt())
         }
     }
 }
