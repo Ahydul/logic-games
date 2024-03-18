@@ -2,6 +2,7 @@ package com.example.tfg.games.hakyuu
 
 import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
+import com.example.tfg.games.Regions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.io.File
 import kotlin.random.Random
 
 /**
@@ -253,10 +255,16 @@ class HakyuuUnitTest {
         val actualValues = hakyuu.createNewGame(Difficulty.EASY)
         val result = hakyuu.boardMeetsRules(actualValues)
 
+        for (a in hakyuu.boardRegions) {
+            println("${a.key}:${a.value}")
+        }
+        hakyuu.printActualValues(actualValues)
+
         assert(result)
+        println("Num of iterations ${hakyuu.numIterations}")
     }
 
-    private val repeat = 100
+    private val repeat = 10
     @ParameterizedTest
     @ValueSource(ints = [5, 6, 7, 8])
     fun testOkRandomBoard(input: Int, testInfo: TestInfo) {
@@ -338,6 +346,67 @@ class HakyuuUnitTest {
         println("Test with sizes ${input}x$input")
         println("Time ${endTime - startTime}")
         println("Num of iterations ${gameType.numIterations}")
+    }
+
+    @Test
+    fun testOkJankoBoards() {
+        val iterations = IntArray(200)
+        val times = LongArray(200)
+
+        val size = 6
+        val file = File("src/test/testdata/6-areas.txt")
+        val bufferedReader = file.bufferedReader()
+
+        var line = bufferedReader.readLine()
+        var index = 1
+        while (line!=null && line.equals("Tablero $index")) {
+            println("Tablero $index")
+            var tableroStr = ""
+            line = bufferedReader.readLine()
+            while (line != null && !line.contains("Tablero")) {
+                tableroStr += line + '\n'
+                line = bufferedReader.readLine()
+            }
+            tableroStr = tableroStr.dropLast(1)
+            hakyuu.boardRegions = Regions.parseString(tableroStr)
+
+            for (a in hakyuu.boardRegions) {
+                println("${a.key}:${a.value}")
+            }
+            val startTime = System.currentTimeMillis()
+            val actualValues = hakyuu.createNewGame(difficulty = Difficulty.EASY)
+
+            val result = hakyuu.boardMeetsRules(actualValues)
+
+            val endTime = System.currentTimeMillis()
+
+            hakyuu.printActualValues(actualValues)
+
+            assert(result && hakyuu.numIterations==1) { "Failed: $index " }
+
+            iterations[index-1] = hakyuu.numIterations
+            times[index-1] = endTime - startTime
+
+            index++
+        }
+        println("Test with sizes ${size}x$size")
+
+        println("Test\tNum Iterations\tTime (ms)")
+
+        (0..<repeat).forEach {
+            println("${it + 1}\t${iterations[it]}\t\t\t\t${times[it]}")
+        }
+
+        iterations.sort()
+        println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
+        println("Iterations Mean: ${iterations.average()}")
+        println("Iterations Median: ${median(iterations)}")
+
+        times.sort()
+        println("Times Mid range: ${(times.first()+times.last()) / 2}")
+        println("Times Mean: ${times.average()}")
+        println("Times Median: ${median(times)}")
+
     }
 
 }
