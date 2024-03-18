@@ -264,10 +264,11 @@ class HakyuuUnitTest {
         println("Num of iterations ${hakyuu.numIterations}")
     }
 
-    private val repeat = 10
     @ParameterizedTest
     @ValueSource(ints = [5, 6, 7, 8])
     fun testOkRandomBoard(input: Int, testInfo: TestInfo) {
+        val repeat = 100
+
         val iterations = IntArray(size = repeat)
         val times = LongArray(size = repeat)
         val seeds = LongArray(size = repeat)
@@ -303,27 +304,27 @@ class HakyuuUnitTest {
         iterations.sort()
         println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
         println("Iterations Mean: ${iterations.average()}")
-        println("Iterations Median: ${median(iterations)}")
+        println("Iterations Median: ${median(iterations, repeat)}")
 
         times.sort()
         println("Times Mid range: ${(times.first()+times.last()) / 2}")
         println("Times Mean: ${times.average()}")
-        println("Times Median: ${median(times)}")
+        println("Times Median: ${median(times, repeat)}")
     }
 
-    private fun median(arr: LongArray): Number {
-        return if (repeat % 2 == 0) {
-            (arr[repeat / 2 - 1] + arr[repeat / 2]) / 2.0
+    private fun median(arr: LongArray, size: Int): Number {
+        return if (size % 2 == 0) {
+            (arr[size / 2 - 1] + arr[size / 2]) / 2.0
         } else {
-            arr[repeat / 2]
+            arr[size / 2]
         }
     }
 
-    private fun median(arr: IntArray): Number{
-        return if (repeat % 2 == 0) {
-            (arr[repeat / 2 - 1] + arr[repeat / 2]) / 2.0
+    private fun median(arr: IntArray, size: Int): Number{
+        return if (size % 2 == 0) {
+            (arr[size / 2 - 1] + arr[size / 2]) / 2.0
         } else {
-            arr[repeat / 2]
+            arr[size / 2]
         }
     }
 
@@ -348,64 +349,63 @@ class HakyuuUnitTest {
         println("Num of iterations ${gameType.numIterations}")
     }
 
-    @Test
-    fun testOkJankoBoards() {
-        val iterations = IntArray(200)
-        val times = LongArray(200)
+    @ParameterizedTest
+    @ValueSource(strings = ["6,46", "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
+    fun testOkJankoBoards(input: String, testInfo: TestInfo) {
+        val spl = input.split(',')
+        val jankoSize = spl[1].toInt()
+        val size = spl[0].toInt()
 
-        val size = 6
-        val file = File("src/test/testdata/6-areas.txt")
-        val bufferedReader = file.bufferedReader()
+        val iterations = IntArray(jankoSize)
+        val times = LongArray(jankoSize)
 
-        var line = bufferedReader.readLine()
-        var index = 1
-        while (line!=null && line.equals("Tablero $index")) {
-            println("Tablero $index")
-            var tableroStr = ""
-            line = bufferedReader.readLine()
-            while (line != null && !line.contains("Tablero")) {
-                tableroStr += line + '\n'
-                line = bufferedReader.readLine()
-            }
-            tableroStr = tableroStr.dropLast(1)
-            hakyuu.boardRegions = Regions.parseString(tableroStr)
+        val file = File("src/test/testdata/$size-areas.txt")
 
-            for (a in hakyuu.boardRegions) {
+        val txt = file.readText()
+
+        val boards = txt.split("Tablero").drop(1).map {
+            it.substring(it.indexOf('\n')+1)
+        }
+
+        for ((index, board) in boards.withIndex()) {
+            println("Board $index")
+
+            val gameType = Hakyuu.create(numColumns = size, numRows = size, random = random)
+            gameType.boardRegions = Regions.parseString(board.dropLast(1))
+
+            for (a in gameType.boardRegions) {
                 println("${a.key}:${a.value}")
             }
+
             val startTime = System.currentTimeMillis()
-            val actualValues = hakyuu.createNewGame(difficulty = Difficulty.EASY)
-
-            val result = hakyuu.boardMeetsRules(actualValues)
-
+            val actualValues = gameType.createNewGame(difficulty = Difficulty.EASY)
+            val result = gameType.boardMeetsRules(actualValues)
             val endTime = System.currentTimeMillis()
 
-            hakyuu.printActualValues(actualValues)
+            gameType.printActualValues(actualValues)
 
-            assert(result && hakyuu.numIterations==1) { "Failed: $index " }
+            assert(result && gameType.numIterations==1) { "Failed: $index " }
 
-            iterations[index-1] = hakyuu.numIterations
-            times[index-1] = endTime - startTime
-
-            index++
+            iterations[index] = gameType.numIterations
+            times[index] = endTime - startTime
         }
         println("Test with sizes ${size}x$size")
 
         println("Test\tNum Iterations\tTime (ms)")
 
-        (0..<repeat).forEach {
-            println("${it + 1}\t${iterations[it]}\t\t\t\t${times[it]}")
+        (0..<jankoSize).forEach {
+            println("${it + 1}\t\t${iterations[it]}\t\t\t\t${times[it]}")
         }
 
         iterations.sort()
         println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
         println("Iterations Mean: ${iterations.average()}")
-        println("Iterations Median: ${median(iterations)}")
+        println("Iterations Median: ${median(iterations,jankoSize)}")
 
         times.sort()
         println("Times Mid range: ${(times.first()+times.last()) / 2}")
         println("Times Mean: ${times.average()}")
-        println("Times Median: ${median(times)}")
+        println("Times Median: ${median(times,jankoSize)}")
 
     }
 

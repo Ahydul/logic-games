@@ -22,22 +22,21 @@ class Hakyuu private constructor(
 
     @Suppress("UnstableApiUsage")
     fun createNewGame(
-        difficulty: Difficulty
+        difficulty: Difficulty,
+        numIterations: Int = 1
     ): Map<Coordinate, Int> {
         val result = mutableMapOf<Coordinate, Int>()
 
         val possibleValuesPerCoordinate = populatePossibleValues(actualValues = result)
         val success = populateCells(possibleValues = possibleValuesPerCoordinate, actualValues = result, foundSPT = mutableListOf())
-/*
+
         if (!success) {
             // Random regions provided can't make a playable game. We repeat the proccess with other regions.
             boardRegions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionA()
-            numIterations++
-            return createNewGame(difficulty)
+            return createNewGame(difficulty, numIterations + 1)
         }
 
- */
-
+/*
         for (row in 0..<numRows) {
             for (col in 0 ..<numColumns) {
                 val coordinate = Coordinate(row = row, column = col)
@@ -46,10 +45,12 @@ class Hakyuu private constructor(
                 }
             }
         }
+ */
 
         //println("Result:")
         //printActualValues(result)
 
+        this.numIterations = numIterations
         return result
     }
 
@@ -175,11 +176,12 @@ class Hakyuu private constructor(
                 }
             }
         }
+
         if (!boardMeetsRules(actualValues)) {
             return false
         }
 
-        if (!possibleValuesChanged){
+        if (!possibleValuesChanged) {
             //Recursive function to populateCells
             return bruteForceAValue(possibleValues = possibleValues, actualValues = actualValues, foundSPT = foundSPT)
         }
