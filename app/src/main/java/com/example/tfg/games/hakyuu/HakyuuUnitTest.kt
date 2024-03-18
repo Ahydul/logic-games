@@ -259,7 +259,7 @@ class HakyuuUnitTest {
     private val repeat = 100
     @ParameterizedTest
     @ValueSource(ints = [5, 6, 7, 8])
-    fun testOkRandomBoard1(input: Int, testInfo: TestInfo) {
+    fun testOkRandomBoard(input: Int, testInfo: TestInfo) {
         val iterations = IntArray(size = repeat)
         val times = LongArray(size = repeat)
         val seeds = LongArray(size = repeat)
@@ -280,7 +280,7 @@ class HakyuuUnitTest {
             times[it] = endTime - startTime
             seeds[it] = seed
 
-            assert(result) { "$it failed: random: $seed " }
+            assert(result) { "$it failed seed: $seed " }
         }
         println("Test with sizes ${input}x$input")
 
@@ -317,6 +317,27 @@ class HakyuuUnitTest {
         } else {
             arr[repeat / 2]
         }
+    }
+
+    @Test
+    fun testOkSeededBoard() {
+        val input = 8
+        val seed = 3210878768
+        val random = Random(seed)
+
+        val startTime = System.currentTimeMillis()
+        val gameType = Hakyuu.create(numColumns = input, numRows = input, random = random)
+        val actualValues = gameType.createNewGame(difficulty = Difficulty.EASY)
+
+        val result = gameType.boardMeetsRules(actualValues)
+
+        val endTime = System.currentTimeMillis()
+
+        assert(result && gameType.numIterations==1) { "Failed: $seed " }
+
+        println("Test with sizes ${input}x$input")
+        println("Time ${endTime - startTime}")
+        println("Num of iterations ${gameType.numIterations}")
     }
 
 }
