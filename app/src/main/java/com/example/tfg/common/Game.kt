@@ -27,10 +27,10 @@ class Game private constructor(
         }
 
         fun exampleRandom(): Game {
-            val numColumns = 5
-            val numRows = 5
+            val numColumns = 8
+            val numRows = 8
             //val x: Int = ((numRows+numColumns) * 1.5).toInt()
-            val random = Random(1085703593)
+            val random = Random(4972474079)
 
             val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random)
 
@@ -48,7 +48,6 @@ class Game private constructor(
             val numRows = 6
 
             val gameType = Hakyuu.example()
-            //val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random, minNumberOfRegions = x)
 
             val map = gameType.createNewGame(difficulty = Difficulty.EASY)
 
