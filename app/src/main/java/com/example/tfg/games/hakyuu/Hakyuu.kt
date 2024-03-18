@@ -194,13 +194,15 @@ class Hakyuu private constructor(
             val newActualValues = actualValues.toMutableMap()
             newActualValues[minPossibleValues.key] = chosenValue
 
-            val res = populateCells(possibleValues = newPossibleValues, actualValues = newActualValues, foundSPT = foundSPT)
+            val newFoundSPT = foundSPT.toMutableList()
+
+            val res = populateCells(possibleValues = newPossibleValues, actualValues = newActualValues, foundSPT = newFoundSPT)
             if (res) {
-                //SET POSSIBLE VALUES
                 possibleValues.clear()
                 possibleValues.putAll(newPossibleValues)
-                //SET ACTUAL VALUES
                 actualValues.putAll(newActualValues)
+                foundSPT.clear()
+                foundSPT.addAll(newFoundSPT)
                 return true
             }
         }
