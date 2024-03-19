@@ -252,7 +252,7 @@ class HakyuuUnitTest {
 
     @Test
     fun testOkBoard() {
-        val actualValues = hakyuu.createNewGame(Difficulty.EASY)
+        val (actualValues, strategiesUsed) = hakyuu.createNewGame2(Difficulty.EASY)
         val result = hakyuu.boardMeetsRules(actualValues)
 
         for (a in hakyuu.boardRegions) {
@@ -261,7 +261,10 @@ class HakyuuUnitTest {
         hakyuu.printActualValues(actualValues)
 
         assert(result)
-        println("Num of iterations ${hakyuu.numIterations}")
+        println("Num of iterations: ${hakyuu.numIterations}")
+        println("Strategies used: ${
+            strategiesUsed.withIndex().joinToString { (index, value) -> "${Hakyuu.Strategy.values()[index]}: $value" }
+        }")
     }
 
     @ParameterizedTest

@@ -20,22 +20,36 @@ class Hakyuu private constructor(
     override var numIterations: Int = 1
 ) : GameType {
 
-    @Suppress("UnstableApiUsage")
-    fun createNewGame(
-        difficulty: Difficulty,
-        numIterations: Int = 1
-    ): Map<Coordinate, Int> {
+    enum class Strategy {
+        RULE2_RULE3,
+        HIDDEN_SINGLE,
+        HIDDEN_PAIR,
+        HIDDEN_TRIPLE,
+        OBVIOUS_PAIR,
+        OBVIOUS_TRIPLE,
+        BRUTE_FORCE
+    }
+
+        @Suppress("UnstableApiUsage")
+    fun createNewGame(difficulty: Difficulty): Map<Coordinate, Int> {
         val result = mutableMapOf<Coordinate, Int>()
 
         val possibleValuesPerCoordinate = populatePossibleValues(actualValues = result)
-        val success = populateCells(possibleValues = possibleValuesPerCoordinate, actualValues = result, foundSPT = mutableListOf())
+        val strategiesUsed = IntArray(Strategy.entries.size)
+
+        val success = populateCells(
+            possibleValues = possibleValuesPerCoordinate,
+            actualValues = result,
+            foundSPT = mutableListOf(),
+            strategiesUsed = strategiesUsed
+        )
 
         if (!success) {
             // Random regions provided can't make a playable game. We repeat the proccess with other regions.
             boardRegions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionA()
-            return createNewGame(difficulty, numIterations + 1)
+            numIterations += 1
+            return createNewGame(difficulty)
         }
-
 /*
         for (row in 0..<numRows) {
             for (col in 0 ..<numColumns) {
@@ -46,12 +60,33 @@ class Hakyuu private constructor(
             }
         }
  */
-
         //println("Result:")
         //printActualValues(result)
 
-        this.numIterations = numIterations
         return result
+    }
+
+    fun createNewGame2(difficulty: Difficulty): Pair<MutableMap<Coordinate, Int>, IntArray> {
+        val result = mutableMapOf<Coordinate, Int>()
+
+        val possibleValuesPerCoordinate = populatePossibleValues(actualValues = result)
+        val strategiesUsed = IntArray(Strategy.entries.size)
+
+        val success = populateCells(
+            possibleValues = possibleValuesPerCoordinate,
+            actualValues = result,
+            foundSPT = mutableListOf(),
+            strategiesUsed = strategiesUsed
+        )
+
+        if (!success) {
+            // Random regions provided can't make a playable game. We repeat the proccess with other regions.
+            boardRegions = Regions(numColumns = numColumns, numRows = numRows, random).divideRegionsOptionA()
+            numIterations += 1
+            return createNewGame2(difficulty)
+        }
+
+        return Pair(result, strategiesUsed)
     }
 
     private fun populatePossibleValues(actualValues: MutableMap<Coordinate, Int>): MutableMap<Coordinate,MutableList<Int>> {
@@ -92,14 +127,23 @@ class Hakyuu private constructor(
         println("=========================")
     }
 
-    private fun populateCells(possibleValues: MutableMap<Coordinate, MutableList<Int>>, actualValues: MutableMap<Coordinate, Int>,
-                              foundSPT: MutableList<Coordinate>): Boolean {
+    private fun populateCells(
+        possibleValues: MutableMap<Coordinate, MutableList<Int>>,
+        actualValues: MutableMap<Coordinate, Int>,
+        foundSPT: MutableList<Coordinate>,
+        strategiesUsed: IntArray
+    ): Boolean {
         while (true)
         {
             // If ended populating return true
             if (boardPopulated(actualValues)) return true
 
-            val noContradiction = populateValues(possibleValues = possibleValues, actualValues = actualValues, foundSPT = foundSPT)
+            val noContradiction = populateValues(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                foundSPT = foundSPT,
+                strategiesUsed = strategiesUsed
+            )
 
             // Found contradiction -> can't populate
             if (!noContradiction) {
@@ -111,55 +155,53 @@ class Hakyuu private constructor(
     // Tries to populate values while there is no contradiction
     // Return if there wasnt a contradiction
     internal fun populateValues(possibleValues: MutableMap<Coordinate, MutableList<Int>>, actualValues: MutableMap<Coordinate, Int>,
-                                foundSPT: MutableList<Coordinate>): Boolean {
+                                foundSPT: MutableList<Coordinate>, strategiesUsed: IntArray): Boolean {
 
         var possibleValuesChanged = false
         for (region in boardRegions.values) {
             for (coordinate in region.filter { possibleValues.containsKey(it) }) {
-                if (region.contains(Coordinate(5,3))) {
-                    val pito = 0
-                }
                 val values = possibleValues[coordinate]!!
-                val valueChanged = values.removeIf { value ->
-                    !(isValidValueRule2(value = value,  region = region, actualValues = actualValues) &&
-                            isValidValueRule3(value = value, coordinate = coordinate, actualValues = actualValues)
-                            )
+                val previousSize = values.size
+
+                values.removeIf { value ->
+                    !isValidValueRule2(value = value,  region = region, actualValues = actualValues) ||
+                        !isValidValueRule3(value = value, coordinate = coordinate, actualValues = actualValues)
                 }
 
-                possibleValuesChanged = valueChanged || possibleValuesChanged
+                val numValuesChanged = previousSize - values.size
+                strategiesUsed[Strategy.RULE2_RULE3.ordinal] += numValuesChanged
 
+                possibleValuesChanged = possibleValuesChanged || numValuesChanged > 0
             }
 
-            val coordsPerValue = getCoordinatesPerValues(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
+            val cleanedHiddenPossibleValues = cleanHiddenSPT(
+                region = region,
+                possibleValues = possibleValues,
+                foundSPT = foundSPT,
+                strategiesUsed = strategiesUsed
+            )
+            possibleValuesChanged = possibleValuesChanged || cleanedHiddenPossibleValues
 
-            val singles = cleanHiddenSingles(coordsPerValue = coordsPerValue, possibleValues = possibleValues)
-            val pairs = cleanHiddenPairs(coordsPerValue = coordsPerValue, possibleValues = possibleValues)
-            val triples = cleanHiddenTriples(coordsPerValue = coordsPerValue, possibleValues = possibleValues)
-
-            var valueChanged = singles.isNotEmpty() || pairs.isNotEmpty() || triples.isNotEmpty()
-
-            foundSPT.addAll(singles)
-            foundSPT.addAll(pairs)
-            foundSPT.addAll(triples)
-
-
-            for ((c1,c2) in detectObviousPairs(region = region, possibleValues = possibleValues, foundSPT = foundSPT)) {
+            val pairs = detectObviousPairs(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
+            strategiesUsed[Strategy.OBVIOUS_PAIR.ordinal] += pairs.size
+            for ((c1,c2) in pairs) {
                 val values = possibleValues[c1]!!
                 region.filter { coordinate -> coordinate!=c1 && coordinate!=c2 && possibleValues.containsKey(coordinate)}
                     .forEach { coordinate ->
-                        valueChanged = valueChanged || possibleValues[coordinate]!!.removeAll(values)
+                        possibleValuesChanged = possibleValuesChanged || possibleValues[coordinate]!!.removeAll(values)
                     }
             }
 
-            for ((c1,c2,c3) in detectObviousTriples(region = region, possibleValues = possibleValues, foundSPT = foundSPT)) {
+            val triples = detectObviousTriples(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
+            strategiesUsed[Strategy.OBVIOUS_TRIPLE.ordinal] += triples.size
+            for ((c1,c2,c3) in triples) {
                 val values = possibleValues[c1]!!
                 region.filter { coordinate -> coordinate!=c1 && coordinate!=c2 && coordinate!=c3 && possibleValues.containsKey(coordinate) }
                     .forEach { coordinate ->
-                        valueChanged = valueChanged || possibleValues[coordinate]!!.removeAll(values)
+                        possibleValuesChanged = possibleValuesChanged || possibleValues[coordinate]!!.removeAll(values)
                     }
             }
 
-            possibleValuesChanged = possibleValuesChanged || valueChanged
             // Update values or return if found contradiction
             if (possibleValuesChanged){
                 for (coordinate in region.filter { possibleValues.containsKey(it) }) {
@@ -177,20 +219,26 @@ class Hakyuu private constructor(
             }
         }
 
-        if (!boardMeetsRules(actualValues)) {
-            return false
-        }
-
         if (!possibleValuesChanged) {
+            strategiesUsed[Strategy.BRUTE_FORCE.ordinal] += 1
             //Recursive function to populateCells
-            return bruteForceAValue(possibleValues = possibleValues, actualValues = actualValues, foundSPT = foundSPT)
+            return bruteForceAValue(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                foundSPT = foundSPT,
+                strategiesUsed = strategiesUsed
+            )
         }
 
         return true
     }
 
-    private fun bruteForceAValue(possibleValues: MutableMap<Coordinate, MutableList<Int>>, actualValues: MutableMap<Coordinate, Int>,
-                                 foundSPT: MutableList<Coordinate>):Boolean {
+    private fun bruteForceAValue(
+        possibleValues: MutableMap<Coordinate, MutableList<Int>>,
+        actualValues: MutableMap<Coordinate, Int>,
+        foundSPT: MutableList<Coordinate>,
+        strategiesUsed: IntArray
+    ):Boolean {
         val minPossibleValues = possibleValues.minByOrNull { it.value.size }!!
 
         //Brute force
@@ -203,19 +251,36 @@ class Hakyuu private constructor(
             newActualValues[minPossibleValues.key] = chosenValue
 
             val newFoundSPT = foundSPT.toMutableList()
+            val newStrategiesUsed = strategiesUsed.clone()
 
-            val res = populateCells(possibleValues = newPossibleValues, actualValues = newActualValues, foundSPT = newFoundSPT)
+            val res = populateCells(
+                possibleValues = newPossibleValues,
+                actualValues = newActualValues,
+                foundSPT = newFoundSPT,
+                strategiesUsed = newStrategiesUsed
+            )
+
             if (res) {
                 possibleValues.clear()
                 possibleValues.putAll(newPossibleValues)
                 actualValues.putAll(newActualValues)
                 foundSPT.clear()
                 foundSPT.addAll(newFoundSPT)
+                replaceArray(thisArray = strategiesUsed, with = newStrategiesUsed)
+
                 return true
             }
         }
         // If brute force didn't solve the board this is an invalid state
         return false
+    }
+
+    private fun replaceArray(thisArray: IntArray, with: IntArray) {
+        var index = 0
+        while (index < thisArray.size) {
+            thisArray[index] = with[index]
+            index++
+        }
     }
 
     private fun getRegionID(coordinate: Coordinate): Int {
@@ -226,13 +291,43 @@ class Hakyuu private constructor(
         return boardRegions[getRegionID(coordinate)]!!
     }
 
-    internal fun getCoordinatesPerValues(region: List<Coordinate>, possibleValues: Map<Coordinate, List<Int>>,
-                                         foundSPT: List<Coordinate> = mutableListOf()): Array<MutableList<Coordinate>> {
+    internal fun getCoordinatesPerValues(
+        region: List<Coordinate>,
+        possibleValues: Map<Coordinate, List<Int>>,
+        foundSPT: List<Coordinate> = mutableListOf()
+    ): Array<MutableList<Coordinate>> {
+
         val coordsPerValue = Array(region.size) { mutableListOf<Coordinate>() }
-        region.filter { coordinate -> !foundSPT.contains(coordinate) && possibleValues.containsKey(coordinate) }.forEach { coordinate ->
-            possibleValues[coordinate]!!.forEach { value -> coordsPerValue[value - 1].add(coordinate) }
-        }
+        region.filter { coordinate -> !foundSPT.contains(coordinate) && possibleValues.containsKey(coordinate) }
+            .forEach { coordinate ->
+                possibleValues[coordinate]!!.forEach { value -> coordsPerValue[value - 1].add(coordinate) }
+            }
+
         return coordsPerValue
+    }
+
+    // Detect and clean hidden singles, pairs, triples
+    private fun cleanHiddenSPT(
+        region: List<Coordinate>,
+        possibleValues: Map<Coordinate, MutableList<Int>>,
+        foundSPT: MutableList<Coordinate> = mutableListOf(),
+        strategiesUsed: IntArray
+    ): Boolean {
+        val coordsPerValue = getCoordinatesPerValues(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
+
+        val singles = cleanHiddenSingles(coordsPerValue = coordsPerValue, possibleValues = possibleValues)
+        val pairs = cleanHiddenPairs(coordsPerValue = coordsPerValue, possibleValues = possibleValues)
+        val triples = cleanHiddenTriples(coordsPerValue = coordsPerValue, possibleValues = possibleValues)
+
+        foundSPT.addAll(singles)
+        foundSPT.addAll(pairs)
+        foundSPT.addAll(triples)
+
+        strategiesUsed[Strategy.HIDDEN_SINGLE.ordinal] += singles.size
+        strategiesUsed[Strategy.HIDDEN_PAIR.ordinal] += pairs.size
+        strategiesUsed[Strategy.HIDDEN_TRIPLE.ordinal] += triples.size
+
+        return singles.isNotEmpty() || pairs.isNotEmpty() || triples.isNotEmpty()
     }
 
     // Delete values to reveal hidden singles
@@ -299,14 +394,15 @@ class Hakyuu private constructor(
                 }
             }
         }
-        if (res.size > 0){
-            val pito = 0
-        }
         return res
     }
 
-    internal fun detectObviousPairs(region: List<Coordinate>, possibleValues: Map<Coordinate, List<Int>>,
-                                    foundSPT: List<Coordinate> = mutableListOf()): List<Pair<Coordinate, Coordinate>> {
+    internal fun detectObviousPairs(
+        region: List<Coordinate>,
+        possibleValues: Map<Coordinate, List<Int>>,
+        foundSPT: List<Coordinate> = mutableListOf()
+    ): List<Pair<Coordinate, Coordinate>> {
+
         val filteredRegions = region.filter { coordinate ->
             possibleValues[coordinate]?.size == 2 && !foundSPT.contains(coordinate)
         }
@@ -321,8 +417,12 @@ class Hakyuu private constructor(
         return res
     }
 
-    internal fun detectObviousTriples(region: List<Coordinate>, possibleValues: Map<Coordinate, List<Int>>,
-                                      foundSPT: List<Coordinate> = mutableListOf()): List<Triple<Coordinate, Coordinate, Coordinate>> {
+    internal fun detectObviousTriples(
+        region: List<Coordinate>,
+        possibleValues: Map<Coordinate, List<Int>>,
+        foundSPT: List<Coordinate> = mutableListOf()
+    ): List<Triple<Coordinate, Coordinate, Coordinate>> {
+
         val filteredRegions = region.filter { coordinate ->
             (possibleValues[coordinate]?.size == 2 || possibleValues[coordinate]?.size == 3) && !foundSPT.contains(coordinate)
         }
@@ -412,36 +512,8 @@ class Hakyuu private constructor(
                     "5:[(3,2), (4,2), (5,1), (5,2)]\n" +
                     "6:[(4,3), (5,3), (5,4), (5,5)]"
 
-            val b = "6:[(3,2)]\n" +
-                    "4:[(3,4)]\n" +
-                    "5:[(4,3)]\n" +
-                    "2:[(4,2), (5,2)]\n" +
-                    "12:[(0,0), (1,0), (2,0)]\n" +
-                    "13:[(0,1), (0,2), (1,1)]\n" +
-                    "8:[(0,5), (1,4), (1,5)]\n" +
-                    "7:[(2,3), (2,4), (3,3)]\n" +
-                    "1:[(5,3), (5,4), (5,5)]\n" +
-                    "9:[(0,3), (0,4), (1,2), (1,3)]\n" +
-                    "10:[(2,1), (2,2), (3,0), (3,1)]\n" +
-                    "3:[(2,5), (3,5), (4,4), (4,5)]\n" +
-                    "11:[(4,0), (4,1), (5,0), (5,1)]"
-
-            val c = "13:[(0,0)]\n" +
-                    "12:[(2,1)]\n" +
-                    "1:[(5,0)]\n" +
-                    "6:[(5,3)]\n" +
-                    "9:[(0,1), (0,2), (0,3)]\n" +
-                    "10:[(0,4), (1,4), (2,4)]\n" +
-                    "11:[(0,5), (1,5), (2,5)]\n" +
-                    "7:[(2,2), (3,2), (3,3)]\n" +
-                    "2:[(1,0), (2,0), (3,0), (4,0)]\n" +
-                    "8:[(1,1), (1,2), (1,3), (2,3)]\n" +
-                    "3:[(3,1), (4,1), (5,1), (5,2)]\n" +
-                    "4:[(3,4), (4,2), (4,3), (4,4)]\n" +
-                    "5:[(3,5), (4,5), (5,4), (5,5)]"
-
             return Hakyuu(
-                boardRegions = Regions.parseString(c),
+                boardRegions = Regions.parseString(a),
                 numRows = numRows,
                 numColumns = numColumns,
                 random = Random(1)
