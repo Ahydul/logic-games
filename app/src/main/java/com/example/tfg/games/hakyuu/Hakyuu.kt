@@ -30,6 +30,25 @@ class Hakyuu private constructor(
         BRUTE_FORCE
     }
 
+    fun populateValues(actualValues: Map<Coordinate, Int>): Pair<MutableMap<Coordinate, Int>, IntArray> {
+        val result = actualValues.toMutableMap()
+        val strategiesUsed = IntArray(Strategy.entries.size)
+        val possibleValuesPerCoordinate = populatePossibleValues(actualValues = result)
+
+        printActualValues(result)
+
+        val success = populateCells(
+            possibleValues = possibleValuesPerCoordinate,
+            actualValues = result,
+            foundSPT = mutableListOf(),
+            strategiesUsed = strategiesUsed
+        )
+
+        fillActualValues(result)
+
+        return Pair(result, strategiesUsed)
+    }
+
         @Suppress("UnstableApiUsage")
     fun createNewGame(difficulty: Difficulty): Map<Coordinate, Int> {
         val result = mutableMapOf<Coordinate, Int>()
@@ -50,18 +69,6 @@ class Hakyuu private constructor(
             numIterations += 1
             return createNewGame(difficulty)
         }
-/*
-        for (row in 0..<numRows) {
-            for (col in 0 ..<numColumns) {
-                val coordinate = Coordinate(row = row, column = col)
-                if (!result.containsKey(coordinate)) {
-                    result.put(coordinate,0)
-                }
-            }
-        }
- */
-        //println("Result:")
-        //printActualValues(result)
 
         return result
     }
@@ -89,6 +96,17 @@ class Hakyuu private constructor(
         return Pair(result, strategiesUsed)
     }
 
+    private fun fillActualValues(actualValues: MutableMap<Coordinate, Int>) {
+        for (row in 0..<numRows) {
+            for (col in 0 ..<numColumns) {
+                val coordinate = Coordinate(row = row, column = col)
+                if (!actualValues.containsKey(coordinate)) {
+                    actualValues.put(coordinate,0)
+                }
+            }
+        }
+    }
+
     private fun populatePossibleValues(actualValues: MutableMap<Coordinate, Int>): MutableMap<Coordinate,MutableList<Int>> {
         val possibleValues = mutableMapOf<Coordinate, MutableList<Int>>()
         val orderedRegions = boardRegions.toList().sortedBy { it.second.size }.toMap()
@@ -96,10 +114,10 @@ class Hakyuu private constructor(
         for (region in orderedRegions) {
             val values = (1 .. region.value.size).toList()
             for (coordinate in region.value) {
+                if (actualValues.containsKey(coordinate)) continue
+
                 if (values.size==1) actualValues.put(coordinate, values[0])
-                else {
-                    possibleValues.put(coordinate, values.toMutableList())
-                }
+                else possibleValues.put(coordinate, values.toMutableList())
             }
         }
         return possibleValues
@@ -229,6 +247,7 @@ class Hakyuu private constructor(
                 strategiesUsed = strategiesUsed
             )
         }
+
 
         return true
     }
@@ -494,23 +513,23 @@ class Hakyuu private constructor(
 
     companion object {
         fun example(): Hakyuu {
-            val numColumns = 6
-            val numRows = 6
-            val a = "10:[(0,1)]\n" +
-                    "15:[(0,3)]\n" +
-                    "14:[(0,5)]\n" +
-                    "4:[(4,1)]\n" +
-                    "1:[(5,0)]\n" +
-                    "9:[(0,0), (1,0)]\n" +
-                    "2:[(3,0), (4,0)]\n" +
-                    "7:[(4,4), (4,5)]\n" +
-                    "11:[(0,2), (1,2), (2,2)]\n" +
-                    "12:[(0,4), (1,3), (1,4)]\n" +
-                    "13:[(1,5), (2,5), (3,5)]\n" +
-                    "3:[(1,1), (2,0), (2,1), (3,1)]\n" +
-                    "8:[(2,3), (2,4), (3,3), (3,4)]\n" +
-                    "5:[(3,2), (4,2), (5,1), (5,2)]\n" +
-                    "6:[(4,3), (5,3), (5,4), (5,5)]"
+            val numColumns = 8
+            val numRows = 8
+            val a = "15:[(0,7)]\n" +
+                    "8:[(4,3)]\n" +
+                    "6:[(7,2), (7,3)]\n" +
+                    "1:[(0,0), (0,1), (0,2)]\n" +
+                    "11:[(0,5), (0,6), (1,5)]\n" +
+                    "2:[(1,0), (1,1), (1,2)]\n" +
+                    "13:[(5,5), (5,6), (5,7)]\n" +
+                    "12:[(1,6), (1,7), (2,5), (2,6), (2,7)]\n" +
+                    "5:[(2,2), (3,1), (3,2), (4,2), (5,2)]\n" +
+                    "3:[(2,0), (2,1), (3,0), (4,0), (5,0), (6,0)]\n" +
+                    "10:[(3,4), (3,5), (3,6), (3,7), (4,6), (4,7)]\n" +
+                    "9:[(4,4), (4,5), (5,3), (5,4), (6,4), (7,4)]\n" +
+                    "14:[(6,5), (6,6), (6,7), (7,5), (7,6), (7,7)]\n" +
+                    "7:[(0,3), (0,4), (1,3), (1,4), (2,3), (2,4), (3,3)]\n" +
+                    "4:[(4,1), (5,1), (6,1), (6,2), (6,3), (7,0), (7,1)]"
 
             return Hakyuu(
                 boardRegions = Regions.parseString(a),

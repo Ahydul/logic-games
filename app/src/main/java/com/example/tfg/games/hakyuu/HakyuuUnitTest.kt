@@ -250,9 +250,33 @@ class HakyuuUnitTest {
                 possibleValues[coordinate1]!!.containsAll(listOf(value1, value2, value3)))
     }
 
+    private fun startBoard(): MutableMap<Coordinate, Int> {
+        val res = mutableMapOf<Coordinate, Int>()
+        val start =
+            "- - - 1 - - 2 1\n" +
+            "- - 1 - - - 4 -\n" +
+            "- - - - 4 - - 1\n" +
+            "- - - - 1 - - 3\n" +
+            "- - 3 - - 6 - -\n" +
+            "- - - - - - 1 -\n" +
+            "- 1 - 7 - - 3 -\n" +
+            "- 6 - - - 2 - -"
+        
+        for ((irow,row) in start.lines().withIndex()) {
+            for ((icol,col) in row.split(" ").withIndex()) {
+                if (col == "-") continue
+                val value = col.toInt()
+
+                res[Coordinate(irow,icol)] = value
+            }
+        }
+
+        return res
+    }
+
     @Test
     fun testOkBoard() {
-        val (actualValues, strategiesUsed) = hakyuu.createNewGame2(Difficulty.EASY)
+        val (actualValues, strategiesUsed) = hakyuu.populateValues(startBoard())
         val result = hakyuu.boardMeetsRules(actualValues)
 
         for (a in hakyuu.boardRegions) {
@@ -260,11 +284,11 @@ class HakyuuUnitTest {
         }
         hakyuu.printActualValues(actualValues)
 
-        assert(result)
         println("Num of iterations: ${hakyuu.numIterations}")
         println("Strategies used: ${
             strategiesUsed.withIndex().joinToString { (index, value) -> "${Hakyuu.Strategy.values()[index]}: $value" }
         }")
+        assert(result)
     }
 
     @ParameterizedTest
@@ -361,6 +385,7 @@ class HakyuuUnitTest {
 
         val iterations = IntArray(jankoSize)
         val times = LongArray(jankoSize)
+        val strategies = Array(jankoSize){""}
 
         val file = File("src/test/testdata/$size-areas.txt")
 
@@ -371,33 +396,36 @@ class HakyuuUnitTest {
         }
 
         for ((index, board) in boards.withIndex()) {
-            println("Board $index")
+            //println("Board $index")
 
             val gameType = Hakyuu.create(numColumns = size, numRows = size, random = random)
             gameType.boardRegions = Regions.parseString(board.dropLast(1))
 
+            /*
             for (a in gameType.boardRegions) {
                 println("${a.key}:${a.value}")
             }
+             */
 
             val startTime = System.currentTimeMillis()
-            val actualValues = gameType.createNewGame(difficulty = Difficulty.EASY)
+            val (actualValues, strategiesUsed) = gameType.createNewGame2(difficulty = Difficulty.EASY)
             val result = gameType.boardMeetsRules(actualValues)
             val endTime = System.currentTimeMillis()
 
-            gameType.printActualValues(actualValues)
+            //gameType.printActualValues(actualValues)
 
             assert(result && gameType.numIterations==1) { "Failed: $index " }
 
             iterations[index] = gameType.numIterations
             times[index] = endTime - startTime
+            strategies[index] = strategiesUsed.withIndex().joinToString { (index, value) -> "${Hakyuu.Strategy.values()[index]}: $value" }
         }
         println("Test with sizes ${size}x$size")
 
-        println("Test\tNum Iterations\tTime (ms)")
+        println("Test\tNum Iterations\tTime (ms)\t")
 
         (0..<jankoSize).forEach {
-            println("${it + 1}\t\t${iterations[it]}\t\t\t\t${times[it]}")
+            println("${it + 1}\t\t${iterations[it]}\t\t\t\t${times[it]}\t\t${strategies[it]}")
         }
 
         iterations.sort()
