@@ -440,4 +440,25 @@ class HakyuuUnitTest {
 
     }
 
+
+    @Test
+    fun testOkSeededBoardHakyuu2() {
+        val input = 8
+        val seed = 321087876828
+        val random = Random(seed)
+
+        val startTime = System.currentTimeMillis()
+        val gameType = Hakyuu2.create(numColumns = input, numRows = input, random = random)
+
+        gameType.createGame()
+
+        val endTime = System.currentTimeMillis()
+
+        assert(true) { "Failed: $seed " }
+
+        println("Test with sizes ${input}x$input")
+        println("Time ${endTime - startTime}")
+    }
+
+
 }

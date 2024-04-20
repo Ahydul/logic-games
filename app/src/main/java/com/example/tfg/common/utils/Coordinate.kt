@@ -62,5 +62,46 @@ data class Coordinate(val row: Int, val column: Int) {
             val spl = str.substring(1,str.length-1).split(',')
             return Coordinate(row = spl[0].toInt(), column = spl[1].toInt())
         }
+
+        fun move(direction: Direction, position:Int, numRows: Int, numColumns: Int, value: Int = 1): Int? {
+            require(value>0)
+            return when(direction){
+                Direction.NORTH -> moveUp(position = position, numColumns = numColumns, value = value)
+                Direction.EAST -> moveRight(position = position, value = value, numColumns = numColumns)
+                Direction.WEST -> moveLeft(position = position, value = value, numColumns = numColumns)
+                Direction.SOUTH -> moveDown(position = position, value = value, numColumns = numColumns, numRows = numRows)
+            }
+        }
+
+        fun move(direction1: Direction, direction2: Direction, position:Int, numRows: Int, numColumns: Int, value: Int = 1): Int? {
+            val tmp = move(direction1, position, numRows, numColumns, value) ?: return null
+            return move(direction2,
+                tmp,
+                numRows,
+                numColumns,
+                value)
+        }
+
+        private fun moveRight(position: Int, numColumns: Int, value: Int = 1): Int? {
+            if (((position % numColumns) + value) >= numColumns) return null
+            return position + value
+        }
+
+        private fun moveLeft(position: Int, numColumns: Int, value: Int = 1): Int? {
+            if (((position % numColumns) - value) < 0) return null
+            return position - value
+        }
+
+        private fun moveUp(position: Int, numColumns: Int, value: Int = 1): Int? {
+            val newPosition = position - value*numColumns
+            if (newPosition < 0) return null
+            return newPosition
+        }
+
+        private fun moveDown(position: Int, numColumns: Int, numRows: Int, value: Int = 1): Int? {
+            val newPosition = position + value*numColumns
+            if (newPosition >= numColumns*numRows) return null
+            return newPosition
+        }
     }
 }
