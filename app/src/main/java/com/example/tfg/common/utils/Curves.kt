@@ -29,6 +29,16 @@ abstract class Curves {
             return bezierCurve(value, p0, p1, p2, p3)
         }
 
+        fun bezier1(value: Double): Double {
+
+            val p0 = Point(0.0, 0.0)
+            val p1 = Point(0.7, 0.05)
+            val p2 = Point(0.5, 0.8)
+            val p3 = Point(1.0, 1.0)
+
+            return bezierCurve(value, p0, p1, p2, p3)
+        }
+
         fun moreProgressively(value: Double): Double {
             return sin(PI * value)
         }
@@ -47,7 +57,8 @@ abstract class Curves {
 
         fun easierInOutSine(value: Double): Double {
             require(value < 13)
-            return 1 / (1 + exp(-6.5 * (value - 0.5)))
+            return 1 / (1 + exp(-7 * (value - 0.6))) //1 / (1 + exp(-6.5 * (value - 0.5)))
+
         }
 
         fun lessMoreLess(value: Double): Double {
