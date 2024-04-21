@@ -13,6 +13,7 @@ class Hakyuu2 private constructor(
     val numColumns: Int,
     val numRows: Int,
     val random: Random,
+    var iterations: Int = 1
 ) {
                         // pair(value, regionID)
     private val numPositions = numColumns * numRows
@@ -35,61 +36,109 @@ class Hakyuu2 private constructor(
         return remainingPositions.isEmpty()
     }
 
-    private val reset = "\u001B[0m"
-    private val colors = arrayOf(
-        "\u001B[30m",  // Black
-        "\u001B[31m",  // Red
-        "\u001B[32m",  // Green
-        "\u001B[33m",  // Yellow
-        "\u001B[34m",  // Blue
-        "\u001B[35m",  // Purple
-        "\u001B[36m",  // Cyan
-        "\u001B[37m",  // White
-        "\u001B[38m",  //
-        "\u001B[39m",  //
-        "\u001B[40m",  //
-        "\u001B[41m",  //
-        "\u001B[42m",  //
-        "\u001B[43m",  //
-        "\u001B[44m",  //
-        "\u001B[45m",  //
-        "\u001B[90m",  // Bright Black
-        "\u001B[91m",  // Bright Red
-        "\u001B[92m",  // Bright Green
-        "\u001B[93m",  // Bright Yellow
-        "\u001B[94m",  // Bright Blue
-        "\u001B[95m",  // Bright Purple
-        "\u001B[96m",  // Bright Cyan
-        "\u001B[97m"   // Bright White
+    private val htmlColors = arrayOf(
+        "#FF0000", // Red
+        "#00FF00", // Green
+        "#0000FF", // Blue
+        "#FFFF00", // Yellow
+        "#FF00FF", // Magenta
+        "#00FFFF", // Cyan
+        "#800000", // Maroon
+        "#008000", // Olive
+        "#000080", // Navy
+        "#808000", // Teal
+        "#800080", // Purple
+        "#008080", // Gray
+        "#C0C0C0", // Silver
+        "#FFA500", // Orange
+        "#FFC0CB", // Pink
+        "#800000", // Brown
+        "#808080", // Dark Gray
+        "#A52A2A", // Brown
+        "#00FF7F", // Spring Green
+        "#ADFF2F", // Green Yellow
+        "#7FFF00", // Chartreuse
+        "#32CD32", // Lime Green
+        "#8B008B", // Dark Magenta
+        "#FF69B4", // Hot Pink
+        "#4B0082", // Indigo
+        "#800080", // Purple
+        "#FF6347", // Tomato
+        "#FF4500", // Orange Red
+        "#FFD700", // Gold
+        "#DAA520", // Goldenrod
+        "#FF8C00", // Dark Orange
+        "#DC143C", // Crimson
+        "#FF1493", // Deep Pink
+        "#00BFFF", // Deep Sky Blue
+        "#87CEEB", // Sky Blue
+        "#4682B4", // Steel Blue
+        "#6A5ACD", // Slate Blue
+        "#7B68EE", // Medium Slate Blue
+        "#9370DB", // Medium Purple
+        "#8A2BE2", // Blue Violet
+        "#9932CC", // Dark Orchid
+        "#8B008B", // Dark Magenta
+        "#BA55D3", // Medium Orchid
+        "#9400D3", // Dark Violet
+        "#800080", // Purple
+        "#663399", // Rebecca Purple
+        "#4B0082", // Indigo
+        "#9370DB", // Medium Purple
+        "#800080", // Purple
+        "#8A2BE2", // Blue Violet
     )
 
     fun printBoard() {
+        val tmpColors = htmlColors.toMutableSet()
+        val colorMap = mutableMapOf<Int,String>()
+
+        var htmlCode = """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""
+
         (0..<numPositions).forEach {
             val num = board[it].first
             val id = board[it].second
-            val print = if (num==0) "  " else if (num < 10) " $num" else "$num"
+            //val print = if (num==0) "   " else if (num < 10) " $num " else "$num "
 
-            print("${colors[id % colors.size]}$print ${reset}")
+            if (!colorMap.containsKey(id)) {
+                val color = tmpColors.first()
+                tmpColors.remove(color)
+                colorMap[id] = color
+            }
+
+            if (it%numColumns == 0){
+                htmlCode += """<tr>"""
+            }
+
+            htmlCode += """<td style="background-color: ${colorMap[id]}; vertical-align: middle; text-align: center; height: 40px; width: 40px;">$num</td>"""
 
             if (it%numColumns == numColumns-1){
-                println()
+                htmlCode += """</tr>"""
             }
+
         }
-        println("=================================")
+        htmlCode +="""</tbody></table>"""
+        print(htmlCode)
+    }
+
+    fun getRegionStatData(): IntArray {
+        val ls = board.map { it.second }.groupBy { it }.map { it.value.size }
+        val result = IntArray(size = ls.max())
+        ls.forEach {
+            result[it-1]++
+        }
+        return result
     }
 
     private fun randomPropagationNumber(): Int {
-        return random.nextInt(maxRegionSize - 1) + 1
+        //return random.nextInt(maxRegionSize - 1) + 1
         return ((maxRegionSize - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
     }
 
     fun createGame() {
         while (!boardCreated()) {
             propagateRandomRegion()
-            //printBoard()
         }
-        printBoard()
-        println(board.map { it.second }.groupBy { it }.map { it.value.size }.sorted())
     }
 
     fun propagateRandomRegion(numPropagations: Int = randomPropagationNumber(), iterations: Int = 1) {
@@ -103,13 +152,13 @@ class Hakyuu2 private constructor(
         val result = populateRegion(region)
 
         if (!result) {
-            if (iterations > 20) {
+            if (iterations > 20)
                 modifyNeighbouringRegions(seed)
-            }
+
             propagateRandomRegion(numPropagations = numPropagations, iterations = iterations+1)
         }
-        else{
-            //println("$iterations iterations")
+        else {
+            this.iterations += iterations
         }
     }
 
@@ -123,7 +172,7 @@ class Hakyuu2 private constructor(
     }
 
     private fun modifyNeighbouringRegions(seed: Int) {
-        val position = Direction.entries.mapNotNull { direction: Direction ->
+        val position = Direction.entries.shuffled(random).mapNotNull { direction: Direction ->
             Coordinate.move(
                 direction = direction,
                 position = seed,
@@ -210,6 +259,28 @@ class Hakyuu2 private constructor(
             errorNotFoundInDirection
         }
         return errorNotFound
+    }
+
+    internal fun boardMeetsRules(): Boolean {
+        val tmp = mutableMapOf<Int, MutableSet<Int>>()
+        board.withIndex().forEach { (position, pair) ->
+            val (value, regionID) = pair
+            if (!isValidValueRule3(value = value, position = position)) {
+                println("Rule 3 failed: with value:$value, position:$position")
+                return false
+            }
+            if (tmp.containsKey(regionID)) {
+                val elementAdded = tmp[regionID]!!.add(value)
+                if (!elementAdded) {
+                    println("Rule 2 failed: with region:${tmp[regionID]}")
+                    return false
+                }
+            }
+            else{
+                tmp[regionID] = mutableSetOf(value)
+            }
+        }
+        return true
     }
 
     private fun propagateOnce(region: MutableList<Int>) {
