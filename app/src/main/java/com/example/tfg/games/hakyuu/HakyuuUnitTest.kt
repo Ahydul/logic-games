@@ -490,8 +490,8 @@ class HakyuuUnitTest {
 
 
     @ParameterizedTest
-    @ValueSource(ints = [5, 6,]) //7, 8, 9, 10, 11, 12, ])//13, 14, 15, 16])
-    fun testOkRandomBoardHakyuu2(size: Int, testInfo: TestInfo) {
+    @ValueSource(ints = [5, 6, 7, 8, 9, 10, 11, 12, ])//13, 14, 15])
+    fun testCreateHakyuuBoards(size: Int, testInfo: TestInfo) {
         println("<h1>Test with sizes ${size}x$size</h1>")
         val repeat = 100
 
@@ -546,10 +546,9 @@ class HakyuuUnitTest {
 
 
         print("<div>")
-        print("<h3>Region stats</h3>")
+
         var htmlCode2 = """<table style="border-spacing: 20px 0;"><tbody>"""
         htmlCode2 += """<tr><th>Region size</th><th>Mode</th><th>Mean</th><th>Median</th></tr>"""
-
         regionSizes.forEachIndexed{ size, arr ->
             arr.sort()
             htmlCode2 += """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, repeat)}</td></tr>"""
@@ -562,20 +561,19 @@ class HakyuuUnitTest {
 
         print("<div>")
 
+        var htmlCode3 = """<table style="border-spacing: 20px 0;"><tbody>"""
+        htmlCode3 += """<tr><th></th><th>Mid Range</th><th>Mean</th><th>Median</th><th>Total</th></tr>"""
+
         iterations.sort()
-        println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
-        println("Iterations Mean: ${iterations.average()}")
-        println("Iterations Median: ${median(iterations, repeat)}")
-
+        htmlCode3 += """<tr><td><b>Iterations</b></td><td>${(iterations.first()+iterations.last()) / 2}</td><td>${iterations.average()}</td><td>${median(iterations, repeat)}</td><td>${iterations.sum()}</td></tr>"""
         times.sort()
-        println("Times Mid range: ${(times.first()+times.last()) / 2}")
-        println("Times Mean: ${times.average()}")
-        println("Times Median: ${median(times, repeat)}")
-        println("Total time: ${times.sum()}")
+        htmlCode3 += """<tr><td><b>Times (ms)</b></td><td>${(times.first()+times.last()) / 2}</td><td>${times.average()}</td><td>${median(times, repeat)}</td><td>${times.sum()}</td></tr>"""
 
-        print("</div>")
+        htmlCode3 += "</tbody></table>"
+        print(htmlCode3)
 
-        print("</div>")
+        print("</div></div>")
+
     }
 
 }

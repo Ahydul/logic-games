@@ -1,5 +1,6 @@
 package com.example.tfg.games.hakyuu
 
+import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Direction
@@ -18,79 +19,35 @@ class Hakyuu2 private constructor(
                         // pair(value, regionID)
     private val numPositions = numColumns * numRows
     private val board: Array<Pair<Int, Int>> = initBoard()
-    private var remainingPositions: MutableSet<Int> = (0..< numPositions).toMutableSet()
+    private val remainingPositions: MutableSet<Int> = initRemainingPositions()
     private var currentID = 0
     private val maxRegionSize = min(numColumns, numRows)
+    private val colors = Colors()
 
     private fun initBoard(): Array<Pair<Int, Int>> {
-        val res = Array(size = numPositions, init = { Pair(0, 0) })
-        res.shuffle(random)
-        return res
+        return Array(size = numPositions, init = { Pair(0, 0) })
     }
 
-    private fun getRandomPosition(): Int {
-        return remainingPositions.random(random)
+    private fun initRemainingPositions():  MutableSet<Int> {
+        return (0..< numPositions).toMutableSet()
+    }
+
+    private fun reset() {
+        board.indices.forEach { board[it] = Pair(0,0) }
+        remainingPositions.addAll(initRemainingPositions())
+    }
+
+    fun createGame(msBeforeSkipBoard: Int = 0) {
+        while (!boardCreated()) {
+            propagateRandomRegion()
+        }
     }
 
     private fun boardCreated(): Boolean {
         return remainingPositions.isEmpty()
     }
 
-    private val htmlColors = arrayOf(
-        "#FF0000", // Red
-        "#00FF00", // Green
-        "#0000FF", // Blue
-        "#FFFF00", // Yellow
-        "#FF00FF", // Magenta
-        "#00FFFF", // Cyan
-        "#800000", // Maroon
-        "#008000", // Olive
-        "#000080", // Navy
-        "#808000", // Teal
-        "#800080", // Purple
-        "#008080", // Gray
-        "#C0C0C0", // Silver
-        "#FFA500", // Orange
-        "#FFC0CB", // Pink
-        "#800000", // Brown
-        "#808080", // Dark Gray
-        "#A52A2A", // Brown
-        "#00FF7F", // Spring Green
-        "#ADFF2F", // Green Yellow
-        "#7FFF00", // Chartreuse
-        "#32CD32", // Lime Green
-        "#8B008B", // Dark Magenta
-        "#FF69B4", // Hot Pink
-        "#4B0082", // Indigo
-        "#800080", // Purple
-        "#FF6347", // Tomato
-        "#FF4500", // Orange Red
-        "#FFD700", // Gold
-        "#DAA520", // Goldenrod
-        "#FF8C00", // Dark Orange
-        "#DC143C", // Crimson
-        "#FF1493", // Deep Pink
-        "#00BFFF", // Deep Sky Blue
-        "#87CEEB", // Sky Blue
-        "#4682B4", // Steel Blue
-        "#6A5ACD", // Slate Blue
-        "#7B68EE", // Medium Slate Blue
-        "#9370DB", // Medium Purple
-        "#8A2BE2", // Blue Violet
-        "#9932CC", // Dark Orchid
-        "#8B008B", // Dark Magenta
-        "#BA55D3", // Medium Orchid
-        "#9400D3", // Dark Violet
-        "#800080", // Purple
-        "#663399", // Rebecca Purple
-        "#4B0082", // Indigo
-        "#9370DB", // Medium Purple
-        "#800080", // Purple
-        "#8A2BE2", // Blue Violet
-    )
-
     fun printBoard() {
-        val tmpColors = htmlColors.toMutableSet()
         val colorMap = mutableMapOf<Int,String>()
 
         var htmlCode = """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""
@@ -98,11 +55,9 @@ class Hakyuu2 private constructor(
         (0..<numPositions).forEach {
             val num = board[it].first
             val id = board[it].second
-            //val print = if (num==0) "   " else if (num < 10) " $num " else "$num "
 
             if (!colorMap.containsKey(id)) {
-                val color = tmpColors.first()
-                tmpColors.remove(color)
+                val color = colors.newColor()
                 colorMap[id] = color
             }
 
@@ -130,18 +85,7 @@ class Hakyuu2 private constructor(
         return result
     }
 
-    private fun randomPropagationNumber(): Int {
-        //return random.nextInt(maxRegionSize - 1) + 1
-        return ((maxRegionSize - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
-    }
-
-    fun createGame() {
-        while (!boardCreated()) {
-            propagateRandomRegion()
-        }
-    }
-
-    fun propagateRandomRegion(numPropagations: Int = randomPropagationNumber(), iterations: Int = 1) {
+    private fun propagateRandomRegion(numPropagations: Int = randomPropagationNumber(), iterations: Int = 1) {
         val seed = getRandomPosition()
         val region = mutableListOf(seed)
 
@@ -160,6 +104,15 @@ class Hakyuu2 private constructor(
         else {
             this.iterations += iterations
         }
+    }
+
+    private fun getRandomPosition(): Int {
+        return remainingPositions.random(random)
+    }
+
+    private fun randomPropagationNumber(): Int {
+        //return random.nextInt(maxRegionSize - 1) + 1
+        return ((maxRegionSize - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
     }
 
     private fun deleteRegion(regionId: Int) {
