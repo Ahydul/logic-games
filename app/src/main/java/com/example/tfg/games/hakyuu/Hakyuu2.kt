@@ -14,7 +14,8 @@ class Hakyuu2 private constructor(
     val numColumns: Int,
     val numRows: Int,
     val random: Random,
-    var iterations: Int = 1
+    var iterations: Int = 1,
+    var numBoardReset: Int = 0
 ) {
                         // pair(value, regionID)
     private val numPositions = numColumns * numRows
@@ -23,6 +24,8 @@ class Hakyuu2 private constructor(
     private var currentID = 0
     private val maxRegionSize = min(numColumns, numRows)
     private val colors = Colors()
+    private var startTime: Long = 0
+    private var msBeforeSkipBoard: Long = 0
 
     private fun initBoard(): Array<Pair<Int, Int>> {
         return Array(size = numPositions, init = { Pair(0, 0) })
@@ -35,9 +38,12 @@ class Hakyuu2 private constructor(
     private fun reset() {
         board.indices.forEach { board[it] = Pair(0,0) }
         remainingPositions.addAll(initRemainingPositions())
+        numBoardReset++
     }
 
-    fun createGame(msBeforeSkipBoard: Int = 0) {
+    fun createGame(msBeforeSkipBoard: Long = 0) {
+        startTime = System.currentTimeMillis()
+        this.msBeforeSkipBoard = msBeforeSkipBoard
         while (!boardCreated()) {
             propagateRandomRegion()
         }
@@ -93,17 +99,35 @@ class Hakyuu2 private constructor(
             propagateOnce(region)
         }
 
-        val result = populateRegion(region)
+        val gameCreationReset = maybeResetCreateGame()
+        if (gameCreationReset) return
+
+        val result = populateRegion(region = region)
 
         if (!result) {
-            if (iterations > 20)
+            if (iterations > 20) {
                 modifyNeighbouringRegions(seed)
-
-            propagateRandomRegion(numPropagations = numPropagations, iterations = iterations+1)
+            }
+            propagateRandomRegion(
+                numPropagations = numPropagations,
+                iterations = iterations+1
+            )
         }
         else {
             this.iterations += iterations
         }
+    }
+
+    private fun maybeResetCreateGame(): Boolean {
+        if (msBeforeSkipBoard <= 0) return false
+
+        val actualTime = System.currentTimeMillis()
+        if ((actualTime - startTime) > msBeforeSkipBoard){
+            reset()
+            createGame(msBeforeSkipBoard)
+            return true
+        }
+        return false
     }
 
     private fun getRandomPosition(): Int {
@@ -156,7 +180,8 @@ class Hakyuu2 private constructor(
         val res = tryPopulateRegion(possibleValuesPerPosition = values, index = 0, result = Array(region.size) { -1 })
 
         return if (res == null){
-            false
+            // If board was created here its because of a reset
+            return boardCreated()
         } else{
             finalizeRegion(positions = positions, values = res)
             true
@@ -172,6 +197,10 @@ class Hakyuu2 private constructor(
     }
 
     private fun tryPopulateRegion(possibleValuesPerPosition: Array<List<Int>>, index: Int, result: Array<Int>): Array<Int>? {
+
+        val gameCreationReset = maybeResetCreateGame()
+        if (gameCreationReset) return null
+
         //Return condition
         if (possibleValuesPerPosition.isEmpty()) return result
 
