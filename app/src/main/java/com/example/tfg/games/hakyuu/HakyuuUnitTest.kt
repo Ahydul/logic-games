@@ -355,6 +355,30 @@ class HakyuuUnitTest {
         }
     }
 
+    //arr sorted
+    private fun mode(arr: IntArray): Number{
+        var currentMax = 0
+        var currentResult = 0
+        var tmpMax = 0
+        var tmpResult = 0
+
+        for (i in arr) {
+            if (tmpResult != i) {
+                if (currentMax < tmpMax) {
+                    currentMax = tmpMax
+                    currentResult = tmpResult
+                }
+                tmpMax = 1
+                tmpResult = i
+            }else {
+                tmpMax++
+            }
+        }
+
+        return currentResult
+    }
+
+
     @Test
     fun testOkSeededBoard() {
         val input = 8
@@ -443,8 +467,8 @@ class HakyuuUnitTest {
 
     @Test
     fun testOkSeededBoardHakyuu2() {
-        val input = 8
-        val seed = 321087876828
+        val input = 11
+        val seed = 5598423764
         val random = Random(seed)
 
         val startTime = System.currentTimeMillis()
@@ -454,11 +478,104 @@ class HakyuuUnitTest {
 
         val endTime = System.currentTimeMillis()
 
-        assert(true) { "Failed: $seed " }
+        gameType.printBoard()
+
+        assert(gameType.boardMeetsRules()) { "Failed: $seed " }
 
         println("Test with sizes ${input}x$input")
         println("Time ${endTime - startTime}")
+        println("Iterations ${gameType.iterations}")
+
     }
 
+
+    @ParameterizedTest
+    @ValueSource(ints = [5, 6,]) //7, 8, 9, 10, 11, 12, ])//13, 14, 15, 16])
+    fun testOkRandomBoardHakyuu2(size: Int, testInfo: TestInfo) {
+        println("<h1>Test with sizes ${size}x$size</h1>")
+        val repeat = 100
+
+        val iterations = IntArray(size = repeat)
+        val times = LongArray(size = repeat)
+        val seeds = LongArray(size = repeat)
+        val regionSizes = Array(
+            size = size,
+            init = { IntArray(size = repeat) }
+        )
+
+        print("""<button onclick="var el = document.getElementById('boards-$size');el.style.display = (el.style.display == 'none') ? 'flex' : 'none'; ">Show boards</button> """)
+        print("""<div id="boards-$size"style="display:none; flex-wrap: wrap;">""")
+
+        repeat(repeat) { iteration ->
+            val startTime = System.currentTimeMillis()
+
+            val seed = (Math.random()*10000000000).toLong()
+            val random = Random(seed)
+
+            val gameType = Hakyuu2.create(numColumns = size, numRows = size, random = random)
+
+            gameType.createGame()
+
+            val endTime = System.currentTimeMillis()
+
+            print("""<div style="margin: 10px;">""")
+            print("<h1>Board ${iteration+1}</h1>")
+            gameType.printBoard()
+            print("</div>")
+
+            iterations[iteration] = gameType.iterations
+            times[iteration] = endTime - startTime
+            seeds[iteration] = seed
+            gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
+                regionSizes[regionSize][iteration] = value
+            }
+
+            assert(gameType.boardMeetsRules()) { "$iteration failed seed: $seed " }
+        }
+        print("</div>")
+        print("""<br><br><div style="display: flex; font-size: large; justify-content: space-evenly;">""")
+
+        var htmlCode = """<table style="border-spacing: 20px 0;"><tbody>"""
+        htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Region Sizes</th></tr>"""
+        (0..<repeat).forEach {
+            val sizes = regionSizes.map { arr -> arr[it] }.joinToString(separator = " ")
+            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${sizes}</td></tr>"""
+        }
+        htmlCode += "</tbody></table>"
+        print(htmlCode)
+
+
+        print("<div>")
+        print("<h3>Region stats</h3>")
+        var htmlCode2 = """<table style="border-spacing: 20px 0;"><tbody>"""
+        htmlCode2 += """<tr><th>Region size</th><th>Mode</th><th>Mean</th><th>Median</th></tr>"""
+
+        regionSizes.forEachIndexed{ size, arr ->
+            arr.sort()
+            htmlCode2 += """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, repeat)}</td></tr>"""
+        }
+        htmlCode2 += "</tbody></table>"
+        print(htmlCode2)
+
+        print("</div>")
+
+
+        print("<div>")
+
+        iterations.sort()
+        println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
+        println("Iterations Mean: ${iterations.average()}")
+        println("Iterations Median: ${median(iterations, repeat)}")
+
+        times.sort()
+        println("Times Mid range: ${(times.first()+times.last()) / 2}")
+        println("Times Mean: ${times.average()}")
+        println("Times Median: ${median(times, repeat)}")
+        println("Total time: ${times.sum()}")
+
+        print("</div>")
+
+        print("</div>")
+    }
 
 }
