@@ -467,19 +467,16 @@ class HakyuuUnitTest {
 
     @Test
     fun testOkSeededBoardHakyuu2() {
-        val input = 15
-        val seed = 2640217587
-        val msBeforeSkipBoard: Long = 1000 //After msBeforeSkipBoard ms it reset the board that is being generated, in case its too complex
+        val input = 11
+        val seed = 5598423764
         val random = Random(seed)
 
         val startTime = System.currentTimeMillis()
         val gameType = Hakyuu2.create(numColumns = input, numRows = input, random = random)
 
-        gameType.createGame(msBeforeSkipBoard)
+        gameType.createGame()
 
         val endTime = System.currentTimeMillis()
-
-        print("""<div style="display: flex; font-size: large; justify-content: space-evenly;">""")
 
         gameType.printBoard()
 
@@ -488,19 +485,15 @@ class HakyuuUnitTest {
         println("Test with sizes ${input}x$input")
         println("Time ${endTime - startTime}")
         println("Iterations ${gameType.iterations}")
-        println("Resets ${gameType.numBoardReset}")
-
-        print("</div>")
 
     }
 
 
     @ParameterizedTest
-    @ValueSource(ints = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+    @ValueSource(ints = [5, 6, 7, 8, 9, 10, 11, 12, ])//13, 14, 15])
     fun testCreateHakyuuBoards(size: Int, testInfo: TestInfo) {
         println("<h1>Test with sizes ${size}x$size</h1>")
         val repeat = 100
-        val msBeforeSkipBoard: Long = 1000 //After msBeforeSkipBoard ms it reset the board that is being generated, in case its too complex
 
         val iterations = IntArray(size = repeat)
         val times = LongArray(size = repeat)
@@ -509,7 +502,6 @@ class HakyuuUnitTest {
             size = size,
             init = { IntArray(size = repeat) }
         )
-        val numResets = IntArray(size = repeat)
 
         print("""<button onclick="var el = document.getElementById('boards-$size');el.style.display = (el.style.display == 'none') ? 'flex' : 'none'; ">Show boards</button> """)
         print("""<div id="boards-$size"style="display:none; flex-wrap: wrap;">""")
@@ -522,7 +514,7 @@ class HakyuuUnitTest {
 
             val gameType = Hakyuu2.create(numColumns = size, numRows = size, random = random)
 
-            gameType.createGame(msBeforeSkipBoard)
+            gameType.createGame()
 
             val endTime = System.currentTimeMillis()
 
@@ -537,7 +529,6 @@ class HakyuuUnitTest {
             gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
                 regionSizes[regionSize][iteration] = value
             }
-            numResets[iteration] = gameType.numBoardReset
 
             assert(gameType.boardMeetsRules()) { "$iteration failed seed: $seed " }
         }
@@ -545,10 +536,10 @@ class HakyuuUnitTest {
         print("""<br><br><div style="display: flex; font-size: large; justify-content: space-evenly;">""")
 
         var htmlCode = """<table style="border-spacing: 20px 0;"><tbody>"""
-        htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Num Resets</th><th>Time (ms)</th><th>Region Sizes</th></tr>"""
+        htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Region Sizes</th></tr>"""
         (0..<repeat).forEach {
             val sizes = regionSizes.map { arr -> arr[it] }.joinToString(separator = " ")
-            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}<td>${numResets[it]}</td><td>${times[it]}</td><td>${sizes}</td></tr>"""
+            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${sizes}</td></tr>"""
         }
         htmlCode += "</tbody></table>"
         print(htmlCode)
@@ -575,8 +566,6 @@ class HakyuuUnitTest {
 
         iterations.sort()
         htmlCode3 += """<tr><td><b>Iterations</b></td><td>${(iterations.first()+iterations.last()) / 2}</td><td>${iterations.average()}</td><td>${median(iterations, repeat)}</td><td>${iterations.sum()}</td></tr>"""
-        numResets.sort()
-        htmlCode3 += """<tr><td><b>Resets</b></td><td>${(numResets.first()+numResets.last()) / 2}</td><td>${numResets.average()}</td><td>${median(numResets, repeat)}</td><td>${numResets.sum()}</td></tr>"""
         times.sort()
         htmlCode3 += """<tr><td><b>Times (ms)</b></td><td>${(times.first()+times.last()) / 2}</td><td>${times.average()}</td><td>${median(times, repeat)}</td><td>${times.sum()}</td></tr>"""
 
