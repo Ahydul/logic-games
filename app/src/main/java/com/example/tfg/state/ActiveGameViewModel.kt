@@ -16,6 +16,7 @@ import com.example.tfg.common.GameState
 import com.example.tfg.common.Move
 import com.example.tfg.common.utils.Quadruple
 import com.example.tfg.games.GameType
+import com.example.tfg.games.Games
 import java.util.SortedMap
 
 class ActiveGameViewModel : ViewModel() {
@@ -40,12 +41,12 @@ class ActiveGameViewModel : ViewModel() {
         return game.value.state
     }
 
-    private fun getGameType(): GameType {
+    fun getGameType(): Games {
         return game.value.gameType
     }
 
     private fun getRegions(): Map<Int, List<Coordinate>> {
-        return getGameType().boardRegions
+        return game.value.regions
     }
 
     fun getNumberRegionSizes(): SortedMap<Int, Int> {
@@ -60,10 +61,6 @@ class ActiveGameViewModel : ViewModel() {
 
     fun getRegionSize(): Int {
         return getRegions().size
-    }
-
-    fun getNumIterationsToMakeGame(): Int {
-        return getGameType().numIterations
     }
 
     private fun getActualState(): GameState {

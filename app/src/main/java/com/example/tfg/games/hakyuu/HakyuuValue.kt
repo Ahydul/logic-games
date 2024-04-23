@@ -12,5 +12,14 @@ enum class HakyuuValue(val value: Int, val icon: Int) {
     SIX(6, R.drawable.number_six),
     SEVEN(7, R.drawable.number_seven),
     EIGHT(8, R.drawable.number_eight),
-    NINE(9, R.drawable.number_nine)
+    NINE(9, R.drawable.number_nine);
+
+    companion object {
+        fun get(value: Int): HakyuuValue {
+            require(value in 0..99)
+            if (value < 10) return entries[value]
+
+            return EMPTY
+        }
+    }
 }

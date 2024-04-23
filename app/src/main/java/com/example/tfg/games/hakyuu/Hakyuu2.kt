@@ -4,12 +4,10 @@ import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Direction
-import com.example.tfg.games.Games
 import kotlin.math.max
 import kotlin.random.Random
 
 class Hakyuu2 private constructor(
-    val type: Games = Games.HAKYUU,
     val noNotes: Boolean = true,
     val numColumns: Int,
     val numRows: Int,
@@ -20,6 +18,7 @@ class Hakyuu2 private constructor(
     private val numPositions = numColumns * numRows
     private val completedBoard: IntArray = IntArray(numPositions)
     private val boardRegions: IntArray = IntArray(numPositions)
+    private val startBoard: IntArray = IntArray(numPositions)
     private val maxRegionSize = max(numColumns, numRows)
     private val colors = Colors()
     private val remainingPositions: MutableSet<Int> = initRemainingPositions()
@@ -34,6 +33,18 @@ class Hakyuu2 private constructor(
         completedBoard.map { 0 }
         boardRegions.map { 0 }
         remainingPositions.addAll(initRemainingPositions())
+    }
+
+    fun getCompletedBoard() : IntArray {
+        return completedBoard
+    }
+
+    fun getStartBoard() : IntArray {
+        return startBoard
+    }
+
+    fun getBoardRegions() : IntArray {
+        return boardRegions
     }
 
     fun getScore(): Int {
@@ -424,8 +435,6 @@ class Hakyuu2 private constructor(
 
         }
 
-        // If the possible values changed: Update actual values or return null if found contradiction
-        // TODO: actualizar siempre los valores cuando size=1, o devolver null si 0 y hacer hiddenvalues,etc solo cuando no hayan cambiado los valores (hacer lo otro hasta que no cambien los valoers)
         if (score.getScore() > 0) {
             for (position in remainingPositions.toList()) {
                 val values = possibleValues[position]
@@ -471,7 +480,7 @@ class Hakyuu2 private constructor(
         bruteForce++
         if (remainingPositions.isEmpty()) return true
 
-        val (position, minPossibleValues) = remainingPositions.map { it to possibleValues[it] }.minBy { (position, values) -> values.size }
+        val (position, minPossibleValues) = remainingPositions.map { it to possibleValues[it] }.minBy { (_, values) -> values.size }
         remainingPositions.remove(position)
         val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
             val ls = mutableListOf<Int>()
@@ -619,7 +628,7 @@ class Hakyuu2 private constructor(
                 val index2 = otherPair.index
                 // Remove from each coordinate the possible values that are not the hidden pairs
                 value.forEach {coordinate ->
-                    possibleValues[coordinate]!!.removeIf { it != index1+1 && it != index2+1 }
+                    possibleValues[coordinate].removeIf { it != index1+1 && it != index2+1 }
                     res.add(coordinate)
                 }
             }
@@ -649,14 +658,13 @@ class Hakyuu2 private constructor(
                 val index3 = otherTriples[1].index
                 // Remove from each coordinate the possible values that are not the hidden triples
                 otherTriples[0].value.forEach { coordinate ->
-                    possibleValues[coordinate]!!.removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
+                    possibleValues[coordinate].removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
                     res.add(coordinate)
                 }
             }
         }
         return res
     }
-
 
 
     companion object {
@@ -668,13 +676,16 @@ class Hakyuu2 private constructor(
             )
         }
 
-        fun createWithRegion(numColumns: Int, numRows: Int, random: Random, regions: IntArray): Hakyuu2 {
+        fun create(numColumns: Int, numRows: Int, random: Random, regions: IntArray, board: IntArray): Hakyuu2 {
             val res = Hakyuu2(
                 numRows = numRows,
                 numColumns = numColumns,
                 random = random
             )
+
             res.boardRegions.indices.forEach { res.boardRegions[it] = regions[it] }
+            res.startBoard.indices.forEach { res.startBoard[it] = board[it] }
+
             return res
         }
 
@@ -703,12 +714,29 @@ class Hakyuu2 private constructor(
                     "18:[(5,5), (3,6), (4,6), (5,6), (3,7), (4,7)]\n" +
                     "1:[(0,0), (1,0), (0,1), (0,2), (1,2), (2,2), (1,3)]"
 
-            return createWithRegion(
+            val start =
+                "- 4 - - 3 1 - -\n" +
+                "- - 2 - - 2 - -\n" +
+                "- - - - - - - 5\n" +
+                "- - - - - - - -\n" +
+                "- - - - - 4 - -\n" +
+                "3 - - - - - - -\n" +
+                "- - 4 - - 6 - -\n" +
+                "- - 3 5 - - 6 -"
+
+            val board = parseBoardString(start)
+
+            return create(
                 regions = parseRegionString(regions),
+                board = board,
                 numRows = numRows,
                 numColumns = numColumns,
                 random = Random(1)
             )
+        }
+
+        private fun parseBoardString(str: String): IntArray {
+            return str.replace('\n',' ').split(" ").map { if (it=="-") 0 else it.toInt() }.toIntArray()
         }
 
         private fun parseRegionString(str: String): IntArray {

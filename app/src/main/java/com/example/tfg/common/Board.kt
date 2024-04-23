@@ -46,6 +46,28 @@ data class Board private constructor(
                 cells = cells,
             )
         }
-    }
 
+        fun exampleBoard(): Board {
+            val cellValues = IntArray(size = 6*6, init = { 0 })
+            cellValues[4] = 2
+            cellValues[16] = 3
+            cellValues[19] = 3
+            cellValues[31] = 4
+
+            return create(
+                numColumns = 6,
+                numRows = 6,
+                cellValues = cellValues,
+            )
+        }
+
+        fun emptyBoard(numColumns: Int, numRows: Int): Board {
+            val cellValues = IntArray(size = numColumns*numRows, init = { 0 })
+            return create(
+                numColumns = numColumns,
+                numRows = numRows,
+                cellValues = cellValues,
+            )
+        }
+    }
 }
