@@ -65,7 +65,7 @@ class ActiveGameView : ComponentActivity() {
 fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
 
     val shape = RoundedCornerShape(8.dp)
-    val game = remember { Game.example() } // Doesnt update on recomposition
+    //val game = remember { Game.example() } // Doesnt update on recomposition
 
     Column(modifier = modifier) {
         TopSection(
@@ -94,7 +94,6 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
         )
         BottomSection(
             viewModel = viewModel,
-            gameType = game.gameType.type,
             modifier = modifier
                 .then(addDebugBorder)
                 .weight(3f)
@@ -136,7 +135,6 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
 @Composable
 fun BottomSection(
     viewModel: ActiveGameViewModel,
-    gameType: Games,
     modifier: Modifier = Modifier)
 {
     Log.d("TAG", "BOTTOMcurrentRecomposeScope $currentRecomposeScope")
@@ -155,7 +153,6 @@ fun BottomSection(
         )
         BottomActionRow(
             viewModel = viewModel,
-            gameType = gameType,
             modifier = Modifier
                 .padding(4.dp)
                 .weight(5f)

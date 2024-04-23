@@ -55,7 +55,7 @@ fun Cell(
         //Main value
         if (value != 0) {
             Icon(
-                painter = painterResource(id = HakyuuValue.entries[value].icon),
+                painter = painterResource(id = HakyuuValue.get(value).icon),
                 tint = cellValueColor,
                 contentDescription = "Value $value"
             )
@@ -65,7 +65,7 @@ fun Cell(
             cell.notes.forEach {
                 if (it != 0) {
                     Icon(
-                        painter = painterResource(id = HakyuuValue.entries[it].icon),
+                        painter = painterResource(id = HakyuuValue.get(value).icon),
                         tint = cellNoteValueColor,
                         contentDescription = "Value $it",
                         modifier = Modifier.padding(5.dp)

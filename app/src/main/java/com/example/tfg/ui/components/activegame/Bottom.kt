@@ -114,7 +114,6 @@ fun TopActionRow(
 @Composable
 fun BottomActionRow(
     viewModel: ActiveGameViewModel,
-    gameType: Games,
     modifier: Modifier
 ) {
     Log.d("TAG", "BottomActionRow $currentRecomposeScope")
@@ -147,7 +146,7 @@ fun BottomActionRow(
                 )
             }
         }
-        else when(gameType) {
+        else when(viewModel.getGameType()) {
             Games.HAKYUU -> {
                 HakyuuValue.entries.forEach {
                     val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
