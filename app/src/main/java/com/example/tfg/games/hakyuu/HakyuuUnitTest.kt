@@ -1,8 +1,5 @@
 package com.example.tfg.games.hakyuu
 
-import com.example.tfg.common.Difficulty
-import com.example.tfg.common.utils.Coordinate
-import com.example.tfg.games.Regions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
@@ -10,7 +7,7 @@ import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import java.io.File
+import kotlin.math.max
 import kotlin.random.Random
 
 /**
@@ -20,28 +17,16 @@ import kotlin.random.Random
  */
 @ExtendWith(CustomTestWatcher::class)
 class HakyuuUnitTest {
-    private lateinit var hakyuu: Hakyuu
-    private lateinit var region : List<Coordinate>
-    private lateinit var possibleValues: MutableMap<Coordinate, MutableList<Int>>
+    private lateinit var hakyuu: Hakyuu2
+    private lateinit var region : List<Int>
+    private lateinit var possibleValues: Array<MutableList<Int>>
     private val random = Random((Math.random()*10000000000).toLong())
 
     @BeforeEach
     fun setUp() {
-        hakyuu = Hakyuu.example()
-
-        region = listOf(
-            Coordinate(0,0),
-            Coordinate(0,1),
-            Coordinate(0,2),
-            Coordinate(1,0),
-            Coordinate(1,1),
-            Coordinate(1,2),
-            Coordinate(2,0),
-            Coordinate(2,1),
-            Coordinate(2,2),
-        )
-
-        possibleValues = region.associateWith { mutableListOf(1,2,3,4,5,6,7,8,9) }.toMutableMap()
+        hakyuu = Hakyuu2.example()
+        region = (0..<9).toList()
+        possibleValues = region.map { (1..9).toMutableList() }.toTypedArray()
     }
 
     private fun randomDistinctInt(possibleValues: MutableList<Int>): Int {
@@ -62,25 +47,22 @@ class HakyuuUnitTest {
         val list = (0..maxNumber).toMutableList()
 
         val values1 = twoRandomDistinctInts(possibleValues=list).toList()
-        val coordinates1 = twoRandomDistinctInts(possibleValues=list)
-        val coord1 = region[coordinates1.first]
-        val coord2 = region[coordinates1.second]
-        possibleValues[coord1] = values1.toMutableList()
-        possibleValues[coord2] = values1.toMutableList()
+        val pos1 = twoRandomDistinctInts(possibleValues=list)
+        val position1 = region[pos1.first]
+        val position2 = region[pos1.second]
+        possibleValues[position1] = values1.toMutableList()
+        possibleValues[position2] = values1.toMutableList()
 
         val values2 = twoRandomDistinctInts(possibleValues=list).toList()
-        val coordinates2 = twoRandomDistinctInts(possibleValues=list)
-        val coord3 = region[coordinates2.first]
-        val coord4 = region[coordinates2.second]
-        possibleValues[coord3] = values2.toMutableList()
-        possibleValues[coord4] = values2.toMutableList()
+        val pos2 = twoRandomDistinctInts(possibleValues=list)
+        val position3 = region[pos2.first]
+        val position4 = region[pos2.second]
+        possibleValues[position3] = values2.toMutableList()
+        possibleValues[position4] = values2.toMutableList()
 
-        val detectedPairs = hakyuu.detectObviousPairs(possibleValues = possibleValues, region = region)
+        val detectedPairs = hakyuu.cleanObviousPairs(possibleValues = possibleValues, region = region)
 
-        val bool = detectedPairs[0].toList().containsAll(arrayOf(coord1,coord2).toList()) || detectedPairs[0].toList().containsAll(arrayOf(coord3,coord4).toList())
-                && detectedPairs[1].toList().containsAll(arrayOf(coord1,coord2).toList()) || detectedPairs[1].toList().containsAll(arrayOf(coord3,coord4).toList())
-
-        assert(bool)
+        assert(detectedPairs.containsAll(listOf(position1,position2,position3,position4)))
     }
 
     private fun threeRandomDistinctInts(possibleValues: MutableList<Int>): Triple<Int,Int,Int> {
@@ -95,17 +77,17 @@ class HakyuuUnitTest {
 
         val values1 = threeRandomDistinctInts(possibleValues=list).toList()
         val coordinates = threeRandomDistinctInts(possibleValues=list)
-        val coord1 = region[coordinates.first]
-        val coord2 = region[coordinates.second]
-        val coord3 = region[coordinates.third]
-        possibleValues[coord1] = values1.toMutableList()
-        possibleValues[coord2] = values1.toMutableList()
-        possibleValues[coord3] = values1.toMutableList()
+        val pos1 = region[coordinates.first]
+        val pos2 = region[coordinates.second]
+        val pos3 = region[coordinates.third]
+        possibleValues[pos1] = values1.toMutableList()
+        possibleValues[pos2] = values1.toMutableList()
+        possibleValues[pos3] = values1.toMutableList()
 
 
-        val detectedTriples = hakyuu.detectObviousTriples(possibleValues = possibleValues, region = region)
+        val detectedTriples = hakyuu.cleanObviousTriples(possibleValues = possibleValues, region = region)
 
-        assert(detectedTriples[0].toList().containsAll(arrayOf(coord1,coord2).toList()))
+        assert(detectedTriples.containsAll(listOf(pos1,pos2,pos3)))
     }
 
     @RepeatedTest(10)
@@ -115,19 +97,19 @@ class HakyuuUnitTest {
 
         val values1 = threeRandomDistinctInts(possibleValues=list).toList()
         val coordinates = threeRandomDistinctInts(possibleValues=list)
-        val coord1 = region[coordinates.first]
-        val coord2 = region[coordinates.second]
-        val coord3 = region[coordinates.third]
-        possibleValues[coord1] = values1.toMutableList()
-        possibleValues[coord2] = values1.toMutableList()
+        val pos1 = region[coordinates.first]
+        val pos2 = region[coordinates.second]
+        val pos3 = region[coordinates.third]
+        possibleValues[pos1] = values1.toMutableList()
+        possibleValues[pos2] = values1.toMutableList()
 
         //We delete a random number from values1 for the next values
-        possibleValues[coord3] = values1.subtract(listOf(values1.random(random)).toSet()).toList().toMutableList()
+        possibleValues[pos3] = values1.subtract(listOf(values1.random(random)).toSet()).toList().toMutableList()
 
 
-        val detectedTriples = hakyuu.detectObviousTriples(possibleValues = possibleValues, region = region)
+        val detectedTriples = hakyuu.cleanObviousTriples(possibleValues = possibleValues, region = region)
 
-        assert(detectedTriples[0].toList().containsAll(arrayOf(coord1,coord2).toList()))
+        assert(detectedTriples.containsAll(listOf(pos1,pos2,pos3)))
     }
 
     @RepeatedTest(10)
@@ -137,19 +119,19 @@ class HakyuuUnitTest {
 
         val values1 = threeRandomDistinctInts(possibleValues=list).toList()
         val coordinates = threeRandomDistinctInts(possibleValues=list)
-        val coord1 = region[coordinates.first]
-        val coord2 = region[coordinates.second]
-        val coord3 = region[coordinates.third]
+        val pos1 = region[coordinates.first]
+        val pos2 = region[coordinates.second]
+        val pos3 = region[coordinates.third]
 
         //For values [a,b,c] we get [b,c];[a,c];[a,b]
-        possibleValues[coord1] = values1.subtract(listOf(values1[0]).toSet()).toList().toMutableList()
-        possibleValues[coord2] = values1.subtract(listOf(values1[1]).toSet()).toList().toMutableList()
-        possibleValues[coord3] = values1.subtract(listOf(values1[2]).toSet()).toList().toMutableList()
+        possibleValues[pos1] = values1.subtract(listOf(values1[0]).toSet()).toList().toMutableList()
+        possibleValues[pos2] = values1.subtract(listOf(values1[1]).toSet()).toList().toMutableList()
+        possibleValues[pos3] = values1.subtract(listOf(values1[2]).toSet()).toList().toMutableList()
 
 
-        val detectedTriples = hakyuu.detectObviousTriples(possibleValues = possibleValues, region = region)
+        val detectedTriples = hakyuu.cleanObviousTriples(possibleValues = possibleValues, region = region)
 
-        assert(detectedTriples[0].toList().containsAll(arrayOf(coord1,coord2).toList()))
+        assert(detectedTriples.containsAll(listOf(pos1,pos2,pos3)))
     }
 
     @RepeatedTest(10)
@@ -157,24 +139,24 @@ class HakyuuUnitTest {
         val maxNumber = region.size - 1
         val list = (0..maxNumber).toMutableList()
 
-        val coordinate1 = possibleValues.toList()[randomDistinctInt(list)].first
-        val coordinate2 = possibleValues.toList()[randomDistinctInt(list)].first
+        val position1 = randomDistinctInt(list)
+        val position2 = randomDistinctInt(list)
 
         val value1 = randomDistinctInt(list) + 1
         val value2 = randomDistinctInt(list) + 1
 
-        possibleValues.forEach { (coordinate, values) ->
-            if (coordinate != coordinate1) values.remove(value1)
-            if (coordinate != coordinate2) values.remove(value2)
+        possibleValues.withIndex().forEach { (position, values) ->
+            if (position != position1) values.remove(value1)
+            if (position != position2) values.remove(value2)
         }
 
         hakyuu.cleanHiddenSingles(
-            coordsPerValue = hakyuu.getCoordinatesPerValues(region, possibleValues),
+            positionsPerValue = hakyuu.getPositionsPerValues(region, possibleValues),
             possibleValues = possibleValues
         )
 
-        assert(possibleValues[coordinate1]!!.size == 1 && possibleValues[coordinate1]!!.contains(value1))
-        assert(possibleValues[coordinate2]!!.size == 1 && possibleValues[coordinate2]!!.contains(value2))
+        assert(possibleValues[position1].size == 1 && possibleValues[position1].contains(value1))
+        assert(possibleValues[position2].size == 1 && possibleValues[position2].contains(value2))
     }
 
 
@@ -183,39 +165,39 @@ class HakyuuUnitTest {
         val maxNumber = region.size - 1
         val list = (0..maxNumber).toMutableList()
 
-        val coordinate1 = possibleValues.toList()[randomDistinctInt(list)].first
-        val coordinate2 = possibleValues.toList()[randomDistinctInt(list)].first
-        val coordinate3 = possibleValues.toList()[randomDistinctInt(list)].first
-        val coordinate4 = possibleValues.toList()[randomDistinctInt(list)].first
+        val position1 = randomDistinctInt(list)
+        val position2 = randomDistinctInt(list)
+        val position3 = randomDistinctInt(list)
+        val position4 = randomDistinctInt(list)
 
         val value1 = randomDistinctInt(list) + 1
         val value2 = randomDistinctInt(list) + 1
         val value3 = randomDistinctInt(list) + 1
         val value4 = randomDistinctInt(list) + 1
 
-        possibleValues.forEach { (coordinate, values) ->
-            if (coordinate != coordinate1 && coordinate != coordinate2) {
+        possibleValues.withIndex().forEach { (position, values) ->
+            if (position != position1 && position != position2) {
                 values.remove(value1)
                 values.remove(value2)
             }
-            if (coordinate != coordinate3 && coordinate != coordinate4 ) {
+            if (position != position3 && position != position4 ) {
                 values.remove(value3)
                 values.remove(value4)
             }
         }
 
         hakyuu.cleanHiddenPairs(
-            coordsPerValue = hakyuu.getCoordinatesPerValues(region, possibleValues),
+            positionsPerValue = hakyuu.getPositionsPerValues(region, possibleValues),
             possibleValues = possibleValues
         )
 
-        assert(possibleValues[coordinate1]!!.size == 2 &&
-                possibleValues[coordinate1] == possibleValues[coordinate2] &&
-                possibleValues[coordinate1]!!.containsAll(listOf(value1, value2)))
+        assert(possibleValues[position1].size == 2 &&
+                possibleValues[position1] == possibleValues[position2] &&
+                possibleValues[position1].containsAll(listOf(value1, value2)))
 
-        assert(possibleValues[coordinate3]!!.size == 2 &&
-                possibleValues[coordinate3] == possibleValues[coordinate4] &&
-                possibleValues[coordinate3]!!.containsAll(listOf(value3, value4)))
+        assert(possibleValues[position3].size == 2 &&
+                possibleValues[position3] == possibleValues[position4] &&
+                possibleValues[position3].containsAll(listOf(value3, value4)))
     }
 
     @RepeatedTest(10)
@@ -223,16 +205,16 @@ class HakyuuUnitTest {
         val maxNumber = region.size - 1
         val list = (0..maxNumber).toMutableList()
 
-        val coordinate1 = possibleValues.toList()[randomDistinctInt(list)].first
-        val coordinate2 = possibleValues.toList()[randomDistinctInt(list)].first
-        val coordinate3 = possibleValues.toList()[randomDistinctInt(list)].first
+        val position1 = randomDistinctInt(list)
+        val position2 = randomDistinctInt(list)
+        val position3 = randomDistinctInt(list)
 
         val value1 = randomDistinctInt(list) + 1
         val value2 = randomDistinctInt(list) + 1
         val value3 = randomDistinctInt(list) + 1
 
-        possibleValues.forEach { (coordinate, values) ->
-            if (coordinate != coordinate1 && coordinate != coordinate2 && coordinate != coordinate3) {
+        possibleValues.withIndex().forEach { (position, values) ->
+            if (position != position1 && position != position2 && position != position3) {
                 values.remove(value1)
                 values.remove(value2)
                 values.remove(value3)
@@ -240,103 +222,42 @@ class HakyuuUnitTest {
         }
 
         hakyuu.cleanHiddenTriples(
-            coordsPerValue = hakyuu.getCoordinatesPerValues(region, possibleValues),
+            positionsPerValue = hakyuu.getPositionsPerValues(region, possibleValues),
             possibleValues = possibleValues
         )
 
-        assert(possibleValues[coordinate1]!!.size == 3 &&
-                possibleValues[coordinate1] == possibleValues[coordinate2] &&
-                possibleValues[coordinate1] == possibleValues[coordinate3] &&
-                possibleValues[coordinate1]!!.containsAll(listOf(value1, value2, value3)))
+        assert(possibleValues[position1].size == 3 &&
+                possibleValues[position1] == possibleValues[position2] &&
+                possibleValues[position1] == possibleValues[position3] &&
+                possibleValues[position1].containsAll(listOf(value1, value2, value3)))
     }
 
-    private fun startBoard(): MutableMap<Coordinate, Int> {
-        val res = mutableMapOf<Coordinate, Int>()
+
+    private fun startBoard(): IntArray {
         val start =
-            "- - - 1 - - 2 1\n" +
-            "- - 1 - - - 4 -\n" +
-            "- - - - 4 - - 1\n" +
-            "- - - - 1 - - 3\n" +
-            "- - 3 - - 6 - -\n" +
-            "- - - - - - 1 -\n" +
-            "- 1 - 7 - - 3 -\n" +
-            "- 6 - - - 2 - -"
-        
-        for ((irow,row) in start.lines().withIndex()) {
-            for ((icol,col) in row.split(" ").withIndex()) {
-                if (col == "-") continue
-                val value = col.toInt()
+            "- 4 - - 3 1 - -\n" +
+            "- - 2 - - 2 - -\n" +
+            "- - - - - - - 5\n" +
+            "- - - - - - - -\n" +
+            "- - - - - 4 - -\n" +
+            "3 - - - - - - -\n" +
+            "- - 4 - - 6 - -\n" +
+            "- - 3 5 - - 6 -"
 
-                res[Coordinate(irow,icol)] = value
-            }
-        }
-
-        return res
+        return start.replace('\n',' ').split(" ").map { if (it=="-") 0 else it.toInt() }.toIntArray()
     }
 
     @Test
     fun testOkBoard() {
-        val (actualValues, strategiesUsed) = hakyuu.populateValues(startBoard())
-        val result = hakyuu.boardMeetsRules(actualValues)
+        val startTime = System.currentTimeMillis()
+        val result = hakyuu.solveBoard(board = startBoard())
+        val endTime = System.currentTimeMillis()
 
-        for (a in hakyuu.boardRegions) {
-            println("${a.key}:${a.value}")
-        }
-        hakyuu.printActualValues(actualValues)
+        println("Num of iterations: ${hakyuu.iterations}")
+        println("Time ${endTime - startTime}")
+        println("Score ${hakyuu.getScore()}")
 
-        println("Num of iterations: ${hakyuu.numIterations}")
-        println("Strategies used: ${
-            strategiesUsed.withIndex().joinToString { (index, value) -> "${Hakyuu.Strategy.values()[index]}: $value" }
-        }")
         assert(result)
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = [5, 6, 7, 8])
-    fun testOkRandomBoard(input: Int, testInfo: TestInfo) {
-        val repeat = 100
-
-        val iterations = IntArray(size = repeat)
-        val times = LongArray(size = repeat)
-        val seeds = LongArray(size = repeat)
-
-        repeat(repeat) {
-            val startTime = System.currentTimeMillis()
-
-            val seed = (Math.random()*10000000000).toLong()
-            val random = Random(seed)
-            val gameType = Hakyuu.create(numColumns = input, numRows = input, random = random)
-            val actualValues = gameType.createNewGame(difficulty = Difficulty.EASY)
-
-            val result = gameType.boardMeetsRules(actualValues)
-
-            val endTime = System.currentTimeMillis()
-
-            iterations[it] = gameType.numIterations
-            times[it] = endTime - startTime
-            seeds[it] = seed
-
-            assert(result) { "$it failed seed: $seed " }
-        }
-        println("Test with sizes ${input}x$input")
-
-        println("Test\tSeed\t\tNum Iterations\tTime (ms)")
-
-        (0..<repeat).forEach {
-            var seed = seeds[it].toString()
-            seed += (" ".repeat(10 - seed.length))
-            println("${it + 1}\t\t${seeds[it]}\t${iterations[it]}\t\t\t\t${times[it]}")
-        }
-
-        iterations.sort()
-        println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
-        println("Iterations Mean: ${iterations.average()}")
-        println("Iterations Median: ${median(iterations, repeat)}")
-
-        times.sort()
-        println("Times Mid range: ${(times.first()+times.last()) / 2}")
-        println("Times Mean: ${times.average()}")
-        println("Times Median: ${median(times, repeat)}")
     }
 
     private fun median(arr: LongArray, size: Int): Number {
@@ -378,28 +299,7 @@ class HakyuuUnitTest {
         return currentResult
     }
 
-
-    @Test
-    fun testOkSeededBoard() {
-        val input = 8
-        val seed = 3210878768
-        val random = Random(seed)
-
-        val startTime = System.currentTimeMillis()
-        val gameType = Hakyuu.create(numColumns = input, numRows = input, random = random)
-        val actualValues = gameType.createNewGame(difficulty = Difficulty.EASY)
-
-        val result = gameType.boardMeetsRules(actualValues)
-
-        val endTime = System.currentTimeMillis()
-
-        assert(result && gameType.numIterations==1) { "Failed: $seed " }
-
-        println("Test with sizes ${input}x$input")
-        println("Time ${endTime - startTime}")
-        println("Num of iterations ${gameType.numIterations}")
-    }
-
+    /*
     @ParameterizedTest
     @ValueSource(strings = ["6,46", "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
     fun testOkJankoBoards(input: String, testInfo: TestInfo) {
@@ -464,15 +364,17 @@ class HakyuuUnitTest {
 
     }
 
+     */
+
 
     @Test
-    fun testOkSeededBoardHakyuu2() {
+    fun testCreateSeededHakyuuBoard() {
         val input = 11
         val seed = 5598423764
         val random = Random(seed)
 
         val startTime = System.currentTimeMillis()
-        val gameType = Hakyuu2.create(numColumns = input, numRows = input, random = random)
+        val gameType = Hakyuu2.create(numColumns = 3, numRows = 3, random = random)
 
         gameType.createGame()
 
@@ -490,21 +392,22 @@ class HakyuuUnitTest {
 
 
     @ParameterizedTest
-    @ValueSource(ints = [5, 6, 7, 8, 9, 10, 11, 12, ])//13, 14, 15])
-    fun testCreateHakyuuBoards(size: Int, testInfo: TestInfo) {
-        println("<h1>Test with sizes ${size}x$size</h1>")
+    @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
+    fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
+        val numRows = (Math.random()*11).toInt() + 3 // [3,13]
+        println("<h1>Test with sizes ${numColumns}x$numRows</h1>")
         val repeat = 100
 
         val iterations = IntArray(size = repeat)
         val times = LongArray(size = repeat)
         val seeds = LongArray(size = repeat)
         val regionSizes = Array(
-            size = size,
+            size = max(numColumns,numRows),
             init = { IntArray(size = repeat) }
         )
 
-        print("""<button onclick="var el = document.getElementById('boards-$size');el.style.display = (el.style.display == 'none') ? 'flex' : 'none'; ">Show boards</button> """)
-        print("""<div id="boards-$size"style="display:none; flex-wrap: wrap;">""")
+        print("""<button onclick="var el = document.getElementById('boards-$numColumns');el.style.display = (el.style.display == 'none') ? 'flex' : 'none'; ">Show boards</button> """)
+        print("""<div id="boards-$numColumns"style="display:none; flex-wrap: wrap;">""")
 
         repeat(repeat) { iteration ->
             val startTime = System.currentTimeMillis()
@@ -512,7 +415,7 @@ class HakyuuUnitTest {
             val seed = (Math.random()*10000000000).toLong()
             val random = Random(seed)
 
-            val gameType = Hakyuu2.create(numColumns = size, numRows = size, random = random)
+            val gameType = Hakyuu2.create(numColumns = numColumns, numRows = numRows, random = random)
 
             gameType.createGame()
 
@@ -562,12 +465,12 @@ class HakyuuUnitTest {
         print("<div>")
 
         var htmlCode3 = """<table style="border-spacing: 20px 0;"><tbody>"""
-        htmlCode3 += """<tr><th></th><th>Mid Range</th><th>Mean</th><th>Median</th><th>Total</th></tr>"""
+        htmlCode3 += """<tr><th></th><th>Mid Range</th><th>Mean</th><th>Median</th><th>Max</th><th>Min</th><th>Total</th></tr>"""
 
         iterations.sort()
-        htmlCode3 += """<tr><td><b>Iterations</b></td><td>${(iterations.first()+iterations.last()) / 2}</td><td>${iterations.average()}</td><td>${median(iterations, repeat)}</td><td>${iterations.sum()}</td></tr>"""
+        htmlCode3 += """<tr><td><b>Iterations</b></td><td>${(iterations.first()+iterations.last()) / 2}</td><td>${iterations.average()}</td><td>${median(iterations, repeat)}</td><td>${iterations.max()}</td><td>${iterations.min()}</td><td>${iterations.sum()}</td></tr>"""
         times.sort()
-        htmlCode3 += """<tr><td><b>Times (ms)</b></td><td>${(times.first()+times.last()) / 2}</td><td>${times.average()}</td><td>${median(times, repeat)}</td><td>${times.sum()}</td></tr>"""
+        htmlCode3 += """<tr><td><b>Times (ms)</b></td><td>${(times.first()+times.last()) / 2}</td><td>${times.average()}</td><td>${median(times, repeat)}</td><td>${times.max()}</td><td>${times.min()}</td><td>${times.sum()}</td></tr>"""
 
         htmlCode3 += "</tbody></table>"
         print(htmlCode3)
