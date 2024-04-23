@@ -5,7 +5,7 @@ import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Direction
 import com.example.tfg.games.Games
-import kotlin.math.min
+import kotlin.math.max
 import kotlin.random.Random
 
 class Hakyuu2 private constructor(
@@ -18,43 +18,40 @@ class Hakyuu2 private constructor(
 ) {
                         // pair(value, regionID)
     private val numPositions = numColumns * numRows
-    private val board: Array<Pair<Int, Int>> = initBoard()
+    private val completedBoard: IntArray = IntArray(numPositions)
+    private val boardRegions: IntArray = IntArray(numPositions)
+    private val maxRegionSize = max(numColumns, numRows)
+    private val colors = Colors()
     private val remainingPositions: MutableSet<Int> = initRemainingPositions()
     private var currentID = 0
-    private val maxRegionSize = min(numColumns, numRows)
-    private val colors = Colors()
-
-    private fun initBoard(): Array<Pair<Int, Int>> {
-        return Array(size = numPositions, init = { Pair(0, 0) })
-    }
+    private val score = HakyuuScore()
 
     private fun initRemainingPositions():  MutableSet<Int> {
         return (0..< numPositions).toMutableSet()
     }
 
     private fun reset() {
-        board.indices.forEach { board[it] = Pair(0,0) }
+        completedBoard.map { 0 }
+        boardRegions.map { 0 }
         remainingPositions.addAll(initRemainingPositions())
     }
 
-    fun createGame(msBeforeSkipBoard: Int = 0) {
-        while (!boardCreated()) {
-            propagateRandomRegion()
-        }
-    }
-
-    private fun boardCreated(): Boolean {
-        return remainingPositions.isEmpty()
+    fun getScore(): Int {
+        return score.getScore()
     }
 
     fun printBoard() {
+        return printBoard(completedBoard)
+    }
+
+    private fun printBoard(board: IntArray) {
         val colorMap = mutableMapOf<Int,String>()
 
         var htmlCode = """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""
 
         (0..<numPositions).forEach {
-            val num = board[it].first
-            val id = board[it].second
+            val num = board[it]
+            val id = boardRegions[it]
 
             if (!colorMap.containsKey(id)) {
                 val color = colors.newColor()
@@ -77,13 +74,25 @@ class Hakyuu2 private constructor(
     }
 
     fun getRegionStatData(): IntArray {
-        val ls = board.map { it.second }.groupBy { it }.map { it.value.size }
+        val ls = boardRegions.groupBy { it }.map { it.value.size }
         val result = IntArray(size = ls.max())
         ls.forEach {
             result[it-1]++
         }
         return result
     }
+
+
+    fun createGame() {
+        while (!boardCreated()) {
+            propagateRandomRegion()
+        }
+    }
+
+    private fun boardCreated(): Boolean {
+        return remainingPositions.isEmpty()
+    }
+
 
     private fun propagateRandomRegion(numPropagations: Int = randomPropagationNumber(), iterations: Int = 1) {
         val seed = getRandomPosition()
@@ -116,12 +125,19 @@ class Hakyuu2 private constructor(
     }
 
     private fun deleteRegion(regionId: Int) {
-        board.forEachIndexed { index, pair ->
-            if (pair.second == regionId) {
-                board[index] = Pair(0, 0)
-                remainingPositions.add(index)
+        boardRegions.withIndex().filter { (_, id) -> id == regionId }
+            .forEach { (position, _) ->
+                boardRegions[position] = 0
+                completedBoard[position] = 0
             }
-        }
+    }
+
+    private fun getRegionId(position: Int): Int {
+        return boardRegions[position]
+    }
+
+    private fun getRegionPositions(regionId: Int): Set<Int> {
+        return boardRegions.withIndex().filter { (_, id) -> id == regionId }.map { (index, _) -> index }.toSet()
     }
 
     private fun modifyNeighbouringRegions(seed: Int) {
@@ -132,11 +148,14 @@ class Hakyuu2 private constructor(
                 numRows = numRows,
                 numColumns = numColumns
             )
-        }.find { board[it].second > 0 }
+        }.find { boardRegions[it] > 0 }
 
-        if (position != null)
-            deleteRegion(board[position].second)
-
+        if (position != null) {
+            val regionId = getRegionId(position)
+            val region = getRegionPositions(regionId)
+            remainingPositions.addAll(region)
+            deleteRegion(regionId)
+        }
     }
 
     private fun populateRegion(region: List<Int>): Boolean {
@@ -144,7 +163,7 @@ class Hakyuu2 private constructor(
         val positions = Array(region.size) { -1 }
         region.map { position ->
                 position to (1..region.size)
-                    .filter { value -> isValidValueRule3(value = value, position = position) }
+                    .filter { value -> checkRule3(value = value, position = position, actualValues = completedBoard) }
                     .toList()
             }
             .sortedBy { it.second.size }
@@ -166,8 +185,10 @@ class Hakyuu2 private constructor(
     private fun finalizeRegion(positions: Array<Int>, values: Array<Int>) {
         currentID++
         for (p in positions.withIndex()) {
-            board[p.value] = Pair(values[p.index], currentID)
-            remainingPositions.remove(p.value)
+            val position = p.value
+            boardRegions[position] = currentID
+            completedBoard[position] = values[p.index]
+            remainingPositions.remove(position)
         }
     }
 
@@ -193,7 +214,7 @@ class Hakyuu2 private constructor(
     }
 
     // If two fields in a row or column contain the same number Z, there must be at least Z fields with different numbers between these two fields.
-    private fun isValidValueRule3(value: Int, position: Int): Boolean {
+    private fun checkRule3(value: Int, position: Int, actualValues: IntArray): Boolean {
         val errorNotFound = Direction.entries.all { direction: Direction ->
             val errorNotFoundInDirection = (1..value)
                 .mapNotNull { moveValue: Int ->
@@ -206,7 +227,7 @@ class Hakyuu2 private constructor(
                     )
                 } //Null values are out of bounds of the board and can be ignored
                 .all { otherPosition: Int ->
-                    board[otherPosition].first != value
+                    actualValues[otherPosition] != value
                 }
 
             errorNotFoundInDirection
@@ -215,10 +236,15 @@ class Hakyuu2 private constructor(
     }
 
     internal fun boardMeetsRules(): Boolean {
+        return boardMeetsRules(completedBoard)
+    }
+
+    private fun boardMeetsRules(board: IntArray): Boolean {
         val tmp = mutableMapOf<Int, MutableSet<Int>>()
-        board.withIndex().forEach { (position, pair) ->
-            val (value, regionID) = pair
-            if (!isValidValueRule3(value = value, position = position)) {
+
+        board.withIndex().filter { (_, value) -> value != 0 }.forEach { (position, value) ->
+            val regionID = getRegionId(position)
+            if (!checkRule3(value = value, position = position, actualValues = board)) {
                 println("Rule 3 failed: with value:$value, position:$position")
                 return false
             }
@@ -254,11 +280,384 @@ class Hakyuu2 private constructor(
     private fun tryPropagate(propagation: Int?, region: MutableList<Int>): Boolean {
         if (propagation != null && remainingPositions.contains(propagation) && !region.contains(propagation)){
             region.add(propagation)
-            //remainingPositions.remove(propagation)
             return true
         }
         return false
     }
+
+
+    internal fun solveBoard(board: IntArray): Boolean {
+        val remainingPositions = (0..< numPositions).filter { board[it] == 0 }.toMutableSet()
+        val possibleValues = Array(numPositions) { position ->
+            if (board[position] == 0) (1.. getRegionPositions(getRegionId(position)).size).toMutableList()
+            else mutableListOf()
+        }
+        val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
+        printBoard(board)
+        return res
+    }
+
+    private fun populatePositions(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        remainingPositions: MutableSet<Int>,
+        foundSPT: MutableList<Int> = mutableListOf()
+    ): Boolean {
+        score.reset()
+        while (true)
+        {
+            // If ended populating return if its a correct board
+            if (boardPopulated(actualValues)) return boardMeetsRules(actualValues)
+
+            val res = populateValues(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                remainingPositions = remainingPositions,
+                foundSPT = foundSPT,
+            ) ?: return false // Found contradiction -> can't populate
+
+            score.add(res.getScore())
+        }
+    }
+
+    private fun boardPopulated(actualValues: IntArray): Boolean {
+        return actualValues.all { it != 0 }
+    }
+
+    // Tries to populate values while there is no contradiction
+    // Return if there wasnt a contradiction
+    private fun populateValues(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        remainingPositions: MutableSet<Int>,
+        foundSPT: MutableList<Int>
+    ): HakyuuScore? {
+
+        val score = HakyuuScore()
+
+        val tmpRule2 = mutableMapOf<Int, MutableSet<Int>>()
+        actualValues.withIndex().filter { (_, value) -> value != 0 }.forEach { (position, value) ->
+            val regionID = getRegionId(position)
+            if (tmpRule2.containsKey(regionID)) tmpRule2[regionID]!!.add(value)
+            else tmpRule2[regionID] = mutableSetOf(value)
+        }
+
+        val regions = mutableMapOf<Int, MutableList<Int>>()
+        val positionsToRemove = mutableListOf<Int>()
+        for (position in remainingPositions) {
+            val regionID = getRegionId(position)
+            for (value in possibleValues[position].toList()) {
+                // Check rule 2
+                if (tmpRule2[regionID]?.contains(value) == true) {
+                    score.addScoreRule2()
+                    val values = possibleValues[position]
+                    values.remove(value)
+
+                    if (values.size == 1) {
+                        actualValues[position] = values.first()
+                        values.clear()
+                        positionsToRemove.add(position)
+                    } else if(values.size == 0) {
+                        return null
+                    }
+
+                    continue
+                }
+
+                // Check rule 3
+                if (!checkRule3(value = value, position = position, actualValues = actualValues)) {
+                    score.addScoreRule3()
+                    val values = possibleValues[position]
+                    values.remove(value)
+
+                    if (values.size == 1) {
+                        actualValues[position] = values.first()
+                        values.clear()
+                        positionsToRemove.add(position)
+                    } else if(values.size == 0) {
+                        return null
+                    }
+
+                    continue
+                }
+            }
+
+            // Populate region
+            if (regions.containsKey(regionID)) {
+                regions[regionID]!!.add(position)
+            } else {
+                regions[regionID] = mutableListOf(position)
+            }
+        }
+
+        for (position in positionsToRemove){
+            remainingPositions.remove(position)
+        }
+
+        if (score.getScore() > 0) return score
+
+        for (region in regions.values) {
+            val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
+
+            val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
+            foundSPT.addAll(singles)
+            score.addScoreHiddenSingle(singles.size)
+            region.removeAll(singles)
+
+            var pairs = cleanHiddenPairs(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
+            foundSPT.addAll(pairs)
+            score.addScoreHiddenPairs(pairs.size/2)
+            region.removeAll(pairs)
+
+            var triples = cleanHiddenTriples(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
+            foundSPT.addAll(triples)
+            score.addScoreHiddenTriples(triples.size/3)
+            region.removeAll(triples)
+
+            pairs = cleanObviousPairs(region = region, possibleValues = possibleValues)
+            foundSPT.addAll(pairs)
+            score.addScoreObviousSingle(pairs.size/2)
+
+            triples = cleanObviousTriples(region = region, possibleValues = possibleValues)
+            foundSPT.addAll(triples)
+            score.addScoreObviousPairs(triples.size/3)
+
+        }
+
+        // If the possible values changed: Update actual values or return null if found contradiction
+        // TODO: actualizar siempre los valores cuando size=1, o devolver null si 0 y hacer hiddenvalues,etc solo cuando no hayan cambiado los valores (hacer lo otro hasta que no cambien los valoers)
+        if (score.getScore() > 0) {
+            for (position in remainingPositions.toList()) {
+                val values = possibleValues[position]
+                if (values.size == 1) {
+                    actualValues[position] = values.first()
+                    values.clear()
+                    remainingPositions.remove(position)
+                } else if (values.size == 0) {
+                    return null
+                }
+            }
+            if (!boardMeetsRules(actualValues)) {
+                return null
+            }
+        }
+
+
+        if (score.getScore() > 0) return score
+
+        // If the possible values didn't change: Brute force a value
+        return if (bruteForceAValue(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                remainingPositions = remainingPositions,
+                foundSPT = foundSPT
+            )
+        ) {
+            // Brute force was successful
+            score.addScoreBruteForce()
+            score
+        } else {
+            null
+        }
+    }
+
+    private var bruteForce = 0
+    private fun bruteForceAValue(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        remainingPositions: MutableSet<Int>,
+        foundSPT: MutableList<Int>
+    ):Boolean {
+        bruteForce++
+        if (remainingPositions.isEmpty()) return true
+
+        val (position, minPossibleValues) = remainingPositions.map { it to possibleValues[it] }.minBy { (position, values) -> values.size }
+        remainingPositions.remove(position)
+        val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
+            val ls = mutableListOf<Int>()
+            ls.addAll(possibleValues[it])
+            ls
+        }
+
+        for(chosenValue in minPossibleValues.toList()) {
+            possibleValues[position].removeAt(0)
+            newPossibleValues[position].clear()
+            val newActualValues = actualValues.clone()
+            newActualValues[position] = chosenValue
+            val newFoundSPT = foundSPT.toMutableList()
+
+            val result = populatePositions(
+                possibleValues = newPossibleValues,
+                actualValues = newActualValues,
+                remainingPositions = remainingPositions,
+                foundSPT = newFoundSPT,
+            )
+
+            if (result) {
+                //newPossibleValues is invalid now!
+                replaceArray(thisArray = possibleValues, with = newPossibleValues)
+                replaceArray(thisArray = actualValues, with = newActualValues)
+                foundSPT.clear()
+                foundSPT.addAll(newFoundSPT)
+
+                return true
+            }
+        }
+        // If brute force didn't solve the board this is an invalid state
+        return false
+    }
+
+    private fun replaceArray(thisArray: IntArray, with: IntArray) {
+        var index = 0
+        while (index < thisArray.size) {
+            thisArray[index] = with[index]
+            index++
+        }
+    }
+
+    private fun replaceArray(thisArray: Array<MutableList<Int>>, with: Array<MutableList<Int>>) {
+        var index = 0
+        while (index < thisArray.size) {
+            thisArray[index] = with[index]
+            index++
+        }
+    }
+
+    internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
+        val filteredRegions = region.filter { position -> possibleValues[position].size == 2 }
+
+        val res = mutableListOf<Int>()
+        filteredRegions.forEachIndexed { index, position1 ->
+            val position2 = filteredRegions.drop(index + 1).find { position2 -> possibleValues[position2] == possibleValues[position1] }
+            if (position2 != null) {
+                res.add(position1)
+                res.add(position2)
+                region.filter { position -> position!=position1 && position!=position2 }
+                    .forEach { coordinate ->
+                        possibleValues[coordinate].remove(position1)
+                        possibleValues[coordinate].remove(position2)
+                    }
+            }
+        }
+        return res
+    }
+
+    internal fun cleanObviousTriples(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
+        // Obvious triples can only have size 2 or 3
+        val filteredRegions = region.filter { coordinate ->
+            (possibleValues[coordinate].size == 2 || possibleValues[coordinate].size == 3)
+        }
+
+        val res = mutableListOf<Int>()
+        filteredRegions.forEachIndexed { index, position1 ->
+            // Substract possible values: {coord2 values} - {position1 values}
+            val union = filteredRegions.drop(index + 1).map { position2 ->
+                Pair(position2, possibleValues[position2].union(possibleValues[position1]))
+            }
+            // Find two coordinates whose substracted possible values are the same
+            val otherTriples = union.filter { other ->
+                union.any { it.first != other.first && it.second == other.second && (it.second.size == 3 || it.second.size == 2) }
+            }
+            // If it was found add it
+            if (otherTriples.size == 2) {
+                val position2 = otherTriples[0].first
+                val position3 = otherTriples[1].first
+                res.add(position1)
+                res.add(position2)
+                res.add(position3)
+
+                region.filter { position -> position!=position1 && position!=position2 && position!=position3 }
+                    .forEach { coordinate ->
+                        possibleValues[coordinate].remove(position1)
+                        possibleValues[coordinate].remove(position2)
+                        possibleValues[coordinate].remove(position3)
+                    }
+            }
+        }
+        return res
+    }
+
+    internal fun getPositionsPerValues(region: List<Int>, possibleValues: Array<MutableList<Int>>): Array<MutableList<Int>> {
+        val maxValue = region.maxOf { possibleValues[it].maxOrNull() ?: 0 }
+        val positionsPerValue = Array(maxValue) { mutableListOf<Int>() }
+        region.forEach { position ->
+            possibleValues[position].forEach { value -> positionsPerValue[value - 1].add(position) }
+        }
+        return positionsPerValue
+    }
+
+    // Delete values to reveal hidden singles
+    internal fun cleanHiddenSingles(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
+        val res = mutableListOf<Int>()
+        positionsPerValue.withIndex().filter { (_,positions) -> positions.size == 1 && !foundSPT.contains(positions.first())}
+            .forEach { (value, positions) ->
+                // Remove all the possible values but the hidden single
+                val position = positions.first()
+                val positionPossibleValues = possibleValues[position]
+                positionPossibleValues.clear()
+                positionPossibleValues.add(value + 1)
+
+                res.add(position)
+            }
+        return res
+    }
+
+    // Delete values to reveal hidden pairs
+    internal fun cleanHiddenPairs(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
+        val filteredPossiblePairs = positionsPerValue.withIndex()
+            .filter { (_, positions) -> positions.size == 2 && !positions.any { position -> foundSPT.contains(position) } }
+
+        val res = mutableListOf<Int>()
+        var drop = 0
+        filteredPossiblePairs.forEach { (index1, value) ->
+            drop++
+            val otherPair = filteredPossiblePairs.drop(drop).find { (_, value2) ->
+                value2 == value
+            }
+
+            if (otherPair != null) { //index1, index2 are pairs
+                val index2 = otherPair.index
+                // Remove from each coordinate the possible values that are not the hidden pairs
+                value.forEach {coordinate ->
+                    possibleValues[coordinate]!!.removeIf { it != index1+1 && it != index2+1 }
+                    res.add(coordinate)
+                }
+            }
+        }
+        return res
+    }
+
+    // Delete values to reveal hidden triples
+    internal fun cleanHiddenTriples(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
+        val filteredPossibleTriples = positionsPerValue.withIndex().filter { it.value.size == 2 || it.value.size == 3 }
+            .filter { (_, positions) -> (positions.size == 2 || positions.size == 3) && !positions.any { position -> foundSPT.contains(position) } }
+
+        val res = mutableListOf<Int>()
+        var drop = 0
+        filteredPossibleTriples.forEach { (index1, value) ->
+            drop++
+            val union = filteredPossibleTriples.drop(drop).map { (i, v) ->
+                IndexedValue(index = i, value = v.union(value))
+            }.filter { it.value.size==3 }
+
+            val otherTriples = union.filter { other ->
+                union.any { it.value == other.value && it.index != other.index }
+            }
+
+            if (otherTriples.size == 2) { //index1, index2 and index3 are triples
+                val index2 = otherTriples[0].index
+                val index3 = otherTriples[1].index
+                // Remove from each coordinate the possible values that are not the hidden triples
+                otherTriples[0].value.forEach { coordinate ->
+                    possibleValues[coordinate]!!.removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
+                    res.add(coordinate)
+                }
+            }
+        }
+        return res
+    }
+
+
 
     companion object {
         fun create(numColumns: Int, numRows: Int, random: Random): Hakyuu2 {
@@ -268,8 +667,77 @@ class Hakyuu2 private constructor(
                 random = random
             )
         }
+
+        fun createWithRegion(numColumns: Int, numRows: Int, random: Random, regions: IntArray): Hakyuu2 {
+            val res = Hakyuu2(
+                numRows = numRows,
+                numColumns = numColumns,
+                random = random
+            )
+            res.boardRegions.indices.forEach { res.boardRegions[it] = regions[it] }
+            return res
+        }
+
+        fun example(): Hakyuu2 {
+            val numColumns = 8
+            val numRows = 8
+            val regions = "5:[(7,0)]\n" +
+                    "7:[(3,1)]\n" +
+                    "10:[(0,3)]\n" +
+                    "11:[(2,3)]\n" +
+                    "12:[(7,3)]\n" +
+                    "17:[(4,5)]\n" +
+                    "19:[(0,6)]\n" +
+                    "21:[(7,7)]\n" +
+                    "2:[(2,0), (3,0)]\n" +
+                    "4:[(5,0), (6,0)]\n" +
+                    "6:[(1,1), (2,1)]\n" +
+                    "9:[(3,2), (3,3), (4,3)]\n" +
+                    "20:[(0,7), (1,7), (2,7)]\n" +
+                    "14:[(4,4), (5,4), (6,4), (6,5)]\n" +
+                    "8:[(6,1), (7,1), (6,2), (7,2), (6,3)]\n" +
+                    "13:[(0,4), (1,4), (2,4), (3,4), (3,5)]\n" +
+                    "16:[(0,5), (1,5), (2,5), (1,6), (2,6)]\n" +
+                    "3:[(4,0), (4,1), (5,1), (4,2), (5,2), (5,3)]\n" +
+                    "15:[(7,4), (7,5), (6,6), (7,6), (5,7), (6,7)]\n" +
+                    "18:[(5,5), (3,6), (4,6), (5,6), (3,7), (4,7)]\n" +
+                    "1:[(0,0), (1,0), (0,1), (0,2), (1,2), (2,2), (1,3)]"
+
+            return createWithRegion(
+                regions = parseRegionString(regions),
+                numRows = numRows,
+                numColumns = numColumns,
+                random = Random(1)
+            )
+        }
+
+        private fun parseRegionString(str: String): IntArray {
+            val map = mutableMapOf<Int, List<Coordinate>>()
+            val lines = str.replace("[","").replace("]","").split('\n')
+
+            val tmp = mutableListOf<Coordinate>()
+            for (line in lines) {
+                val spl = line.split(':')
+                val coordinates = spl[1].split(", ").map { Coordinate.parseString(it,true) }
+                tmp.addAll(coordinates)
+                map[spl[0].toInt()] = coordinates
+            }
+
+            val maxCoordinate = tmp.maxBy { it.column + it.row }
+
+            val res = Array(map.values.sumOf { it.size }) { position ->
+                val pair = map.map { it.key to it.value.map { it2 ->
+                        it2.toIndex(numRows = maxCoordinate.row + 1, numColumns = maxCoordinate.column + 1)!!
+                    }
+                }
+                .find { it.second.contains(position) }!!
+                pair.first
+            }
+
+            return res.toIntArray()
+        }
+
+
     }
-
-
 }
 

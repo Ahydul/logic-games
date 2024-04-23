@@ -58,8 +58,11 @@ data class Coordinate(val row: Int, val column: Int) {
             return (row < 0 || column < 0 || row >= numRows || column >= numColumns)
         }
 
-        fun parseString(str: String): Coordinate {
+        fun parseString(str: String, reverse: Boolean = false): Coordinate {
             val spl = str.substring(1,str.length-1).split(',')
+            if (reverse) {
+                return Coordinate(row = spl[1].toInt(), column = spl[0].toInt())
+            }
             return Coordinate(row = spl[0].toInt(), column = spl[1].toInt())
         }
 
