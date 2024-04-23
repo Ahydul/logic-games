@@ -17,14 +17,14 @@ import kotlin.random.Random
  */
 @ExtendWith(CustomTestWatcher::class)
 class HakyuuUnitTest {
-    private lateinit var hakyuu: Hakyuu2
+    private lateinit var hakyuu: Hakyuu
     private lateinit var region : List<Int>
     private lateinit var possibleValues: Array<MutableList<Int>>
     private val random = Random((Math.random()*10000000000).toLong())
 
     @BeforeEach
     fun setUp() {
-        hakyuu = Hakyuu2.example()
+        hakyuu = Hakyuu.example()
         region = (0..<9).toList()
         possibleValues = region.map { (1..9).toMutableList() }.toTypedArray()
     }
@@ -374,7 +374,7 @@ class HakyuuUnitTest {
         val random = Random(seed)
 
         val startTime = System.currentTimeMillis()
-        val gameType = Hakyuu2.create(numColumns = 3, numRows = 3, random = random)
+        val gameType = Hakyuu.create(numColumns = 3, numRows = 3, random = random)
 
         gameType.createGame()
 
@@ -415,7 +415,7 @@ class HakyuuUnitTest {
             val seed = (Math.random()*10000000000).toLong()
             val random = Random(seed)
 
-            val gameType = Hakyuu2.create(numColumns = numColumns, numRows = numRows, random = random)
+            val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random)
 
             gameType.createGame()
 

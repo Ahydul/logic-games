@@ -7,7 +7,7 @@ import com.example.tfg.common.utils.Direction
 import kotlin.math.max
 import kotlin.random.Random
 
-class Hakyuu2 private constructor(
+class Hakyuu private constructor(
     val noNotes: Boolean = true,
     val numColumns: Int,
     val numRows: Int,
@@ -668,16 +668,16 @@ class Hakyuu2 private constructor(
 
 
     companion object {
-        fun create(numColumns: Int, numRows: Int, random: Random): Hakyuu2 {
-            return Hakyuu2(
+        fun create(numColumns: Int, numRows: Int, random: Random): Hakyuu {
+            return Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
                 random = random
             )
         }
 
-        fun create(numColumns: Int, numRows: Int, random: Random, regions: IntArray, board: IntArray): Hakyuu2 {
-            val res = Hakyuu2(
+        fun create(numColumns: Int, numRows: Int, random: Random, regions: IntArray, board: IntArray): Hakyuu {
+            val res = Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
                 random = random
@@ -689,7 +689,7 @@ class Hakyuu2 private constructor(
             return res
         }
 
-        fun example(): Hakyuu2 {
+        fun example(): Hakyuu {
             val numColumns = 8
             val numRows = 8
             val regions = "5:[(7,0)]\n" +
