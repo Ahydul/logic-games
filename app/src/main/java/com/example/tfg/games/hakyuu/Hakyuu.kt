@@ -4,106 +4,49 @@ import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Direction
+import com.example.tfg.common.utils.Utils
+import com.example.tfg.games.GameType
+import com.example.tfg.games.Games
 import kotlin.math.max
 import kotlin.random.Random
 
 class Hakyuu private constructor(
-    val noNotes: Boolean = true,
-    val numColumns: Int,
-    val numRows: Int,
-    val random: Random,
-    var iterations: Int = 1
+    numColumns: Int,
+    numRows: Int,
+    random: Random
+) : GameType(
+    type = Games.HAKYUU,
+    numColumns = numColumns,
+    numRows = numRows,
+    random = random,
+    score = HakyuuScore()
 ) {
-                        // pair(value, regionID)
-    private val numPositions = numColumns * numRows
-    private val completedBoard: IntArray = IntArray(numPositions)
-    private val boardRegions: IntArray = IntArray(numPositions)
-    private val startBoard: IntArray = IntArray(numPositions)
-    private val maxRegionSize = max(numColumns, numRows)
-    private val colors = Colors()
+
     private val remainingPositions: MutableSet<Int> = initRemainingPositions()
     private var currentID = 0
-    private val score = HakyuuScore()
+    var iterations: Int = 1
 
     private fun initRemainingPositions():  MutableSet<Int> {
         return (0..< numPositions).toMutableSet()
     }
 
-    private fun reset() {
+    override fun reset() {
         completedBoard.map { 0 }
         boardRegions.map { 0 }
+        startBoard.map { 0 }
         remainingPositions.addAll(initRemainingPositions())
     }
 
-    fun getCompletedBoard() : IntArray {
-        return completedBoard
-    }
-
-    fun getStartBoard() : IntArray {
-        return startBoard
-    }
-
-    fun getBoardRegions() : IntArray {
-        return boardRegions
-    }
-
-    fun getScore(): Int {
-        return score.getScore()
-    }
-
-    fun printBoard() {
-        return printBoard(completedBoard)
-    }
-
-    private fun printBoard(board: IntArray) {
-        val colorMap = mutableMapOf<Int,String>()
-
-        var htmlCode = """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""
-
-        (0..<numPositions).forEach {
-            val num = board[it]
-            val id = boardRegions[it]
-
-            if (!colorMap.containsKey(id)) {
-                val color = colors.newColor()
-                colorMap[id] = color
-            }
-
-            if (it%numColumns == 0){
-                htmlCode += """<tr>"""
-            }
-
-            htmlCode += """<td style="background-color: ${colorMap[id]}; vertical-align: middle; text-align: center; height: 40px; width: 40px;">$num</td>"""
-
-            if (it%numColumns == numColumns-1){
-                htmlCode += """</tr>"""
-            }
-
-        }
-        htmlCode +="""</tbody></table>"""
-        print(htmlCode)
-    }
-
-    fun getRegionStatData(): IntArray {
-        val ls = boardRegions.groupBy { it }.map { it.value.size }
-        val result = IntArray(size = ls.max())
-        ls.forEach {
-            result[it-1]++
-        }
-        return result
-    }
-
-
-    fun createGame() {
+    override fun createGame(): Boolean {
         while (!boardCreated()) {
             propagateRandomRegion()
         }
+        return boardMeetsRules()
     }
 
     private fun boardCreated(): Boolean {
         return remainingPositions.isEmpty()
     }
-
 
     private fun propagateRandomRegion(numPropagations: Int = randomPropagationNumber(), iterations: Int = 1) {
         val seed = getRandomPosition()
@@ -134,23 +77,7 @@ class Hakyuu private constructor(
         //return random.nextInt(maxRegionSize - 1) + 1
         return ((maxRegionSize - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
     }
-
-    private fun deleteRegion(regionId: Int) {
-        boardRegions.withIndex().filter { (_, id) -> id == regionId }
-            .forEach { (position, _) ->
-                boardRegions[position] = 0
-                completedBoard[position] = 0
-            }
-    }
-
-    private fun getRegionId(position: Int): Int {
-        return boardRegions[position]
-    }
-
-    private fun getRegionPositions(regionId: Int): Set<Int> {
-        return boardRegions.withIndex().filter { (_, id) -> id == regionId }.map { (index, _) -> index }.toSet()
-    }
-
+    
     private fun modifyNeighbouringRegions(seed: Int) {
         val position = Direction.entries.shuffled(random).mapNotNull { direction: Direction ->
             Coordinate.move(
@@ -245,12 +172,8 @@ class Hakyuu private constructor(
         }
         return errorNotFound
     }
-
-    internal fun boardMeetsRules(): Boolean {
-        return boardMeetsRules(completedBoard)
-    }
-
-    private fun boardMeetsRules(board: IntArray): Boolean {
+    
+    override fun boardMeetsRules(board: IntArray): Boolean {
         val tmp = mutableMapOf<Int, MutableSet<Int>>()
 
         board.withIndex().filter { (_, value) -> value != 0 }.forEach { (position, value) ->
@@ -297,7 +220,7 @@ class Hakyuu private constructor(
     }
 
 
-    internal fun solveBoard(board: IntArray): Boolean {
+    public override fun solveBoard(board: IntArray): Boolean {
         val remainingPositions = (0..< numPositions).filter { board[it] == 0 }.toMutableSet()
         val possibleValues = Array(numPositions) { position ->
             if (board[position] == 0) (1.. getRegionPositions(getRegionId(position)).size).toMutableList()
@@ -327,12 +250,8 @@ class Hakyuu private constructor(
                 foundSPT = foundSPT,
             ) ?: return false // Found contradiction -> can't populate
 
-            score.add(res.getScore())
+            score.add(res.get())
         }
-    }
-
-    private fun boardPopulated(actualValues: IntArray): Boolean {
-        return actualValues.all { it != 0 }
     }
 
     // Tries to populate values while there is no contradiction
@@ -405,7 +324,7 @@ class Hakyuu private constructor(
             remainingPositions.remove(position)
         }
 
-        if (score.getScore() > 0) return score
+        if (score.get() > 0) return score
 
         for (region in regions.values) {
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
@@ -435,7 +354,7 @@ class Hakyuu private constructor(
 
         }
 
-        if (score.getScore() > 0) {
+        if (score.get() > 0) {
             for (position in remainingPositions.toList()) {
                 val values = possibleValues[position]
                 if (values.size == 1) {
@@ -452,7 +371,7 @@ class Hakyuu private constructor(
         }
 
 
-        if (score.getScore() > 0) return score
+        if (score.get() > 0) return score
 
         // If the possible values didn't change: Brute force a value
         return if (bruteForceAValue(
@@ -504,8 +423,8 @@ class Hakyuu private constructor(
 
             if (result) {
                 //newPossibleValues is invalid now!
-                replaceArray(thisArray = possibleValues, with = newPossibleValues)
-                replaceArray(thisArray = actualValues, with = newActualValues)
+                Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
+                Utils.replaceArray(thisArray = actualValues, with = newActualValues)
                 foundSPT.clear()
                 foundSPT.addAll(newFoundSPT)
 
@@ -514,22 +433,6 @@ class Hakyuu private constructor(
         }
         // If brute force didn't solve the board this is an invalid state
         return false
-    }
-
-    private fun replaceArray(thisArray: IntArray, with: IntArray) {
-        var index = 0
-        while (index < thisArray.size) {
-            thisArray[index] = with[index]
-            index++
-        }
-    }
-
-    private fun replaceArray(thisArray: Array<MutableList<Int>>, with: Array<MutableList<Int>>) {
-        var index = 0
-        while (index < thisArray.size) {
-            thisArray[index] = with[index]
-            index++
-        }
     }
 
     internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
@@ -764,8 +667,6 @@ class Hakyuu private constructor(
 
             return res.toIntArray()
         }
-
-
     }
 }
 

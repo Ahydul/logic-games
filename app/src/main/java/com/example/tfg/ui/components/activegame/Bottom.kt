@@ -146,7 +146,7 @@ fun BottomActionRow(
                 )
             }
         }
-        else when(viewModel.getGameType()) {
+        else when(viewModel.getGameType().type) {
             Games.HAKYUU -> {
                 HakyuuValue.entries.forEach {
                     val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
