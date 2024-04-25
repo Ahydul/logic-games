@@ -376,13 +376,13 @@ class HakyuuUnitTest {
         val startTime = System.currentTimeMillis()
         val gameType = Hakyuu.create(numColumns = 3, numRows = 3, random = random)
 
-        gameType.createGame()
+        val res = gameType.createGame()
 
         val endTime = System.currentTimeMillis()
 
         gameType.printBoard()
 
-        assert(gameType.boardMeetsRules()) { "Failed: $seed " }
+        assert(res) { "Failed: $seed " }
 
         println("Test with sizes ${input}x$input")
         println("Time ${endTime - startTime}")
@@ -417,7 +417,7 @@ class HakyuuUnitTest {
 
             val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random)
 
-            gameType.createGame()
+            val res = gameType.createGame()
 
             val endTime = System.currentTimeMillis()
 
@@ -433,7 +433,7 @@ class HakyuuUnitTest {
                 regionSizes[regionSize][iteration] = value
             }
 
-            assert(gameType.boardMeetsRules()) { "$iteration failed seed: $seed " }
+            assert(res) { "$iteration failed seed: $seed " }
         }
         print("</div>")
         print("""<br><br><div style="display: flex; font-size: large; justify-content: space-evenly;">""")

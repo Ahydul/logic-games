@@ -41,12 +41,12 @@ class ActiveGameViewModel : ViewModel() {
         return game.value.state
     }
 
-    fun getGameType(): Games {
+    fun getGameType(): GameType {
         return game.value.gameType
     }
 
     private fun getRegions(): Map<Int, List<Coordinate>> {
-        return game.value.regions
+        return getGameType().getRegions()
     }
 
     fun getNumberRegionSizes(): SortedMap<Int, Int> {

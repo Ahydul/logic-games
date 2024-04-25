@@ -1,14 +1,8 @@
 package com.example.tfg.games.hakyuu
 
-class HakyuuScore(private var score: Int = 0) {
+import com.example.tfg.games.Score
 
-    fun getScore(): Int {
-        return this.score
-    }
-
-    fun add(num: Int) {
-        score += num
-    }
+class HakyuuScore : Score() {
 
     fun addScoreRule3() {
         score += 1
@@ -36,9 +30,5 @@ class HakyuuScore(private var score: Int = 0) {
 
     fun addScoreBruteForce() {
         score += 1000
-    }
-
-    fun reset() {
-        score = 0
     }
 }
