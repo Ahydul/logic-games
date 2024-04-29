@@ -19,9 +19,9 @@ import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import java.util.SortedMap
 
-class ActiveGameViewModel : ViewModel() {
+class ActiveGameViewModel(game: Game) : ViewModel() {
 
-    private val game = mutableStateOf(Game.example())
+    private val game = mutableStateOf(game)
     private var statePointer = mutableIntStateOf(0)
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
@@ -43,6 +43,10 @@ class ActiveGameViewModel : ViewModel() {
 
     fun getGameType(): GameType {
         return game.value.gameType
+    }
+
+    fun getMaxValue(): Int {
+        return game.value.gameType.maxRegionSize
     }
 
     private fun getRegions(): Map<Int, List<Coordinate>> {
@@ -456,7 +460,7 @@ class ActiveGameViewModel : ViewModel() {
         val previousCells = getCells(coordinates)
 
         if (isNote()) {
-            setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
+            setCellsNotes(note = value, coordinates = coordinates, ordered = false)
         }
         else if (coordinates.size == 1) {
             setCellsValues(value, coordinates = coordinates)

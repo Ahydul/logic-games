@@ -17,7 +17,7 @@ abstract class GameType(
     val completedBoard: IntArray = IntArray(numPositions)
     val boardRegions: IntArray = IntArray(numPositions)
     val startBoard: IntArray = IntArray(numPositions)
-    protected val maxRegionSize = max(numColumns, numRows)
+    val maxRegionSize = max(numColumns, numRows)
 
     private val colors: Colors = Colors()
 

@@ -30,10 +30,15 @@ class Game private constructor(
             val numColumns = 8
             val numRows = 8
             val hakyuu = Hakyuu.example()
+            val board = Board.create(numRows = numRows, numColumns = numColumns, cellValues = hakyuu.startBoard)
+
+            board.cells[2].notes[0] = 1
+            board.cells[2].notes[1] = 10
+            board.cells[2].notes[2] = 11
 
             return create(
                 gameType = hakyuu,
-                board = Board.create(numRows = numRows, numColumns = numColumns, cellValues = hakyuu.startBoard),
+                board = board,
                 difficulty = Difficulty.EASY
             )
         }
