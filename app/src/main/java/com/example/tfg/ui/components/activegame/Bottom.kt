@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
-import com.example.tfg.addDebugBorder
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.HakyuuValue
 import com.example.tfg.state.ActiveGameViewModel
@@ -36,7 +35,7 @@ fun Action(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier.then(addDebugBorder)
+        modifier = modifier
     ) {
         Icon(
             tint = iconColor,
@@ -148,17 +147,21 @@ fun BottomActionRow(
         }
         else when(viewModel.getGameType().type) {
             Games.HAKYUU -> {
-                HakyuuValue.entries.forEach {
+                for(it in 0..<viewModel.getMaxValue()) {
+                //for(it in 0..<12) {
+                    val value = HakyuuValue.get(it)
                     val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
-                        else colorResource(id = R.color.primary_color)
+                    else colorResource(id = R.color.primary_color)
 
+                    //TODO: FIX THIS
                     Action(
-                        onClick = { viewModel.noteOrWriteAction(it.value) },
-                        imageVector = ImageVector.vectorResource(id = it.icon),
+                        onClick = { viewModel.noteOrWriteAction(value.value) },
+                        imageVector = ImageVector.vectorResource(id = value.icon),
                         iconColor = iconColor,
                         contentDescription = null,
                         modifier = modifierValueButtons
                     )
+
                 }
             }
         }

@@ -36,7 +36,7 @@ import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.theme.TFGTheme
 
 class ActiveGameView : ComponentActivity() {
-    val viewModel: ActiveGameViewModel = ActiveGameViewModel()
+    val viewModel: ActiveGameViewModel = ActiveGameViewModel(Game.example())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,13 +71,13 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
         TopSection(
             viewModel = viewModel,
             modifier = modifier
-                .then(addDebugBorder)
+
                 .weight(1f)
         )
         MiddleSection(
             viewModel = viewModel,
             modifier = modifier
-                .then(addDebugBorder)
+
                 .border(
                     width = 1.dp,
                     color = Color.Black,
@@ -95,7 +95,6 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
         BottomSection(
             viewModel = viewModel,
             modifier = modifier
-                .then(addDebugBorder)
                 .weight(3f)
         )
     }
@@ -149,14 +148,14 @@ fun BottomSection(
             modifier = Modifier
                 .weight(2f)
                 .padding(2.dp)
-                .then(addDebugBorder)
+
         )
         BottomActionRow(
             viewModel = viewModel,
             modifier = Modifier
                 .padding(4.dp)
                 .weight(5f)
-                .then(addDebugBorder)
+
         )
         Spacer(modifier = Modifier.weight(2f))
     }
@@ -187,7 +186,7 @@ val addDebugBorder = Modifier.border(
 fun GreetingPreview() {
     TFGTheme {
         ActiveGameScreen(
-            viewModel = ActiveGameViewModel(),
+            viewModel = ActiveGameViewModel(Game.example()),
             modifier = Modifier
                 .background(colorResource(id = R.color.primary_background))
                 .fillMaxWidth()

@@ -65,14 +65,14 @@ fun Cell(
             cell.notes.forEach {
                 if (it != 0) {
                     Icon(
-                        painter = painterResource(id = HakyuuValue.get(value).icon),
+                        painter = painterResource(id = HakyuuValue.get(it).icon),
                         tint = cellNoteValueColor,
                         contentDescription = "Value $it",
-                        modifier = Modifier.padding(5.dp)
+                        modifier = Modifier.padding(2.dp)
                     )
                 }
                 else {
-                    Spacer(modifier = Modifier.padding(5.dp))
+                    Spacer(modifier = Modifier.padding(2.dp))
                 }
             }
         }
