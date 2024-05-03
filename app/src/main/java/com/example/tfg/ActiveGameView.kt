@@ -33,6 +33,8 @@ import com.example.tfg.ui.components.activegame.BottomActionRow
 import com.example.tfg.ui.components.activegame.TopActionRow
 import com.example.tfg.games.Games
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.ui.components.activegame.ActiveGameScreen
+import com.example.tfg.ui.components.activegame.TopSection
 import com.example.tfg.ui.theme.TFGTheme
 
 class ActiveGameView : ComponentActivity() {
@@ -58,121 +60,6 @@ class ActiveGameView : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
-
-    val shape = RoundedCornerShape(8.dp)
-    //val game = remember { Game.example() } // Doesnt update on recomposition
-
-    Column(modifier = modifier) {
-        TopSection(
-            viewModel = viewModel,
-            modifier = modifier
-
-                .weight(1f)
-        )
-        MiddleSection(
-            viewModel = viewModel,
-            modifier = modifier
-
-                .border(
-                    width = 1.dp,
-                    color = Color.Black,
-                )
-                .aspectRatio(ratio = 1f)
-                .padding(4.dp)
-                .clip(shape)
-                .border(
-                    width = 2.dp,
-                    color = Color.Black,
-                    shape = shape
-                )
-                .weight(4f)
-        )
-        BottomSection(
-            viewModel = viewModel,
-            modifier = modifier
-                .weight(3f)
-        )
-    }
-}
-
-@Composable
-fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
-    Log.d("TAG", "TOPcurrentRecomposeScope $currentRecomposeScope")
-/*
-    Column(modifier = modifier) {
-        Row {
-            Text(
-                text = ""
-            )
-        }
-        Row {
-            Text(
-                text = "Dificultad"
-            )
-            Text(
-                text = "Errores"
-            )
-            Text(
-                text = "Pistas"
-            )
-            Text(
-                text = "Tiempo"
-            )
-        }
-    }
-    
- */
-}
-
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun BottomSection(
-    viewModel: ActiveGameViewModel,
-    modifier: Modifier = Modifier)
-{
-    Log.d("TAG", "BOTTOMcurrentRecomposeScope $currentRecomposeScope")
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        // Actions
-        TopActionRow(
-            viewModel = viewModel,
-            modifier = Modifier
-                .weight(2f)
-                .padding(2.dp)
-
-        )
-        BottomActionRow(
-            viewModel = viewModel,
-            modifier = Modifier
-                .padding(4.dp)
-                .weight(5f)
-
-        )
-        Spacer(modifier = Modifier.weight(2f))
-    }
-}
-
-@Composable
-fun MiddleSection(
-    viewModel: ActiveGameViewModel,
-    modifier: Modifier = Modifier
-) {
-    Log.d("TAG", "MIDDLEcurrentRecomposeScope $currentRecomposeScope")
-
-    Box (
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-    ){
-        Board(viewModel=viewModel, modifier = Modifier)
     }
 }
 
