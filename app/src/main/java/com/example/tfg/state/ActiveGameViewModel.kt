@@ -41,8 +41,8 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return game.value.state
     }
 
-    fun getGameType(): GameType {
-        return game.value.gameType
+    fun getGameType(): Games {
+        return game.value.gameType.type
     }
 
     fun getMaxValue(): Int {
@@ -50,7 +50,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     private fun getRegions(): Map<Int, List<Coordinate>> {
-        return getGameType().getRegions()
+        return game.value.gameType.getRegions()
     }
 
     fun getNumberRegionSizes(): SortedMap<Int, Int> {
@@ -453,14 +453,14 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     Game Actions
      */
 
-    fun noteOrWriteAction(value: Int, ordered: Boolean = true) {
+    fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
         val coordinates = selectedTiles.filter { !isReadOnly(it) }
         if (coordinates.isEmpty()) return
 
         val previousCells = getCells(coordinates)
 
         if (isNote()) {
-            setCellsNotes(note = value, coordinates = coordinates, ordered = false)
+            setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
         }
         else if (coordinates.size == 1) {
             setCellsValues(value, coordinates = coordinates)
