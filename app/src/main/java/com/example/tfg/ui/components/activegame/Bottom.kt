@@ -2,6 +2,8 @@ package com.example.tfg.ui.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -24,27 +27,94 @@ import com.example.tfg.games.hakyuu.HakyuuValue
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.HorizontalGrid
 
-
 @Composable
-fun Action(
-    onClick: () -> Unit,
-    imageVector: ImageVector,
-    contentDescription: String?,
-    iconColor: Color = colorResource(id = R.color.primary_color),
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = onClick,
+fun BottomSection(
+    viewModel: ActiveGameViewModel,
+    modifier: Modifier = Modifier)
+{
+    Log.d("TAG", "BOTTOMcurrentRecomposeScope $currentRecomposeScope")
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        Icon(
-            tint = iconColor,
-            imageVector = imageVector,
-            contentDescription = contentDescription,
-            modifier = Modifier.fillMaxSize()
+        // Actions
+        TopActionRow(
+            viewModel = viewModel,
+            modifier = Modifier
+                .weight(2f)
+                .padding(2.dp)
+
         )
+        BottomActionRow(
+            viewModel = viewModel,
+            modifier = Modifier
+                .padding(4.dp)
+                .weight(5f)
+
+        )
+        Spacer(modifier = Modifier.weight(2f))
     }
 }
+
+
+@Composable
+fun BottomActionRow(
+    viewModel: ActiveGameViewModel,
+    modifier: Modifier
+) {
+    Log.d("TAG", "BottomActionRow $currentRecomposeScope")
+
+    val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
+    val defaultCellBackground = colorResource(id = R.color.cell_background)
+
+    HorizontalGrid(
+        rows = 2,
+        modifier = modifier
+    ) {
+        val shape = RoundedCornerShape(15.dp)
+        val modifierValueButtons = Modifier
+            .padding(8.dp)
+            .clip(shape)
+            .background(
+                color = defaultCellBackground,
+                shape = shape
+            )
+
+        if(viewModel.isPaint()){
+            backgroundColors.forEachIndexed { index, color ->
+                Action(                                                 //First color is remove the background
+                    onClick = { viewModel.paintAction(colorInt = color)},
+                    imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
+                    iconColor = Color(color),
+                    contentDescription = "Color $index",
+                    modifier = modifierValueButtons
+                )
+            }
+        }
+        else when(viewModel.getGameType().type) {
+            Games.HAKYUU -> {
+                for(it in 0..<viewModel.getMaxValue()) {
+                    //for(it in 0..<12) {
+                    val value = HakyuuValue.get(it)
+                    val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
+                    else colorResource(id = R.color.primary_color)
+
+                    //TODO: FIX THIS
+                    Action(
+                        onClick = { viewModel.noteOrWriteAction(value.value) },
+                        imageVector = ImageVector.vectorResource(id = value.icon),
+                        iconColor = iconColor,
+                        contentDescription = null,
+                        modifier = modifierValueButtons
+                    )
+
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun TopActionRow(
@@ -111,59 +181,22 @@ fun TopActionRow(
 
 
 @Composable
-fun BottomActionRow(
-    viewModel: ActiveGameViewModel,
-    modifier: Modifier
+fun Action(
+    onClick: () -> Unit,
+    imageVector: ImageVector,
+    contentDescription: String?,
+    iconColor: Color = colorResource(id = R.color.primary_color),
+    modifier: Modifier = Modifier
 ) {
-    Log.d("TAG", "BottomActionRow $currentRecomposeScope")
-
-    val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
-    val defaultCellBackground = colorResource(id = R.color.cell_background)
-
-    HorizontalGrid(
-        rows = 2,
+    IconButton(
+        onClick = onClick,
         modifier = modifier
     ) {
-        val shape = RoundedCornerShape(15.dp)
-        val modifierValueButtons = Modifier
-            .padding(8.dp)
-            .clip(shape)
-            .background(
-                color = defaultCellBackground,
-                shape = shape
-            )
-
-
-        if(viewModel.isPaint()){
-            backgroundColors.forEachIndexed { index, color ->
-                Action(                                                 //First color is remove the background
-                    onClick = { viewModel.paintAction(colorInt = color)},
-                    imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
-                    iconColor = Color(color),
-                    contentDescription = "Color $index",
-                    modifier = modifierValueButtons
-                )
-            }
-        }
-        else when(viewModel.getGameType().type) {
-            Games.HAKYUU -> {
-                for(it in 0..<viewModel.getMaxValue()) {
-                //for(it in 0..<12) {
-                    val value = HakyuuValue.get(it)
-                    val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
-                    else colorResource(id = R.color.primary_color)
-
-                    //TODO: FIX THIS
-                    Action(
-                        onClick = { viewModel.noteOrWriteAction(value.value) },
-                        imageVector = ImageVector.vectorResource(id = value.icon),
-                        iconColor = iconColor,
-                        contentDescription = null,
-                        modifier = modifierValueButtons
-                    )
-
-                }
-            }
-        }
+        Icon(
+            tint = iconColor,
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
