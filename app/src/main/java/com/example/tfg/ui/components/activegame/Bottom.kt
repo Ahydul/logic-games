@@ -92,7 +92,7 @@ fun BottomActionRow(
                 )
             }
         }
-        else when(viewModel.getGameType().type) {
+        else when(viewModel.getGameType()) {
             Games.HAKYUU -> {
                 for(it in 0..<viewModel.getMaxValue()) {
                     //for(it in 0..<12) {

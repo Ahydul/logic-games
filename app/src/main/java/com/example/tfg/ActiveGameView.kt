@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import com.example.tfg.ui.theme.TFGTheme
 
 class ActiveGameView : ComponentActivity() {
     val viewModel: ActiveGameViewModel = ActiveGameViewModel(Game.example())
+    private val viewModel2: ActiveGameViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
