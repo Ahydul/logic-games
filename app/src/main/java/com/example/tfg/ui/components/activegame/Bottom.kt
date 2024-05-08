@@ -4,11 +4,8 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
@@ -25,6 +22,7 @@ import com.example.tfg.R
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.HakyuuValue
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.HorizontalGrid
 
 @Composable
@@ -83,7 +81,7 @@ fun BottomActionRow(
 
         if(viewModel.isPaint()){
             backgroundColors.forEachIndexed { index, color ->
-                Action(                                                 //First color is remove the background
+                CustomIconButton(                                                 //First color is remove the background
                     onClick = { viewModel.paintAction(colorInt = color)},
                     imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
                     iconColor = Color(color),
@@ -101,7 +99,7 @@ fun BottomActionRow(
                     else colorResource(id = R.color.primary_color)
 
                     //TODO: FIX THIS
-                    Action(
+                    CustomIconButton(
                         onClick = { viewModel.noteOrWriteAction(value.value) },
                         imageVector = ImageVector.vectorResource(id = value.icon),
                         iconColor = iconColor,
@@ -128,75 +126,53 @@ fun TopActionRow(
         rows = 1,
         modifier = modifier
     ) {
-        Action( //Note
+        CustomIconButton( //Note
             onClick = { viewModel.newGameState() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier
         )
-        Action( //Undo
+        CustomIconButton( //Undo
             onClick = { viewModel.setActualState(0) },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier
         )
-        Action( //Redo
+        CustomIconButton( //Redo
             onClick = { viewModel.setActualState(1) },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
             modifier = actionModifier
         )
-        Action( //Paint
+        CustomIconButton( //Paint
             onClick = { viewModel.setIsPaint() },
             imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),
             contentDescription = stringResource(id = R.string.brush_action),
             modifier = actionModifier
         )
-        Action( //Erase
+        CustomIconButton( //Erase
             onClick = { viewModel.eraseAction() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
             contentDescription = stringResource(id = R.string.erase_action),
             modifier = actionModifier
         )
-        Action( //Note
+        CustomIconButton( //Note
             onClick = { viewModel.setIsNote() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier
         )
-        Action( //Undo
+        CustomIconButton( //Undo
             onClick = { viewModel.undoMove() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier
         )
-        Action( //Redo
+        CustomIconButton( //Redo
             onClick = { viewModel.redoMove() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
             modifier = actionModifier
-        )
-    }
-}
-
-
-@Composable
-fun Action(
-    onClick: () -> Unit,
-    imageVector: ImageVector,
-    contentDescription: String?,
-    iconColor: Color = colorResource(id = R.color.primary_color),
-    modifier: Modifier = Modifier
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier
-    ) {
-        Icon(
-            tint = iconColor,
-            imageVector = imageVector,
-            contentDescription = contentDescription,
-            modifier = Modifier.fillMaxSize()
         )
     }
 }

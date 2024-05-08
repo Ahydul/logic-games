@@ -9,6 +9,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="section_border">#FF000000</color>
+    <color name="board_grid2">#363636</color>
     <color name="board_grid">#FF282828</color>
     <color name="cell_value">#FF888888</color>
     <color name="cell_note">#FF777777</color>
