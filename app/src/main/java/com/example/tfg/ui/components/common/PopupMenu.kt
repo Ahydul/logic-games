@@ -1,6 +1,5 @@
 package com.example.tfg.ui.components.common
 
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
@@ -51,8 +50,6 @@ class LeftPopupPositionProvider(private val buttonBounds: IntRect) : PopupPositi
         layoutDirection: LayoutDirection,
         popupContentSize: IntSize
     ): IntOffset {
-        Log.d("popup", "${buttonBounds.top}")
-
         val x = buttonBounds.left + buttonBounds.width - popupContentSize.width
         val y = buttonBounds.top
         return IntOffset(x, y)

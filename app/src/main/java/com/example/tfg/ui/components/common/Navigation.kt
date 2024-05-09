@@ -1,6 +1,5 @@
 package com.example.tfg.ui.components.common
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,9 +33,7 @@ fun NavigationBar(
         val mod = Modifier.weight(1f)
 
         LabeledIconButton(
-            onClick = {
-                Log.d("navigation", "home")
-                navController.navigate(MainActivity.Home.name) },
+            onClick = { navController.navigate(MainActivity.Home.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.house),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
@@ -44,9 +41,7 @@ fun NavigationBar(
             modifier = mod
         )
         LabeledIconButton(
-            onClick = {
-                Log.d("navigation", "games")
-                navController.navigate(MainActivity.Games.name) },
+            onClick = { navController.navigate(MainActivity.Games.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.controller_game),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
@@ -54,9 +49,7 @@ fun NavigationBar(
             modifier = mod
         )
         LabeledIconButton(
-            onClick = {
-                Log.d("navigation", "stats")
-                navController.navigate(MainActivity.Stats.name) },
+            onClick = { navController.navigate(MainActivity.Stats.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
