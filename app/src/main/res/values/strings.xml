@@ -6,4 +6,7 @@
     <string name="edit_action">Edit</string>
     <string name="undo_action">Undo</string>
     <string name="redo_action">Redo</string>
+    <string name="home_screen">Home Screen</string>
+    <string name="games_screen">Games Screen</string>
+    <string name="stats_screen">Stats Screen</string>
 </resources>
