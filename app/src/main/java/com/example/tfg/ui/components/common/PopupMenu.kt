@@ -77,6 +77,7 @@ fun PopupMenu(
             easing = SlowOutFastInEasing
         ), label = "AnimateColor"
     )
+
     val animatedBorderColor by animateColorAsState(
         targetValue = if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState) expandedColor else dismissedColor,
         animationSpec = tween(
@@ -87,39 +88,41 @@ fun PopupMenu(
 
     val transformOriginState = remember { mutableStateOf(TransformOrigin.Center) }
 
-    //THIS IS TO GET THE OFFSET
-    CustomIconButton(
-        onClick = {  },
-        imageVector = ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
-        contentDescription = "",
-        iconColor = dismissedColor,
-        modifier = Modifier.onGloballyPositioned { buttonBounds = it.boundsInWindow().roundToIntRect() }
-    )
+    val menuButton: @Composable (Modifier) -> Unit = {
+        Surface(
+            shape = CircleShape,
+            color = animatedSurfaceColor,
+            border = BorderStroke(1.dp, animatedBorderColor)
+        ) {
+            CustomIconButton(
+                onClick = { expandedStates.targetState = !expandedStates.targetState },
+                imageVector = ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
+                contentDescription = "Click me for menu",
+                modifier = it
+            )
+        }
+    }
 
-    Popup(
-        popupPositionProvider = LeftPopupPositionProvider(buttonBounds),
-        onDismissRequest = onDismissRequest,
-        properties = properties
-    ) {
-        PopupMenuContent(
-            expandedStates = expandedStates,
-            transformOriginState = transformOriginState,
-            borderColor = expandedColor,
-            surfaceColor = dismissedColor,
-            modifier = modifier,
-            content = content,
-            buttonBounds = buttonBounds
-        ){
-            Surface(
-                shape = CircleShape,
-                color = animatedSurfaceColor,
-                border = BorderStroke(1.dp, animatedBorderColor)
-            ) {
-                CustomIconButton(
-                    onClick = { expandedStates.targetState = !expandedStates.targetState },
-                    imageVector = ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
-                    contentDescription = "Click me for menu"
-                )
+    menuButton(Modifier.onGloballyPositioned {
+        buttonBounds = it.boundsInWindow().roundToIntRect()
+    })
+
+    if (expandedStates.targetState || expandedStates.currentState) {
+        Popup(
+            popupPositionProvider = LeftPopupPositionProvider(buttonBounds),
+            onDismissRequest = onDismissRequest,
+            properties = properties
+        ) {
+            PopupMenuContent(
+                expandedStates = expandedStates,
+                transformOriginState = transformOriginState,
+                borderColor = expandedColor,
+                surfaceColor = dismissedColor,
+                modifier = modifier,
+                content = content,
+                buttonBounds = buttonBounds
+            ){
+                menuButton(Modifier)
             }
         }
     }
@@ -138,7 +141,6 @@ private fun PopupMenuContent(
     button: @Composable () -> Unit
 ) {
     val transition = updateTransition(expandedStates, "DropDownMenu")
-
     val expandedFloat by transition.animateFloat(
         transitionSpec = {
             tween(
