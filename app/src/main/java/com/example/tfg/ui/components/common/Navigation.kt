@@ -1,5 +1,6 @@
 package com.example.tfg.ui.components.common
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,10 +12,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.tfg.R
+import com.example.tfg.ui.components.mainactivity.MainActivity
 
 @Composable
-fun NavigationBar(modifier: Modifier = Modifier) {
+fun NavigationBar(
+    modifier: Modifier = Modifier,
+    navController: NavHostController
+) {
     val bgColor = colorResource(id = R.color.board_grid)
     Divider (
         color = colorResource(id = R.color.board_grid2),
@@ -28,7 +34,9 @@ fun NavigationBar(modifier: Modifier = Modifier) {
         val mod = Modifier.weight(1f)
 
         LabeledIconButton(
-            onClick = { /*TODO*/ },
+            onClick = {
+                Log.d("navigation", "home")
+                navController.navigate(MainActivity.Home.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.house),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
@@ -36,7 +44,9 @@ fun NavigationBar(modifier: Modifier = Modifier) {
             modifier = mod
         )
         LabeledIconButton(
-            onClick = { /*TODO*/ },
+            onClick = {
+                Log.d("navigation", "games")
+                navController.navigate(MainActivity.Games.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.controller_game),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
@@ -44,13 +54,14 @@ fun NavigationBar(modifier: Modifier = Modifier) {
             modifier = mod
         )
         LabeledIconButton(
-            onClick = { /*TODO*/ },
+            onClick = {
+                Log.d("navigation", "stats")
+                navController.navigate(MainActivity.Stats.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
             label = "Estadísticas",
             modifier = mod
         )
-
     }
 }
