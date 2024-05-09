@@ -59,7 +59,10 @@ class MainActivity : ComponentActivity() {
 fun MainHeader(modifier: Modifier = Modifier) {
     Row(modifier = modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.weight(1f))
-        PopupMenu {
+        PopupMenu(
+            expandedColor = Color.White,
+            dismissedColor = colorResource(id = R.color.primary_background)
+        ) {
             CustomFilledIconButton(
                 onClick = {  },
                 imageVector = ImageVector.vectorResource(id = R.drawable.paint_brush),
