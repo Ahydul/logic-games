@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.IntOffset
@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.roundToIntRect
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
@@ -52,7 +53,7 @@ class LeftPopupPositionProvider(private val buttonBounds: IntRect) : PopupPositi
         Log.d("popup", "${buttonBounds.top}")
 
         val x = buttonBounds.left + buttonBounds.width - popupContentSize.width
-        val y = buttonBounds.top + 65 //No me preguntes por que
+        val y = buttonBounds.top
         return IntOffset(x, y)
     }
 }
@@ -83,16 +84,7 @@ fun PopupMenu(
         contentDescription = "",
         iconColor = colorResource(id = R.color.primary_background),
         modifier = Modifier
-            .onGloballyPositioned {
-                val offset = it.positionInRoot()
-                buttonBounds =
-                    IntRect(
-                        offset.x.toInt(),
-                        offset.y.toInt(),
-                        offset.x.toInt() + it.size.width,
-                        offset.y.toInt() + it.size.height
-                    )
-            }
+            .onGloballyPositioned { buttonBounds = it.boundsInWindow().roundToIntRect() }
     )
 
 
