@@ -2,6 +2,8 @@ package com.example.tfg.ui.components.common
 
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
@@ -30,7 +32,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -62,16 +63,25 @@ class LeftPopupPositionProvider(private val buttonBounds: IntRect) : PopupPositi
 fun PopupMenu(
     modifier: Modifier = Modifier,
     properties: PopupProperties = PopupProperties(focusable = true),
+    expandedColor: Color,
+    dismissedColor: Color,
     content: @Composable RowScope.() -> Unit
 ) {
     var buttonBounds by remember { mutableStateOf(IntRect(0,0,0,0)) }
     val expandedStates = remember { MutableTransitionState(false) }
     val onDismissRequest = { expandedStates.targetState = false }
-    val animatedColor by animateColorAsState(
-        targetValue = if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState) Color.White else colorResource(id = R.color.primary_background),
+    val animatedSurfaceColor by animateColorAsState(
+        targetValue = if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState) expandedColor else dismissedColor,
         animationSpec = tween(
             durationMillis = InTransitionDuration,
-            easing = LinearOutSlowInEasing
+            easing = SlowOutFastInEasing
+        ), label = "AnimateColor"
+    )
+    val animatedBorderColor by animateColorAsState(
+        targetValue = if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState) expandedColor else dismissedColor,
+        animationSpec = tween(
+            durationMillis = InTransitionDuration * 2,
+            easing = SlowOutFastInEasing
         ), label = "AnimateColor"
     )
 
@@ -82,11 +92,9 @@ fun PopupMenu(
         onClick = {  },
         imageVector = ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
         contentDescription = "",
-        iconColor = colorResource(id = R.color.primary_background),
-        modifier = Modifier
-            .onGloballyPositioned { buttonBounds = it.boundsInWindow().roundToIntRect() }
+        iconColor = dismissedColor,
+        modifier = Modifier.onGloballyPositioned { buttonBounds = it.boundsInWindow().roundToIntRect() }
     )
-
 
     Popup(
         popupPositionProvider = LeftPopupPositionProvider(buttonBounds),
@@ -96,13 +104,16 @@ fun PopupMenu(
         PopupMenuContent(
             expandedStates = expandedStates,
             transformOriginState = transformOriginState,
+            borderColor = expandedColor,
+            surfaceColor = dismissedColor,
             modifier = modifier,
             content = content,
             buttonBounds = buttonBounds
         ){
             Surface(
                 shape = CircleShape,
-                color = animatedColor,
+                color = animatedSurfaceColor,
+                border = BorderStroke(1.dp, animatedBorderColor)
             ) {
                 CustomIconButton(
                     onClick = { expandedStates.targetState = !expandedStates.targetState },
@@ -120,6 +131,8 @@ private fun PopupMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
     transformOriginState: MutableState<TransformOrigin>,
     modifier: Modifier,
+    borderColor: Color,
+    surfaceColor: Color,
     content: @Composable RowScope.() -> Unit,
     buttonBounds: IntRect,
     button: @Composable () -> Unit
@@ -136,13 +149,6 @@ private fun PopupMenuContent(
     ) { expanded ->
         if (expanded) 1f else 0f
     }
-    val animatedColor by animateColorAsState(
-        targetValue = if (expandedStates.targetState) Color.White else colorResource(id = R.color.primary_background),
-        animationSpec = tween(
-            durationMillis = InTransitionDuration,
-            easing = LinearOutSlowInEasing
-        ), label = "AnimateColor"
-    )
 
     Surface(
         modifier = Modifier.graphicsLayer {
@@ -151,8 +157,8 @@ private fun PopupMenuContent(
             transformOrigin = transformOriginState.value
         },
         shape = CircleShape,
-        border = BorderStroke(1.dp,animatedColor),
-        color = colorResource(id = R.color.primary_background),
+        border = if (expandedStates.targetState) BorderStroke(1.dp, borderColor) else null,
+        color = surfaceColor,
     ) {
         Row(
             modifier = modifier
@@ -168,3 +174,4 @@ private fun PopupMenuContent(
 
 // Menu open/close animation.
 internal const val InTransitionDuration = 240
+val SlowOutFastInEasing: Easing = CubicBezierEasing(0.0f, 0.2f, 1.0f, 1.0f)
