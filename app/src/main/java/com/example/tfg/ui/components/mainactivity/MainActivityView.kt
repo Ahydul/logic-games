@@ -27,7 +27,7 @@ fun MainScreen(
 
         NavHost(
             navController = navController,
-            startDestination = MainActivity.Home.name,
+            startDestination = MainActivity.Games.name,
             modifier = modifier.weight(17f)
         ) {
             composable(route = MainActivity.Home.name) {
