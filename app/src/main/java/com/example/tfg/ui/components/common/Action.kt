@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tfg.R
@@ -69,6 +70,31 @@ fun CustomFilledIconButton(
 }
 
 @Composable
+fun CustomText(
+    mainText: String,
+    textColor: Color = Color.Black,
+    mainFontSize: TextUnit = TextUnit.Unspecified,
+    secondaryText: String? = null,
+    modifier: Modifier = Modifier
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = mainText,
+            color = textColor,
+            fontSize = mainFontSize,
+            textAlign = TextAlign.Center,
+            modifier = modifier
+        )
+        if (secondaryText != null)
+            Text(text = secondaryText,
+                color = textColor.copy(alpha = 0.5f),
+                textAlign = TextAlign.Center,
+                modifier = modifier
+            )
+    }
+}
+
+@Composable
 fun MainFilledButton(
     onClick: () -> Unit,
     mainText: String,
@@ -78,25 +104,19 @@ fun MainFilledButton(
     textColor: Color = Color.Black
 ) {
     FilledTonalButton(
-        modifier = Modifier.fillMaxWidth(0.8f).border(width = 0.5.dp, color = borderColor, shape = CircleShape),
+        modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .border(width = 0.5.dp, color = borderColor, shape = CircleShape),
         onClick = onClick,
         colors = ButtonDefaults.filledTonalButtonColors(containerColor = color)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = mainText,
-                color = textColor,
-                fontSize = 22.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(0.7f)
-            )
-            if (secondaryText != null)
-                Text(text = secondaryText,
-                    color = textColor.copy(alpha = 0.5f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(0.7f)
-                )
-        }
+        CustomText(
+            mainText = mainText,
+            secondaryText = secondaryText,
+            textColor = textColor,
+            mainFontSize = 22.sp,
+            modifier = Modifier.fillMaxWidth(0.7f)
+        )
     }
 }
 

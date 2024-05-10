@@ -17,31 +17,23 @@ import com.example.tfg.state.ActiveGameViewModel
 fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
 
     val shape = RoundedCornerShape(8.dp)
-    //val game = remember { Game.example() } // Doesnt update on recomposition
+    val firstBorderColor = Color.Black
+    val secondBorderColor = Color.Black
 
     Column(modifier = modifier) {
         TopSection(
             viewModel = viewModel,
             modifier = modifier
-
                 .weight(1f)
         )
         MiddleSection(
             viewModel = viewModel,
             modifier = modifier
-
-                .border(
-                    width = 1.dp,
-                    color = Color.Black,
-                )
+                .border(width = 1.dp, color = firstBorderColor)
                 .aspectRatio(ratio = 1f)
                 .padding(4.dp)
                 .clip(shape)
-                .border(
-                    width = 2.dp,
-                    color = Color.Black,
-                    shape = shape
-                )
+                .border(width = 2.dp, color = secondBorderColor, shape = shape)
                 .weight(4f)
         )
         BottomSection(

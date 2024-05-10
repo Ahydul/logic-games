@@ -3,7 +3,6 @@ package com.example.tfg.ui.components.activegame
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -34,29 +33,24 @@ fun Cell(
 
     val gridColor = colorResource(id = R.color.board_grid)
 
-    val backgroundColor = if (cell.backgroundColor == 0)
-        colorResource(id = R.color.cell_background)
-    else
-        Color(cell.backgroundColor)
+    val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.cell_background)
+                            else Color(cell.backgroundColor).copy(alpha = 0.4f)
+    val iconColor = if (cell.isError) colorResource(id = R.color.cell_value_error)
+                        else colorResource(id = R.color.cell_value)
 
     val borderColor = colorResource(id = R.color.section_border)
-    val cellValueColor = colorResource(id = R.color.cell_value)
-    val cellNoteValueColor = colorResource(id = R.color.cell_note)
+    val noteColor = colorResource(id = R.color.cell_note)
     val value = cell.value
 
     Box(
         modifier = modifier
             .background(color = backgroundColor)
-            .border(
-                width = 0.2.dp,
-                color = gridColor
-            )
     ) {
         //Main value
         if (value != 0) {
             Icon(
                 painter = painterResource(id = HakyuuValue.get(value).icon),
-                tint = cellValueColor,
+                tint = iconColor,
                 contentDescription = "Value $value"
             )
         }
@@ -66,7 +60,7 @@ fun Cell(
                 if (it != 0) {
                     Icon(
                         painter = painterResource(id = HakyuuValue.get(it).icon),
-                        tint = cellNoteValueColor,
+                        tint = noteColor,
                         contentDescription = "Value $it",
                         modifier = Modifier.padding(2.dp)
                     )
@@ -81,26 +75,37 @@ fun Cell(
 
         //Paints region borders and selecting UI
         Canvas(modifier = Modifier.matchParentSize()) {
-            val borderSize = 1.dp.toPx()
-            val drawDivider = { start: Offset, end: Offset ->
-                drawLine(
-                    color = borderColor,
-                    start = start,
-                    end = end,
-                    strokeWidth = borderSize
-                )
+            val bigBorderSize = 2.dp.toPx()
+            val smallBorderSize = 0.8.dp.toPx()
+
+            val drawTopDivider = { color: Color, dividerSize: Float ->
+                val y = 0f
+                drawLine(color = color, start = Offset(0f, y), end = Offset(size.width, y), strokeWidth = dividerSize)
             }
-            val drawHorizontalDivider = { y:Float ->
-                drawDivider(Offset(0f, y), Offset(size.width, y))
+            val drawBottomDivider = { color: Color, dividerSize: Float ->
+                val y = size.height
+                drawLine(color = color, start = Offset(0f, y), end = Offset(size.width, y), strokeWidth = dividerSize)
             }
-            val drawVerticalDivider = { x:Float ->
-                drawDivider(Offset(x, size.width), Offset(x, 0f))
+            val drawLeftDivider = { color: Color, dividerSize: Float ->
+                val x = 0f
+                drawLine(color = color, start = Offset(x, size.width), end = Offset(x, 0f), strokeWidth = dividerSize)
+            }
+            val drawRightDivider = { color: Color, dividerSize: Float ->
+                val x = size.width
+                drawLine(color = color, start = Offset(x, size.width), end = Offset(x, 0f), strokeWidth = dividerSize)
             }
 
-            if (dividersToDraw.up) drawHorizontalDivider(0f + borderSize / 2)
-            if (dividersToDraw.down) drawHorizontalDivider(size.height - borderSize / 2)
-            if (dividersToDraw.right) drawVerticalDivider(size.width - borderSize / 2)
-            if (dividersToDraw.left) drawVerticalDivider(0f + borderSize / 2)
+            if (dividersToDraw.up) drawTopDivider(borderColor, bigBorderSize)
+            else drawTopDivider(gridColor, smallBorderSize)
+
+            if (dividersToDraw.down) drawBottomDivider(borderColor, bigBorderSize)
+            else drawBottomDivider(gridColor, smallBorderSize)
+
+            if (dividersToDraw.right) drawRightDivider(borderColor, bigBorderSize)
+            else drawRightDivider(gridColor, smallBorderSize)
+
+            if (dividersToDraw.left) drawLeftDivider(borderColor, bigBorderSize)
+            else drawLeftDivider(gridColor, smallBorderSize)
 
             if(isSelected()){
                 drawOval(color = Color.Red, alpha = 0.2f)

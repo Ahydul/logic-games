@@ -90,26 +90,26 @@ fun BottomActionRow(
                 )
             }
         }
-        else when(viewModel.getGameType()) {
-            Games.HAKYUU -> {
-                for(it in 0..<viewModel.getMaxValue()) {
-                    //for(it in 0..<12) {
-                    val value = HakyuuValue.get(it)
-                    val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
-                    else colorResource(id = R.color.primary_color)
-
-                    //TODO: FIX THIS
-                    CustomIconButton(
-                        onClick = { viewModel.noteOrWriteAction(value.value) },
-                        imageVector = ImageVector.vectorResource(id = value.icon),
-                        iconColor = iconColor,
-                        contentDescription = null,
-                        modifier = modifierValueButtons
-                    )
-
+        else {
+            for(it in 0..< viewModel.getMaxValue()) {
+                val value = when(viewModel.getGame()) {
+                    Games.HAKYUU -> HakyuuValue.get(it)
                 }
+                val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
+                                else colorResource(id = R.color.primary_color)
+                val icon = ImageVector.vectorResource(id = value.icon)
+
+                //TODO: FIX THIS
+                CustomIconButton(
+                    onClick = { viewModel.noteOrWriteAction(value.value) },
+                    imageVector = icon,
+                    iconColor = iconColor,
+                    contentDescription = null,
+                    modifier = modifierValueButtons
+                )
             }
         }
+
     }
 }
 

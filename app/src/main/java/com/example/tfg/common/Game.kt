@@ -12,7 +12,7 @@ class Game private constructor(
     val state: SnapshotStateList<GameState>,
     val startDate: LocalDateTime = LocalDateTime.now(),
     val endDate: LocalDateTime? = null,
-    var errors: List<Move> = emptyList(),
+    var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
     var numClues: Int = 0
 ) {
 
