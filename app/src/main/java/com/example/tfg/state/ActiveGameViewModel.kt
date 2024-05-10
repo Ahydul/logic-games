@@ -25,7 +25,7 @@ import java.util.SortedMap
 class ActiveGameViewModel(game: Game) : ViewModel() {
 
     private val ERRORCELLBACKGROUNDCOLOR = Color.Red.toArgb()
-    private val game = mutableStateOf(game)
+    private val game = game
     private var numErrors = mutableStateOf(0)
     private var statePointer = mutableIntStateOf(0)
     private val isNote = mutableStateOf(false)
@@ -43,19 +43,19 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 //  Main getters
 
     private fun getGameStates(): SnapshotStateList<GameState> {
-        return game.value.state
+        return game.state
     }
 
     private fun getGameType(): GameType {
-        return game.value.gameType
+        return game.gameType
     }
 
     fun getNumClues(): Int {
-        return game.value.numClues
+        return game.numClues
     }
 
     fun getDifficulty(): Difficulty {
-        return game.value.difficulty
+        return game.difficulty
     }
 
     fun getGame(): Games {
@@ -180,7 +180,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
     private fun addError(index: Int, value: Int) {
         val error = Pair(index, value)
-        val res = game.value.errors.add(error)
+        val res = game.errors.add(error)
         if (res) numErrors.value++
     }
 
@@ -427,7 +427,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     fun setIsNote() {
-        if (game.value.gameType.noNotes) return
+        if (game.gameType.noNotes) return
         isNote.value = !isNote()
     }
 
