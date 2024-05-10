@@ -7,7 +7,7 @@ import kotlin.random.Random
 
 abstract class GameType(
     val type: Games,
-    val noNotes: Boolean = true,
+    val noNotes: Boolean = false,
     val numColumns: Int,
     val numRows: Int,
     protected val random: Random,
@@ -114,6 +114,11 @@ abstract class GameType(
 
     protected fun boardPopulated(actualValues: IntArray): Boolean {
         return actualValues.all { it != 0 }
+    }
+
+    abstract fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int>
+    fun isError(position: Int, value: Int): Boolean {
+        return completedBoard[position] != value
     }
 
 }

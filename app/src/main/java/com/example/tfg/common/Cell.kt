@@ -11,6 +11,7 @@ class Cell private constructor(
     var notes: IntArray,
     val readOnly: Boolean,
     val backgroundColor: Int,
+    val isError: Boolean = false
 ) {
 
     fun isEmpty(): Boolean {
@@ -57,8 +58,8 @@ class Cell private constructor(
         return newNotes
     }
 
-    fun copy(value: Int = this.value, notes: IntArray = this.notes, backgroundColor: Int = this.backgroundColor): Cell {
-        return Cell(value = value, notes = notes, readOnly = this.readOnly, backgroundColor = backgroundColor)
+    fun copy(value: Int = this.value, notes: IntArray = this.notes, backgroundColor: Int = this.backgroundColor, isError: Boolean = this.isError): Cell {
+        return Cell(value = value, notes = notes, readOnly = this.readOnly, backgroundColor = backgroundColor, isError = isError)
     }
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {

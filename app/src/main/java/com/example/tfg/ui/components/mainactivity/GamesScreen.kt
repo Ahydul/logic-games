@@ -1,7 +1,6 @@
 package com.example.tfg.ui.components.mainactivity
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -13,8 +12,6 @@ fun GamesScreen(modifier: Modifier = Modifier) {
     Column(modifier = modifier
         .fillMaxHeight()
     ) {
-        Spacer(modifier = mod.weight(10f))
-        ContinueButtons(modifier = mod.weight(5f))
-        Spacer(modifier = mod.weight(4f))
+
     }
 }

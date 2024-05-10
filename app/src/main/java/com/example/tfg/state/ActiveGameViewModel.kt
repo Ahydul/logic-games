@@ -6,10 +6,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import com.example.tfg.common.Board
 import com.example.tfg.common.Cell
+import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.Game
 import com.example.tfg.common.GameState
@@ -21,7 +24,9 @@ import java.util.SortedMap
 
 class ActiveGameViewModel(game: Game) : ViewModel() {
 
+    private val ERRORCELLBACKGROUNDCOLOR = Color.Red.toArgb()
     private val game = mutableStateOf(game)
+    private var numErrors = mutableStateOf(0)
     private var statePointer = mutableIntStateOf(0)
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
@@ -41,16 +46,28 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return game.value.state
     }
 
-    fun getGameType(): Games {
-        return game.value.gameType.type
+    private fun getGameType(): GameType {
+        return game.value.gameType
+    }
+
+    fun getNumClues(): Int {
+        return game.value.numClues
+    }
+
+    fun getDifficulty(): Difficulty {
+        return game.value.difficulty
+    }
+
+    fun getGame(): Games {
+        return getGameType().type
     }
 
     fun getMaxValue(): Int {
-        return game.value.gameType.maxRegionSize
+        return getGameType().maxRegionSize
     }
 
     private fun getRegions(): Map<Int, List<Coordinate>> {
-        return game.value.gameType.getRegions()
+        return getGameType().getRegions()
     }
 
     fun getNumberRegionSizes(): SortedMap<Int, Int> {
@@ -99,10 +116,13 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return getBoard().cells
     }
 
+    fun getNumErrors(): Int {
+        return numErrors.value
+    }
 
-/*
-    GameState functions
- */
+    /*
+        GameState functions
+     */
 
     //Actual state is updated with unsync data and cloned into a new GameState
     fun newGameState() {
@@ -158,35 +178,39 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         if (!getCell(index).isEmpty()) setCell(index = index, newCell = Cell.createWithBackground(backgroundColor = 0))
     }
 
-    private fun setCellValue(index: Int, value: Int) {
-        Log.d("action", "index:$index value:$value")
+    private fun addError(index: Int, value: Int) {
+        val error = Pair(index, value)
+        val res = game.value.errors.add(error)
+        if (res) numErrors.value++
+    }
 
-        val newCell = getCells()[index].copy(
-            value = if (getCells()[index].value == value) { 0 } else { value }
+    private fun setCellValue(index: Int, value: Int, isError: Boolean = false) {
+        val previousCell = getCell(index)
+        val newCell = previousCell.copy(
+            value = if (previousCell.value == value) 0 else value,
+            isError = isError
         )
         setCell(index = index, newCell = newCell)
 
-        Log.d("action", "new cell:${getCell(index)}")
+        if (isError) addError(index = index, value = value)
+        Log.d("d","add $index to errors")
+        Log.d("d","${getNumErrors()}")
+
     }
 
     private fun setCellNote(index: Int, noteIndex: Int, note: Int) {
-        Log.d("action", "setCellNote index:$index noteIndex:$noteIndex note:$note")
-
+        val previousCell = getCell(index)
         val newCell = if (note == 0) {
-            getCells()[index].copy(notes = Cell.emptyNotes())
-        } else if (getCells()[index].getNote(noteIndex) == note) {
-            getCells()[index].copy(noteIndex = noteIndex, noteValue = 0)
+            previousCell.copy(notes = Cell.emptyNotes())
+        } else if (previousCell.getNote(noteIndex) == note) {
+            previousCell.copy(noteIndex = noteIndex, noteValue = 0)
         } else {
-            getCells()[index].copy(noteIndex = noteIndex, noteValue = note)
+            previousCell.copy(noteIndex = noteIndex, noteValue = note)
         }
         setCell(index = index, newCell = newCell)
-
-        Log.d("action", "new cell:${getCell(index)}")
     }
 
     private fun setCellNote(index: Int, note: Int) {
-        Log.d("action", "setCellNote index:$index note:$note")
-
         val cell = getCell(index)
         val newCell = if (note == 0) {
             cell.copy(notes = Cell.emptyNotes())
@@ -199,20 +223,14 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
             }
         }
         setCell(index = index, newCell = newCell)
-
-        Log.d("action", "new cell:${getCell(index)}")
     }
 
-    private fun setCellColor(coordinate: Coordinate, color: Int) {
-        val index = coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
-        Log.d("action", "index:$index color:$color")
-
-        val newCell = getCells()[index].copy(
-            backgroundColor = if (getCells()[index].backgroundColor == color) { 0 } else { color }
+    private fun setCellColor(index: Int, color: Int) {
+        val previousCell = getCell(index)
+        val newCell = previousCell.copy(
+            backgroundColor = if (previousCell.backgroundColor == color) 0 else color
         )
         setCell(index = index, newCell = newCell)
-
-        Log.d("action", "new cell:${getCell(index)}")
     }
 
     private fun setCell(coordinate: Coordinate, newCell: Cell) {
@@ -231,13 +249,6 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         }
     }
 
-    private fun setCellsValues(value: Int, coordinates: List<Coordinate>) {
-        coordinates.forEach {
-            val index = it.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
-            setCellValue(value = value, index = index)
-        }
-    }
-
     private fun eraseCells(coordinates: List<Coordinate>) {
         coordinates.forEach {
             val index = it.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
@@ -245,9 +256,13 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         }
     }
 
-    private fun setCellsColor(color: Int, coordinates: List<Coordinate>) {
-        coordinates.forEach { setCellColor(color = color, coordinate = it) }
+    private fun setCellsBackgroundColor(color: Int, coordinates: List<Coordinate>) {
+        coordinates.forEach { coordinate ->
+            val index = coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+            setCellColor(color = color, index = index)
+        }
     }
+
 
     /*
         SelectedTiles functions
@@ -337,54 +352,62 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
             getMoves().removeRange(fromIndex = getActualMovesPointer() + 1, toIndex = getMoves().size)
         }
 
-        Log.d("move","ADD moves:${getMoves().size} pointer:${getActualMovesPointer()}")
-
         getMoves().add(move)
         movePointerRight()
-
-        Log.d("move","moves:${getMoves().size} pointer:${getActualMovesPointer()}")
     }
 
     fun applyMove(move: Move) {
+        var valuesChanged = mutableListOf<Coordinate>()
         for (i in 0..move.coordinates.size - 1) {
-            setCell(coordinate = move.coordinates[i], newCell = move.newCells[i])
+            val newCell = move.newCells[i]
+            val coordinate = move.coordinates[i]
+            if (getCell(coordinate).value != newCell.value) valuesChanged.add(coordinate)
+
+            setCell(coordinate = coordinate, newCell = newCell)
         }
 
         removeSelections()
-        addSelections(move.coordinates)
+
+        if (valuesChanged.isNotEmpty()) {
+            addSelections(valuesChanged)
+        }else {
+            addSelections(move.coordinates)
+        }
     }
 
     fun unapplyMove(move: Move) {
+        var valuesChanged = mutableListOf<Coordinate>()
         for (i in 0..move.coordinates.size - 1) {
-            setCell(coordinate = move.coordinates[i], newCell = move.previousCells[i])
+            val previousCell = move.previousCells[i]
+            val coordinate = move.coordinates[i]
+            if (getCell(coordinate).value != previousCell.value) valuesChanged.add(coordinate)
+
+            setCell(coordinate = coordinate, newCell = previousCell)
         }
 
         removeSelections()
-        addSelections(move.coordinates)
+
+        if (valuesChanged.isNotEmpty()) {
+            addSelections(valuesChanged)
+        }else {
+            addSelections(move.coordinates)
+        }
     }
 
     fun redoMove() {
         val canRedo = getActualMovesPointer() < getMoves().size - 1
         if (!canRedo) return
 
-        Log.d("move","REDO moves:${getMoves().size} pointer:${getActualMovesPointer()}")
-
         movePointerRight()
         applyMove(getMove(getActualMovesPointer()))
-
-        Log.d("move","moves:${getMoves().size} pointer:${getActualMovesPointer()}")
     }
 
     fun undoMove() {
         val canUndo = getActualMovesPointer() > -1
         if (!canUndo) return
 
-        Log.d("move","UNDO moves:${getMoves().size} pointer:${getActualMovesPointer()}")
-
         unapplyMove(getMove(getActualMovesPointer()))
         movePointerLeft()
-
-        Log.d("move","moves:${getMoves().size} pointer:${getActualMovesPointer()}")
     }
 
     /*
@@ -404,6 +427,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     fun setIsNote() {
+        if (game.value.gameType.noNotes) return
         isNote.value = !isNote()
     }
 
@@ -453,17 +477,42 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     Game Actions
      */
 
+    private fun checkValue(position: Int, value: Int): Set<Int> {
+        return getGameType().checkValue(
+            position = position,
+            value = value,
+            actualValues = getBoard().cells.map { if (it.isError) 0 else it.value }.toIntArray()
+        )
+    }
+
+    private fun isError(position: Int, value: Int): Boolean {
+        return getGameType().isError(
+            position = position,
+            value = value
+        )
+    }
+
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
-        val coordinates = selectedTiles.filter { !isReadOnly(it) }
+        val coordinates = selectedTiles.filter { !isReadOnly(it) }.toMutableList()
         if (coordinates.isEmpty()) return
 
-        val previousCells = getCells(coordinates)
+        var previousCells = getCells(coordinates).toMutableList()
 
         if (isNote()) {
             setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
         }
         else if (coordinates.size == 1) {
-            setCellsValues(value, coordinates = coordinates)
+            val index = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+
+            // Paint positions that causes the error
+            val errors = checkValue(position = index, value = value).map { Coordinate.fromIndex(it, getNumRows(),getNumColumns()) }
+            previousCells.addAll(getCells(errors))
+            setCellsBackgroundColor(color = ERRORCELLBACKGROUNDCOLOR, coordinates = errors)
+            coordinates.addAll(errors)
+
+            val isError = isError(position = index, value = value)
+            setCellValue(value = value, index = index, isError = isError)
+
             removeSelections()
         }
 
@@ -477,7 +526,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
         if (coordinates.isEmpty()) return
 
-        setCellsColor(color = colorInt, coordinates = coordinates)
+        setCellsBackgroundColor(color = colorInt, coordinates = coordinates)
 
         val newCells = getCells(coordinates)
         addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))

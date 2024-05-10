@@ -1,5 +1,6 @@
 package com.example.tfg.games.hakyuu
 
+import android.util.Log
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
@@ -569,6 +570,37 @@ class Hakyuu private constructor(
         return res
     }
 
+    override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
+        val res = mutableSetOf<Int>()
+        val positions = getRegionPositions(regionId = getRegionId(position = position))
+
+        //Check rule 1
+        if (value > positions.size) res.add(position)
+
+        //Check rule 2
+        positions.filter { pos -> pos != position && actualValues[pos] == value}
+            .forEach { res.add(it) }
+
+        //Check rule 3
+        Direction.entries.forEach { direction: Direction ->
+            (1..value).mapNotNull { moveValue: Int ->
+                    Coordinate.move(
+                        direction = direction,
+                        position = position,
+                        numRows = numRows,
+                        numColumns = numColumns,
+                        value = moveValue
+                    )
+                } //Null values are out of bounds of the board and can be ignored
+                .filter { otherPosition: Int ->
+                    actualValues[otherPosition] == value
+                }
+                .forEach { res.add(it) }
+        }
+
+        return res
+    }
+
 
     companion object {
         fun create(numColumns: Int, numRows: Int, random: Random): Hakyuu {
@@ -579,15 +611,19 @@ class Hakyuu private constructor(
             )
         }
 
-        fun create(numColumns: Int, numRows: Int, random: Random, regions: IntArray, board: IntArray): Hakyuu {
+        fun create(numColumns: Int, numRows: Int, random: Random, regions: IntArray, startBoard: IntArray, completedBoard: IntArray): Hakyuu {
             val res = Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
                 random = random
             )
 
+            //res.solveBoard(startBoard)
             res.boardRegions.indices.forEach { res.boardRegions[it] = regions[it] }
-            res.startBoard.indices.forEach { res.startBoard[it] = board[it] }
+            res.startBoard.indices.forEach { res.startBoard[it] = startBoard[it] }
+            res.completedBoard.indices.forEach { res.completedBoard[it] = completedBoard[it] }
+
+
 
             return res
         }
@@ -627,11 +663,23 @@ class Hakyuu private constructor(
                 "- - 4 - - 6 - -\n" +
                 "- - 3 5 - - 6 -"
 
-            val board = parseBoardString(start)
+            val completed =
+                "1 4 1 2 3 1 2 1\n" +
+                "3 1 2 1 4 2 1 3\n" +
+                "5 2 7 3 6 1 4 5\n" +
+                "1 6 1 2 1 5 2 1\n" +
+                "2 3 5 1 2 4 3 2\n" +
+                "3 5 1 4 1 2 1 3\n" +
+                "1 2 4 1 3 6 5 4\n" +
+                "2 1 3 5 4 1 6 1"
+
+            val startBoard = parseBoardString(start)
+            val completedBoard = parseBoardString(completed)
 
             return create(
                 regions = parseRegionString(regions),
-                board = board,
+                startBoard = startBoard,
+                completedBoard = completedBoard,
                 numRows = numRows,
                 numColumns = numColumns,
                 random = Random(1)

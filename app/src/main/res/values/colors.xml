@@ -12,6 +12,7 @@
     <color name="board_grid2">#3E3E3E</color>
     <color name="board_grid">#FF282828</color>
     <color name="cell_value">#FF888888</color>
+    <color name="cell_value_error">#890A0A</color>
     <color name="cell_note">#FF777777</color>
     <color name="primary_color">#FF999999</color>
     <color name="note_color">#FF295438</color>
