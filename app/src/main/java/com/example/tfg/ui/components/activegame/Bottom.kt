@@ -126,24 +126,27 @@ fun TopActionRow(
         rows = 1,
         modifier = modifier
     ) {
-        CustomIconButton( //Note
+        /*
+        //TODO: IMPLEMENT STATE BUTTONS. AND DO EXTENDED TESTS //Note
+        CustomIconButton(
             onClick = { viewModel.newGameState() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier
         )
-        CustomIconButton( //Undo
+        CustomIconButton(
             onClick = { viewModel.setActualState(0) },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier
         )
-        CustomIconButton( //Redo
+        CustomIconButton(
             onClick = { viewModel.setActualState(1) },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
             modifier = actionModifier
         )
+         */
         CustomIconButton( //Paint
             onClick = { viewModel.setIsPaint() },
             imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),

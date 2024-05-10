@@ -2,6 +2,7 @@ package com.example.tfg.ui.components.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Divider
@@ -11,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.tfg.R
 import com.example.tfg.ui.components.mainactivity.MainActivity
@@ -30,7 +32,9 @@ fun NavigationBar(
     Row(modifier = modifier
         .background(bgColor)
     ) {
-        val mod = Modifier.weight(1f)
+        val mod = Modifier.weight(1f).fillMaxSize()
+        val fontSize = 12.sp
+        val iconPadding = 15.dp
 
         LabeledIconButton(
             onClick = { navController.navigate(MainActivity.Home.name) },
@@ -38,6 +42,8 @@ fun NavigationBar(
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
             label = "Inicio",
+            fontSize = fontSize,
+            iconPadding = iconPadding,
             modifier = mod
         )
         LabeledIconButton(
@@ -46,6 +52,8 @@ fun NavigationBar(
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
             label = "Juegos",
+            fontSize = fontSize,
+            iconPadding = iconPadding,
             modifier = mod
         )
         LabeledIconButton(
@@ -54,6 +62,8 @@ fun NavigationBar(
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
             label = "Estadísticas",
+            fontSize = fontSize,
+            iconPadding = iconPadding,
             modifier = mod
         )
     }
