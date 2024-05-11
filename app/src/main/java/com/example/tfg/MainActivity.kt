@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.CustomFilledIconButton
 import com.example.tfg.ui.components.common.LabeledIconButton
-import com.example.tfg.ui.components.common.MainFilledButton
 import com.example.tfg.ui.components.common.MainHeader
 import com.example.tfg.ui.components.common.NavigationBar
 import com.example.tfg.ui.components.common.PopupMenu

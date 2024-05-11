@@ -173,4 +173,5 @@ private fun PopupMenuContent(
 
 // Menu open/close animation.
 internal const val InTransitionDuration = 240
-val SlowOutFastInEasing: Easing = CubicBezierEasing(0.0f, 0.2f, 1.0f, 1.0f)
+internal const val OutTransitionDuration = 75
+internal val SlowOutFastInEasing: Easing = CubicBezierEasing(0.0f, 0.2f, 1.0f, 1.0f)

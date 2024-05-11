@@ -1,10 +1,23 @@
 package com.example.tfg.ui.components.mainactivity
 
+import android.graphics.ColorSpace
 import android.util.Log
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,27 +26,51 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.example.tfg.R
+import com.example.tfg.ui.components.common.ClippedRectangleShape
 import com.example.tfg.ui.components.common.CustomButton
+import com.example.tfg.ui.components.common.CustomFilledButton
+import com.example.tfg.ui.components.common.CustomIconButton
+import com.example.tfg.ui.components.common.CustomTextField
+import com.example.tfg.ui.components.common.InTransitionDuration
 import com.example.tfg.ui.components.common.LabeledIconButton
+import com.example.tfg.ui.components.common.OutTransitionDuration
+import com.example.tfg.ui.components.common.SlowOutFastInEasing
+import kotlin.random.Random
 
 @Composable
-private fun ChooseGameButton(modifier: Modifier = Modifier) {
+private fun ChooseGameButton(modifier: Modifier = Modifier, expandedStates: MutableTransitionState<Boolean>) {
     CustomButton(
-        onClick = { Log.d("button", "choose game") },
+        onClick = { expandedStates.targetState = true },
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
         shape = RoundedCornerShape(8.dp),
         borderStroke = BorderStroke(0.5.dp, color = colorResource(id = R.color.board_grid2)),
@@ -56,7 +93,9 @@ private fun ChooseGameButton(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                val mod = Modifier.weight(1f).aspectRatio(1f)
+                val mod = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
                 val shape = RoundedCornerShape(20.dp)
                 val fontSize = 11.sp
                 val iconPadding = 14.dp
@@ -72,10 +111,10 @@ private fun ChooseGameButton(modifier: Modifier = Modifier) {
                     modifier = mod
                 )
                 LabeledIconButton(
-                    onClick = { Log.d("button", "CUSTOM") },
-                    imageVector = ImageVector.vectorResource(id = R.drawable.handyman_24px),
+                    onClick = { Log.d("button", "EN CURSO") },
+                    imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
                     iconColor = colorResource(id = R.color.primary_color),
-                    label = "Custom",
+                    label = "En curso",
                     labelColor = colorResource(id = R.color.primary_color),
                     fontSize = fontSize,
                     shape = shape,
@@ -98,16 +137,168 @@ private fun ChooseGameButton(modifier: Modifier = Modifier) {
     }
 }
 
+
+@Composable
+fun TextFields(modifier: Modifier = Modifier, textColor: Color) {
+    val textFieldModifier = modifier
+        .border(
+            1.dp,
+            color = colorResource(id = R.color.board_grid2),
+            shape = RoundedCornerShape(10.dp)
+        )
+    val numColumns = remember { mutableStateOf("6") }
+    val numRows = remember { mutableStateOf("6") }
+    val seed = remember { mutableStateOf("") }
+    val maxValue = 13
+    val minValue = 3
+
+
+    CustomTextField(
+        state = numColumns,
+        minValue = minValue,
+        maxValue = maxValue,
+        color = textColor,
+        label = { Text(text = "Número de columnas", color = textColor) },
+        modifier = textFieldModifier
+    )
+    CustomTextField(
+        state = numRows,
+        minValue = minValue,
+        maxValue = maxValue,
+        color = textColor,
+        label = { Text(text = "Número de filas", color = textColor) },
+        modifier = textFieldModifier
+    )
+    CustomTextField(
+        state = seed,
+        color = textColor,
+        label = { Text(text = "Semilla", color = textColor) },
+        modifier = textFieldModifier
+    )
+}
+
+@Composable
+fun chosenGameButtons(modifier: Modifier = Modifier, textColor: Color) {
+    Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
+        CustomFilledButton(
+            onClick = { Log.d("button","Tablero customizado") },
+            color = colorResource(id = R.color.board_grid),
+            borderColor = colorResource(id = R.color.board_grid2),
+            textColor = textColor,
+            mainText = "Tablero customizado",
+            buttonModifier = modifier.weight(1.5f)
+        )
+        CustomFilledButton(
+            onClick = { Log.d("button","Crear") },
+            color = colorResource(id = R.color.board_grid),
+            borderColor = colorResource(id = R.color.board_grid2),
+            textColor = textColor,
+            mainText = "Crear",
+            buttonModifier = modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun ChosenGame(expandedStates: MutableTransitionState<Boolean>, onDismissRequest: (() -> Unit)) {
+    val transition = updateTransition(expandedStates, "DropDownMenu")
+    val scale by transition.animateFloat(
+        transitionSpec = {
+            if (false isTransitioningTo true) {
+                tween(
+                    durationMillis = InTransitionDuration,
+                    easing = LinearOutSlowInEasing
+                )
+            } else {
+                tween(
+                    durationMillis = 1,
+                    delayMillis = OutTransitionDuration
+                )
+            }
+        }
+    ) { if (it) 1f else 0.8f }
+
+    Popup(
+        alignment = Alignment.Center,
+        onDismissRequest = onDismissRequest,
+        properties = PopupProperties(focusable = true),
+        offset = IntOffset(0,-140)
+    ) {
+        val bgColor = colorResource(id = R.color.board_grid)
+        val color = colorResource(id = R.color.pearl_white)
+
+        Box(
+            modifier = Modifier
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .clip(RoundedCornerShape(8.dp))
+                .fillMaxWidth(0.8f)
+                .background(bgColor)
+                .padding(3.dp)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(bgColor)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.padding(25.dp)
+                ) {
+                    val modifier = Modifier.padding(top = 15.dp)
+
+                    Text(text = "Hakyuu", fontSize = 25.sp, color = color)
+                    TextFields(textColor = color, modifier = modifier)
+                    chosenGameButtons(textColor = color, modifier = modifier.padding(horizontal = 2.dp).fillMaxHeight())
+                }
+            }
+            CustomIconButton(
+                onClick = { expandedStates.targetState = false },
+                imageVector = ImageVector.vectorResource(id = R.drawable.outline_close_24),
+                contentDescription = "",
+            )
+        }
+    }
+}
+
+
 @Composable
 fun GamesScreen(modifier: Modifier = Modifier) {
+    val expandedStates = remember { MutableTransitionState(false) }
+
+    val animatedBlur by animateDpAsState(
+        targetValue = if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState) 2.5.dp else 0.dp,
+        animationSpec =
+        if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState)
+            tween(
+                durationMillis = InTransitionDuration,
+                easing = LinearOutSlowInEasing
+            )
+        else
+            tween(
+                durationMillis = OutTransitionDuration,
+                easing = LinearOutSlowInEasing
+            ), label = "AnimateBlur"
+    )
+
     Column(
         modifier = modifier
             .padding(10.dp)
             .verticalScroll(rememberScrollState())
+            .blur(animatedBlur)
     ) {
-        repeat(6){
-            ChooseGameButton()
-            Spacer(modifier = Modifier.height(10.dp))
-        }
+        ChooseGameButton(expandedStates = expandedStates)
+        Spacer(modifier = Modifier.height(10.dp))
+
+    }
+
+    val onDismissRequest = { expandedStates.targetState = false }
+
+    if (expandedStates.targetState || expandedStates.currentState) {
+        ChosenGame(expandedStates = expandedStates, onDismissRequest = onDismissRequest)
     }
 }
