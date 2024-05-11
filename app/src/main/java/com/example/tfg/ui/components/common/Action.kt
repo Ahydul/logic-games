@@ -3,15 +3,17 @@ package com.example.tfg.ui.components.common
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledIconButton
@@ -20,7 +22,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,11 +34,13 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.tfg.R
 
 @Composable
@@ -105,18 +113,19 @@ fun CustomText(
 }
 
 @Composable
-fun MainFilledButton(
+fun CustomFilledButton(
     onClick: () -> Unit,
     mainText: String,
     secondaryText: String? = null,
     color: Color = Color.Red,
     borderColor: Color = Color.Red,
-    textColor: Color = Color.Black
+    textColor: Color = Color.Black,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    buttonModifier: Modifier = Modifier,
+    textModifier: Modifier = Modifier
 ) {
     FilledTonalButton(
-        modifier = Modifier
-            .fillMaxWidth(0.8f)
-            .border(width = 0.5.dp, color = borderColor, shape = CircleShape),
+        modifier = buttonModifier.border(width = 0.5.dp, color = borderColor, shape = CircleShape),
         onClick = onClick,
         colors = ButtonDefaults.filledTonalButtonColors(containerColor = color)
     ) {
@@ -124,37 +133,12 @@ fun MainFilledButton(
             mainText = mainText,
             secondaryText = secondaryText,
             textColor = textColor,
-            mainFontSize = 22.sp,
-            modifier = Modifier.fillMaxWidth(0.7f)
-        )
-    }
-}
-/*
-@Composable
-fun LabeledIconButton(
-    onClick: () -> Unit,
-    imageVector: ImageVector,
-    iconColor: Color = colorResource(id = R.color.primary_color),
-    label: String,
-    labelColor: Color = colorResource(id = R.color.primary_color),
-    fontSize: TextUnit = TextUnit.Unspecified,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        CustomIconButton(onClick, imageVector, label, iconColor)
-        Text(
-            text = label,
-            color = labelColor,
-            fontSize = fontSize,
+            mainFontSize = fontSize,
+            modifier = textModifier
         )
     }
 }
 
- */
 @Composable
 fun LabeledIconButton(
     onClick: () -> Unit,
@@ -183,7 +167,10 @@ fun LabeledIconButton(
                 tint = iconColor,
                 imageVector = imageVector,
                 contentDescription = label,
-                modifier = Modifier.weight(5f).fillMaxSize().padding(iconPadding, iconPadding, iconPadding, 0.dp)
+                modifier = Modifier
+                    .weight(5f)
+                    .fillMaxSize()
+                    .padding(iconPadding, iconPadding, iconPadding, 0.dp)
             )
             Text(
                 text = label,
@@ -213,4 +200,67 @@ fun CustomButton(
         modifier = modifier.height(intrinsicSize = IntrinsicSize.Min),
         content = content
     )
+}
+
+
+@Composable
+fun CustomTextField(
+    state: MutableState<String>,
+    label: @Composable() (() -> Unit)? = null,
+    bgColors: TextFieldColors = TextFieldDefaults.colors(unfocusedContainerColor = Color.Transparent,focusedContainerColor = Color(1f,1f,1f, 0.04f)),
+    color: Color,
+    numberValues: Boolean = false,
+    minValue: Int? = null,
+    maxValue: Int? = null,
+    modifier: Modifier = Modifier
+) {
+    val textStyle = TextStyle(color = color)
+    val bool = minValue!=null && maxValue!=null
+
+    Box(modifier = Modifier.height(IntrinsicSize.Min)) {
+        TextField(
+            value = state.value,
+            textStyle = textStyle,
+            onValueChange = { state.value = it },
+            label = label,
+            modifier = modifier,
+            colors = bgColors,
+            readOnly = bool,
+            keyboardOptions = if (numberValues) KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
+            else KeyboardOptions.Default
+        )
+        if (bool) {
+            val value = state.value.toInt()
+            Column(
+                modifier = modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                val buttonMod = Modifier.size(25.dp)
+                val iconModifier = Modifier.fillMaxSize()
+                IconButton(
+                    modifier = buttonMod,
+                    onClick = { if (value < maxValue!!) state.value = (value+1).toString()}
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.expand_less_24px),
+                        contentDescription = "Add one",
+                        tint = color,
+                        modifier = iconModifier
+                    )
+                }
+                IconButton(
+                    modifier = buttonMod,
+                    onClick = { if (value > minValue!!) state.value = (value-1).toString()}
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.expand_more_24px),
+                        contentDescription = "Substract one",
+                        tint = color,
+                        modifier = iconModifier
+                    )
+                }
+            }
+        }
+    }
 }
