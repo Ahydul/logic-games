@@ -10,10 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
-import com.example.tfg.common.Difficulty
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomText
 
@@ -32,15 +33,18 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = modifier
         ) {
-            val difficulty = when(viewModel.getDifficulty()){
-                Difficulty.EASY -> "Fácil"
-                Difficulty.MEDIUM -> "Medio"
-                Difficulty.HARD -> "Dificil"
-            }
-            CustomText(mainText = "Dificultad", secondaryText = "$difficulty", textColor = colorResource(R.color.primary_color))
-            CustomText(mainText = "Errores", secondaryText = "${viewModel.getNumErrors()}", textColor = colorResource(R.color.primary_color))
-            CustomText(mainText = "Pistas", secondaryText = "${viewModel.getNumClues()}", textColor = colorResource(R.color.primary_color))
-            CustomText(mainText = "Tiempo", secondaryText = "00:42", textColor = colorResource(R.color.primary_color))
+            val context = LocalContext.current
+            val difficultyText = stringResource(id = R.string.difficulty)
+            CustomText(mainText = difficultyText, secondaryText = "${viewModel.getDifficulty(context)}", textColor = colorResource(R.color.primary_color))
+
+            val errorsText = stringResource(id = R.string.errors)
+            CustomText(mainText = errorsText, secondaryText = "${viewModel.getNumErrors()}", textColor = colorResource(R.color.primary_color))
+
+            val cluesText = stringResource(id = R.string.clues)
+            CustomText(mainText = cluesText, secondaryText = "${viewModel.getNumClues()}", textColor = colorResource(R.color.primary_color))
+
+            val timeText = stringResource(id = R.string.time)
+            CustomText(mainText = timeText, secondaryText = "00:42", textColor = colorResource(R.color.primary_color))
         }
     }
 

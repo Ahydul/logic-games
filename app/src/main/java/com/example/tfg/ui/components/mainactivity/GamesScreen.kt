@@ -117,33 +117,39 @@ private fun ChooseGameButton(
                 val shape = RoundedCornerShape(20.dp)
                 val fontSize = 11.sp
                 val iconPadding = 14.dp
+
+                val rulesLabel = stringResource(id = R.string.rules)
                 LabeledIconButton(
                     onClick = { Log.d("button", "REGLAS") },
                     imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
                     iconColor = colorResource(id = R.color.primary_color),
-                    label = "Reglas",
+                    label = rulesLabel,
                     labelColor = colorResource(id = R.color.primary_color),
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,
                     modifier = mod
                 )
+
+                val inProgressLabel = stringResource(id = R.string.in_progress)
                 LabeledIconButton(
                     onClick = { Log.d("button", "EN CURSO") },
                     imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
                     iconColor = colorResource(id = R.color.primary_color),
-                    label = "En curso",
+                    label = inProgressLabel,
                     labelColor = colorResource(id = R.color.primary_color),
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,
                     modifier = mod
                 )
+
+                val statsLabel = stringResource(id = R.string.stats)
                 LabeledIconButton(
                     onClick = { Log.d("button", "STATS") },
                     imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
                     iconColor = colorResource(id = R.color.primary_color),
-                    label = "Estadísticas",
+                    label = statsLabel,
                     labelColor = colorResource(id = R.color.primary_color),
                     fontSize = fontSize,
                     shape = shape,
@@ -166,53 +172,61 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
     val context = LocalContext.current
     val difficultyRange = Difficulty.entries.map { it.toString(context) }
     val difficulty = remember { mutableStateOf(Difficulty.EASY.toString(context)) }
-    val numColumns = remember { mutableStateOf("6") }
-    val numRows = remember { mutableStateOf("6") }
+    val initialValue = "6"
+    val numColumns = remember { mutableStateOf(initialValue) }
+    val numRows = remember { mutableStateOf(initialValue) }
     val maxValue = 13
     val minValue = 3
     val range = (minValue..maxValue).map { it.toString() }
     val seed = remember { mutableStateOf("") }
 
+    val difficultyLabel = stringResource(id = R.string.difficulty)
     CustomTextField(
         state = difficulty,
         range = difficultyRange,
         color = textColor,
-        label = { Text(text = "Dificultad", color = textColor) },
+        label = { Text(text = difficultyLabel, color = textColor) },
         modifier = textFieldModifier
     )
+
+    val numColumnsLabel = stringResource(id = R.string.num_columns)
     CustomTextField(
         state = numColumns,
         range = range,
         color = textColor,
-        label = { Text(text = "Número de columnas", color = textColor) },
+        label = { Text(text = numColumnsLabel, color = textColor) },
         modifier = textFieldModifier
     )
+
+    val numRowsLabel = stringResource(id = R.string.num_rows)
     CustomTextField(
         state = numRows,
         range = range,
         color = textColor,
-        label = { Text(text = "Número de filas", color = textColor) },
+        label = { Text(text = numRowsLabel, color = textColor) },
         modifier = textFieldModifier
     )
+
+    val seedLabel = stringResource(id = R.string.seed)
     CustomTextField(
         state = seed,
         color = textColor,
-        label = { Text(text = "Semilla", color = textColor) },
+        label = { Text(text = seedLabel, color = textColor) },
         modifier = textFieldModifier
     )
 
     Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
-        val context = LocalContext.current
-
+        val customBoardText = stringResource(id = R.string.custom_board)
         CustomFilledButton(
             onClick = { /*TODO*/ },
             color = colorResource(id = R.color.board_grid),
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = textColor,
-            mainText = "Tablero customizado",
+            mainText = customBoardText,
             buttonModifier = modifier.weight(1.5f)
         )
 
+        val createText = stringResource(id = R.string.create)
         CustomFilledButton(
             onClick = {
                 val rows = numRows.value.toInt()
@@ -226,7 +240,7 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
             color = colorResource(id = R.color.board_grid),
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = textColor,
-            mainText = "Crear",
+            mainText = createText,
             buttonModifier = modifier.weight(1f)
         )
     }

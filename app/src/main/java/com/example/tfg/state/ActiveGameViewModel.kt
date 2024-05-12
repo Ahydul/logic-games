@@ -1,5 +1,6 @@
 package com.example.tfg.state
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -56,6 +57,11 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     fun getDifficulty(): Difficulty {
         return game.difficulty
     }
+
+    fun getDifficulty(context: Context): String {
+        return game.difficulty.toString(context)
+    }
+
 
     fun getGame(): Games {
         return getGameType().type
