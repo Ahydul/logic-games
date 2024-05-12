@@ -117,6 +117,10 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return getBoard().numRows
     }
 
+    fun getNumCells(): Int {
+        return getNumRows() * getNumColumns()
+    }
+
     private fun getCells(): MutableList<Cell> {
         return getBoard().cells
     }
@@ -450,7 +454,8 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     private fun drawDivisorBetween(original: Coordinate, other: Coordinate?): Boolean {
-        return other != null && !fromSameRegion(original, other)
+        //When outside of bounds (null) we draw divisor
+        return other == null || !fromSameRegion(original, other)
     }
 
     private fun drawDividerRight(coordinate: Coordinate): Boolean {
