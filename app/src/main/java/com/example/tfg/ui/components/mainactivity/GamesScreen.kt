@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -154,7 +155,6 @@ private fun ChooseGameButton(
     }
 }
 
-
 @Composable
 fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Games) {
     val textFieldModifier = modifier
@@ -163,14 +163,23 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
             color = colorResource(id = R.color.board_grid2),
             shape = RoundedCornerShape(10.dp)
         )
-    val difficulty = remember { mutableStateOf(Difficulty.EASY) }
+    val context = LocalContext.current
+    val difficultyRange = Difficulty.entries.map { it.toString(context) }
+    val difficulty = remember { mutableStateOf(Difficulty.EASY.toString(context)) }
     val numColumns = remember { mutableStateOf("6") }
     val numRows = remember { mutableStateOf("6") }
-    val seed = remember { mutableStateOf("") }
     val maxValue = 13
     val minValue = 3
     val range = (minValue..maxValue).map { it.toString() }
+    val seed = remember { mutableStateOf("") }
 
+    CustomTextField(
+        state = difficulty,
+        range = difficultyRange,
+        color = textColor,
+        label = { Text(text = "Dificultad", color = textColor) },
+        modifier = textFieldModifier
+    )
     CustomTextField(
         state = numColumns,
         range = range,
@@ -208,8 +217,9 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
             onClick = {
                 val rows = numRows.value.toInt()
                 val cols = numColumns.value.toInt()
-                val game = if (seed.value.isEmpty()) Game.create(chosenGame = chosenGame, difficulty = difficulty.value, numRows = rows, numColumns = cols)
-                else Game.create(chosenGame = chosenGame, difficulty = difficulty.value, numRows = rows, numColumns = cols, seed = seed.value.hashCode().toLong())
+                val diff = Difficulty.get(difficulty.value)
+                val game = if (seed.value.isEmpty()) Game.create(chosenGame = chosenGame, difficulty = diff, numRows = rows, numColumns = cols)
+                else Game.create(chosenGame = chosenGame, difficulty = diff, numRows = rows, numColumns = cols, seed = seed.value.hashCode().toLong())
 
                 startActiveGameActivity(context, game)
             },

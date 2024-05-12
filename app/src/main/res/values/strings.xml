@@ -9,4 +9,7 @@
     <string name="home_screen">Home Screen</string>
     <string name="games_screen">Games Screen</string>
     <string name="stats_screen">Stats Screen</string>
+    <string name="easy">Easy</string>
+    <string name="medium">Medium</string>
+    <string name="hard">Hard</string>
 </resources>
