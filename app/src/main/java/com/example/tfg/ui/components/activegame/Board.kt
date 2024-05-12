@@ -5,8 +5,6 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -19,97 +17,6 @@ import com.example.tfg.ui.components.common.HorizontalGrid
 
 @Composable
 fun Board(
-    viewModel: ActiveGameViewModel,
-    modifier: Modifier = Modifier
-) {
-    Log.d("recomposition", "BOARD recomposition")
-
-    val numColumns = viewModel.getNumColumns()
-    val numRows = viewModel.getNumRows()
-
-    Column(
-        modifier = modifier
-            //Tap -> removes all selections and selects the cell
-            //Long press -> keeps selections. Selects or deselects the cell if cell was deselected or selected
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = {
-                        Log.d("Gesture", "LongPress $it $size")
-                        viewModel.setSelection(
-                            position = it,
-                            size = size,
-                        )
-                    },
-                    onTap = {
-                        Log.d("Gesture", "Tap $it $size")
-                        viewModel.setSelection(
-                            position = it,
-                            size = size,
-                            removePrevious = true,
-                        )
-                    }
-                )
-            }
-            //Normal drag -> removes all selections and selects the cells
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = {
-                        Log.d("Gesture", "DragStart $it $size")
-                        viewModel.removeSelections()
-                    },
-                    onDrag = { change, _ ->
-                        Log.d("Gesture", "Drag ${change.position} $size")
-                        viewModel.selectTile(
-                            position = change.position,
-                            size = size,
-                        )
-                    }
-                )
-            }
-            //Long press drag -> keeps selections. Select or deselect the cells depending if first cell was deselected or selected
-            .pointerInput(Unit) {
-                var selecting = true
-                detectDragGesturesAfterLongPress(
-                    onDragStart = { offset ->
-                        Log.d("Gesture", "onLongDragStart $offset $size")
-                        //True -> Action=select ; False -> Action=deselect
-                        selecting = !viewModel.isSelected(size = size, position = offset)
-                    },
-                    onDrag = { change, _ ->
-                        Log.d("Gesture", "onLongDrag ${change.position} $size")
-                        if (selecting) viewModel.selectTile(position = change.position, size = size)
-                        else viewModel.deselectTile(position = change.position, size = size)
-                    }
-                )
-            }
-
-
-    ) {
-
-        for (row in 0..<numRows) {
-
-            Row(modifier = modifier.weight(1f)) {
-
-                for (col in 0..<numColumns) {
-                    val borderColor = colorResource(id = R.color.section_border)
-                    val coordinate = Coordinate(row = row, column = col)
-                    Cell(
-                        cell = viewModel.getCell(coordinate),
-                        borderColor = borderColor,
-                        dividersToDraw = remember { viewModel.dividersToDraw(coordinate) },
-                        isSelected = remember { { viewModel.isTileSelected(coordinate) } },
-                    )
-
-                }
-            }
-        }
-    }
-
-}
-
-
-@Composable
-fun Board2(
     viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier
 ) {

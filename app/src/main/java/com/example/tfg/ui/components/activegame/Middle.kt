@@ -18,6 +18,6 @@ fun MiddleSection(
         contentAlignment = Alignment.Center,
         modifier = modifier
     ){
-        Board2(viewModel=viewModel, modifier = Modifier)
+        Board(viewModel=viewModel, modifier = Modifier)
     }
 }
