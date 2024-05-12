@@ -15,12 +15,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tfg.common.Game
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.state.CustomGameViewModelFactory
 import com.example.tfg.ui.components.activegame.ActiveGameScreen
 import com.example.tfg.ui.theme.TFGTheme
 
-class ActiveGameView : ComponentActivity() {
-    private val viewModel: ActiveGameViewModel = ActiveGameViewModel(Game.example())
-    private val viewModel2: ActiveGameViewModel by viewModels()
+class ActiveGameView(game: Game = Game.example()) : ComponentActivity() {
+    //private val viewModel: ActiveGameViewModel = ActiveGameViewModel(game)
+    private val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(game) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

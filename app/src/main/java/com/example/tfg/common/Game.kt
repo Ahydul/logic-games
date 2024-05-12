@@ -3,8 +3,10 @@ package com.example.tfg.common
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.tfg.games.GameType
+import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.Hakyuu
 import java.time.LocalDateTime
+import kotlin.random.Random
 
 class Game private constructor(
     val gameType: GameType,
@@ -40,6 +42,23 @@ class Game private constructor(
                 gameType = hakyuu,
                 board = board,
                 difficulty = Difficulty.EASY
+            )
+        }
+
+        fun create(chosenGame: Games, difficulty: Difficulty, numColumns: Int, numRows: Int, seed: Long = (Math.random()*10000000000).toLong()): Game {
+            // Initialize game
+            val random = Random(seed)
+            val game = when(chosenGame) {
+                Games.HAKYUU -> Hakyuu.create(numRows = numRows, numColumns = numColumns, random = random)
+            }
+            // Create game board
+            game.createGame()
+            val board = Board.create(numRows = numRows, numColumns = numColumns, cellValues = game.startBoard)
+
+            return create(
+                gameType = game,
+                board = board,
+                difficulty = difficulty
             )
         }
     }
