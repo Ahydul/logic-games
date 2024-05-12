@@ -2,11 +2,11 @@ package com.example.tfg.ui.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -25,8 +25,8 @@ import com.example.tfg.ui.components.common.HorizontalGrid
 fun Cell(
     cell: Cell,
     isSelected: () -> Boolean,
-    dividersToDraw: Quadruple<Boolean>,
-    modifier: Modifier = Modifier
+    borderColor: Color,
+    dividersToDraw: Quadruple<Boolean>
 ) {
     Log.d("recomposition", "CELL recomposition")
 
@@ -37,40 +37,36 @@ fun Cell(
     val iconColor = if (cell.isError) colorResource(id = R.color.cell_value_error)
                         else colorResource(id = R.color.cell_value)
 
-    val borderColor = colorResource(id = R.color.section_border)
     val noteColor = colorResource(id = R.color.cell_note)
     val value = cell.value
 
-    Box(
-        modifier = modifier
-            .background(color = backgroundColor)
-    ) {
+    Box {
         //Main value
-        if (value != 0) {
-            Icon(
-                painter = painterResource(id = HakyuuValue.get(value).icon),
-                tint = iconColor,
-                contentDescription = "Value $value"
-            )
-        }
-        //Notes
-        HorizontalGrid(numRows = 3) {
-            cell.notes.forEach {
-                if (it != 0) {
-                    Icon(
-                        painter = painterResource(id = HakyuuValue.get(it).icon),
-                        tint = noteColor,
-                        contentDescription = "Value $it",
-                        modifier = Modifier.padding(2.dp)
-                    )
-                }
-                else {
-                    Spacer(modifier = Modifier.padding(2.dp))
+        Surface(color = backgroundColor) {
+            if (value != 0) {
+                Icon(
+                    painter = painterResource(id = HakyuuValue.get(value).icon),
+                    tint = iconColor,
+                    contentDescription = "Value $value"
+                )
+            }
+            //Notes
+            HorizontalGrid(numRows = 3) {
+                cell.notes.forEach {
+                    if (it != 0) {
+                        Icon(
+                            painter = painterResource(id = HakyuuValue.get(it).icon),
+                            tint = noteColor,
+                            contentDescription = "Value $it",
+                            modifier = Modifier.padding(2.dp)
+                        )
+                    }
+                    else {
+                        Spacer(modifier = Modifier.padding(2.dp))
+                    }
                 }
             }
         }
-
-
 
         //Paints region borders and selecting UI
         Canvas(modifier = Modifier.matchParentSize()) {
@@ -110,5 +106,7 @@ fun Cell(
                 drawOval(color = Color.Red, alpha = 0.2f)
             }
         }
+
+
     }
 }
