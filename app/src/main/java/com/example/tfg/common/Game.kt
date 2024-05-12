@@ -1,12 +1,15 @@
 package com.example.tfg.common
 
+import android.os.Parcelable
 import androidx.compose.runtime.mutableStateListOf
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.Hakyuu
+import kotlinx.parcelize.Parcelize
 import java.time.LocalDateTime
 import kotlin.random.Random
 
+@Parcelize
 class Game private constructor(
     val gameType: GameType,
     val difficulty: Difficulty,
@@ -15,7 +18,7 @@ class Game private constructor(
     val endDate: LocalDateTime? = null,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
     var numClues: Int = 0
-) {
+) : Parcelable {
 
     companion object {
         private fun create(gameType: GameType, board: Board, difficulty: Difficulty): Game {
