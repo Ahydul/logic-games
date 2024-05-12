@@ -226,7 +226,7 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
 
 private fun startActiveGameActivity(context: Context, game: Game) {
     val intent = Intent(context, ActiveGameView::class.java)
-    intent.putExtra("game", game) // Add your parameter here
+    intent.putExtra("game", game)
     context.startActivity(intent)
 }
 
