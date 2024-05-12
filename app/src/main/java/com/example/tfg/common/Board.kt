@@ -1,7 +1,6 @@
 package com.example.tfg.common
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 
 /*
 * Manages the indexes of the different cells
@@ -9,7 +8,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 data class Board private constructor(
     val numColumns: Int,
     val numRows: Int,
-    val cells: SnapshotStateList<Cell>, // numColumns * numRows
+    val cells: MutableList<Cell>, // numColumns * numRows
 ) {
 
     fun clone(): Board {

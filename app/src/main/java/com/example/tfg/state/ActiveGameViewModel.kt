@@ -42,7 +42,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
 //  Main getters
 
-    private fun getGameStates(): SnapshotStateList<GameState> {
+    private fun getGameStates(): MutableList<GameState> {
         return game.state
     }
 
@@ -92,7 +92,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return getActualState().pointer
     }
 
-    private fun getMoves(): SnapshotStateList<Move> {
+    private fun getMoves(): MutableList<Move> {
         return getActualState().moves
     }
 
@@ -112,7 +112,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return getBoard().numRows
     }
 
-    private fun getCells(): SnapshotStateList<Cell> {
+    private fun getCells(): MutableList<Cell> {
         return getBoard().cells
     }
 
@@ -137,6 +137,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
             statePointer.intValue = pointer
             Log.d("state", "${getActualState()}")
         }
+        removeSelections()
     }
 
 /*
@@ -348,8 +349,8 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
     private fun addMove(move: Move) {
         //Remove moves that won't be accesed anymore
-        if (getActualMovesPointer() < getMoves().size - 1) {
-            getMoves().removeRange(fromIndex = getActualMovesPointer() + 1, toIndex = getMoves().size)
+        while (getActualMovesPointer() < getMoves().size - 1) {
+            getMoves().removeLast()
         }
 
         getMoves().add(move)
