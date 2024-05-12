@@ -27,6 +27,8 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -210,12 +212,11 @@ fun CustomTextField(
     bgColors: TextFieldColors = TextFieldDefaults.colors(unfocusedContainerColor = Color.Transparent,focusedContainerColor = Color(1f,1f,1f, 0.04f)),
     color: Color,
     numberValues: Boolean = false,
-    minValue: Int? = null,
-    maxValue: Int? = null,
+    range: List<String>? = null,
     modifier: Modifier = Modifier
 ) {
     val textStyle = TextStyle(color = color)
-    val bool = minValue!=null && maxValue!=null
+    val isRange = !range.isNullOrEmpty()
 
     Box(modifier = Modifier.height(IntrinsicSize.Min)) {
         TextField(
@@ -225,12 +226,15 @@ fun CustomTextField(
             label = label,
             modifier = modifier,
             colors = bgColors,
-            readOnly = bool,
+            readOnly = isRange,
             keyboardOptions = if (numberValues) KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
             else KeyboardOptions.Default
         )
-        if (bool) {
-            val value = state.value.toInt()
+        if (isRange) {
+            val i = range!!.indexOf(state.value).let { if (it == -1) null else it }
+            require(i != null) {"Range doesn't have the value '${state.value}' included"}
+
+            val pointer = remember { mutableIntStateOf(i) }
             Column(
                 modifier = modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.End,
@@ -240,7 +244,12 @@ fun CustomTextField(
                 val iconModifier = Modifier.fillMaxSize()
                 IconButton(
                     modifier = buttonMod,
-                    onClick = { if (value < maxValue!!) state.value = (value+1).toString()}
+                    onClick = {
+                        if (pointer.intValue < range.size - 1) {
+                            pointer.intValue = pointer.intValue + 1
+                            state.value = range[pointer.intValue]
+                        }
+                    }
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.expand_less_24px),
@@ -251,7 +260,12 @@ fun CustomTextField(
                 }
                 IconButton(
                     modifier = buttonMod,
-                    onClick = { if (value > minValue!!) state.value = (value-1).toString()}
+                    onClick = {
+                        if (pointer.intValue > 0) {
+                            pointer.intValue = pointer.intValue - 1
+                            state.value = range[pointer.intValue]
+                        }
+                    }
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.expand_more_24px),
