@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -22,7 +21,7 @@ fun Board(
     viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    Log.d("cell", "BOARDcurrentRecomposeScope $currentRecomposeScope")
+    Log.d("recomposition", "BOARD recomposition")
 
     val numColumns = viewModel.getNumColumns()
     val numRows = viewModel.getNumRows()

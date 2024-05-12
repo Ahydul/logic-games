@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -29,7 +28,7 @@ fun Cell(
     dividersToDraw: Quadruple<Boolean>,
     modifier: Modifier = Modifier
 ) {
-    Log.d("cell", "CELL currentRecomposeScope $currentRecomposeScope")
+    Log.d("recomposition", "CELL recomposition")
 
     val gridColor = colorResource(id = R.color.board_grid)
 

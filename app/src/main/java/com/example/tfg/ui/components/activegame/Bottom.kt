@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,7 +29,7 @@ fun BottomSection(
     viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier)
 {
-    Log.d("TAG", "BOTTOMcurrentRecomposeScope $currentRecomposeScope")
+    Log.d("recomposition", "BOTTOM recomposition")
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -61,7 +60,7 @@ fun BottomActionRow(
     viewModel: ActiveGameViewModel,
     modifier: Modifier
 ) {
-    Log.d("TAG", "BottomActionRow $currentRecomposeScope")
+    Log.d("recomposition", "BottomActionRow recomposition")
 
     val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
     val defaultCellBackground = colorResource(id = R.color.cell_background)
