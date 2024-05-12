@@ -12,16 +12,14 @@ abstract class GameType(
     open val numColumns: Int,
     open val numRows: Int,
     protected open val random: Random,
-    protected val score: Score
-): Parcelable {
-    // Use lazy to ensure numColumns and numRows are initialized. If not used numPositions will be 0
-    // I still don't understand this so I consider this a hack
-    protected val numPositions: Int by lazy { numColumns * numRows }
-    val completedBoard: IntArray by lazy { IntArray(numPositions) }
-    val boardRegions: IntArray by lazy { IntArray(numPositions) }
-    val startBoard: IntArray by lazy { IntArray(numPositions) }
-    val maxRegionSize: Int by lazy { max(numColumns, numRows) }
+    protected val score: Score,
+    protected open val numPositions: Int = numColumns * numRows,
+    open val completedBoard: IntArray = IntArray(numPositions),
+    open val boardRegions: IntArray = IntArray(numPositions),
+    open val startBoard: IntArray = IntArray(numPositions),
+    val maxRegionSize: Int = max(numColumns, numRows),
     private val colors: Colors = Colors()
+): Parcelable {
 
     protected open fun reset() {
         completedBoard.map { 0 }
@@ -77,7 +75,7 @@ abstract class GameType(
 
     fun getRegions(): Map<Int, List<Coordinate>> {
         val res: MutableMap<Int, MutableList<Coordinate>> = mutableMapOf()
-        boardRegions.forEachIndexed { position, regionId ->
+        this.boardRegions.forEachIndexed { position, regionId ->
             val coordinate = Coordinate.fromIndex(
                 index = position,
                 numRows = numRows,

@@ -50,9 +50,10 @@ class Game private constructor(
         fun create(chosenGame: Games, difficulty: Difficulty, numColumns: Int, numRows: Int, seed: Long = (Math.random()*10000000000).toLong()): Game {
             // Initialize game
             val random = Random(seed)
-            val game = when(chosenGame) {
+            val game: GameType = when(chosenGame) {
                 Games.HAKYUU -> Hakyuu.create(numRows = numRows, numColumns = numColumns, random = random)
             }
+
             // Create game board
             game.createGame()
             val board = Board.create(numRows = numRows, numColumns = numColumns, cellValues = game.startBoard)

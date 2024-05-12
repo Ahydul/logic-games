@@ -1,32 +1,40 @@
 package com.example.tfg.games.hakyuu
 
-import android.util.Log
-import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Direction
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import kotlin.math.max
+import kotlinx.parcelize.RawValue
 import kotlin.random.Random
 
+@Parcelize
 class Hakyuu private constructor(
-    numColumns: Int,
-    numRows: Int,
-    random: Random
-) : GameType(
+    override val numColumns: Int,
+    override val numRows: Int,
+    override val random: @RawValue Random,
+    var iterations: Int = 1,
+    // The next parameters are here bc @Parcelize is bs and doesn't work properly
+    override val numPositions: Int = numColumns * numRows,
+    override val completedBoard: IntArray = IntArray(numPositions),
+    override val boardRegions: IntArray = IntArray(numPositions),
+    override val startBoard: IntArray = IntArray(numPositions),
+): GameType(
     type = Games.HAKYUU,
     numColumns = numColumns,
     numRows = numRows,
     random = random,
     score = HakyuuScore()
 ) {
-
+    @IgnoredOnParcel
     private val remainingPositions: MutableSet<Int> = initRemainingPositions()
+    @IgnoredOnParcel
     private var currentID = 0
-    var iterations: Int = 1
+    @IgnoredOnParcel
+    private var bruteForce = 0
 
     private fun initRemainingPositions():  MutableSet<Int> {
         return (0..< numPositions).toMutableSet()
@@ -37,12 +45,18 @@ class Hakyuu private constructor(
         boardRegions.map { 0 }
         startBoard.map { 0 }
         remainingPositions.addAll(initRemainingPositions())
+        bruteForce = 0
     }
 
     override fun createGame(): Boolean {
+        // Create completedBoard
         while (!boardCreated()) {
             propagateRandomRegion()
         }
+        // TODO: IMPLEMENT THIS. For now is the completedBoard
+        // Create startBoard
+        startBoard.indices.forEach { startBoard[it] = completedBoard[it] }
+
         return boardMeetsRules()
     }
 
@@ -391,7 +405,6 @@ class Hakyuu private constructor(
         }
     }
 
-    private var bruteForce = 0
     private fun bruteForceAValue(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
@@ -619,12 +632,9 @@ class Hakyuu private constructor(
                 random = random
             )
 
-            //res.solveBoard(startBoard)
             res.boardRegions.indices.forEach { res.boardRegions[it] = regions[it] }
             res.startBoard.indices.forEach { res.startBoard[it] = startBoard[it] }
             res.completedBoard.indices.forEach { res.completedBoard[it] = completedBoard[it] }
-
-
 
             return res
         }
