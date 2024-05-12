@@ -374,7 +374,7 @@ class HakyuuUnitTest {
         val random = Random(seed)
 
         val startTime = System.currentTimeMillis()
-        val gameType = Hakyuu.create(numColumns = 3, numRows = 3, random = random)
+        val gameType = Hakyuu.create(numColumns = input, numRows = input, random = random)
 
         val res = gameType.createGame()
 
