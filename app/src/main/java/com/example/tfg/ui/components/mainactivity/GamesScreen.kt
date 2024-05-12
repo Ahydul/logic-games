@@ -169,20 +169,18 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
     val seed = remember { mutableStateOf("") }
     val maxValue = 13
     val minValue = 3
-
+    val range = (minValue..maxValue).map { it.toString() }
 
     CustomTextField(
         state = numColumns,
-        minValue = minValue,
-        maxValue = maxValue,
+        range = range,
         color = textColor,
         label = { Text(text = "Número de columnas", color = textColor) },
         modifier = textFieldModifier
     )
     CustomTextField(
         state = numRows,
-        minValue = minValue,
-        maxValue = maxValue,
+        range = range,
         color = textColor,
         label = { Text(text = "Número de filas", color = textColor) },
         modifier = textFieldModifier
