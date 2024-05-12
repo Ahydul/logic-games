@@ -6,11 +6,12 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.state.ActiveGameViewModel
 
@@ -82,9 +83,11 @@ fun Board(
 
 
     ) {
+        var maxCellSize = 10
         val cellModifier = modifier
             .weight(1f)
-            .fillMaxHeight()
+            .fillMaxSize()
+            .onGloballyPositioned { maxCellSize = it.size.height }
 
         for (row in 0..<numRows) {
 

@@ -54,7 +54,7 @@ fun Cell(
             )
         }
         //Notes
-        HorizontalGrid(rows = 3) {
+        HorizontalGrid(numRows = 3) {
             cell.notes.forEach {
                 if (it != 0) {
                     Icon(
