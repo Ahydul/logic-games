@@ -6,11 +6,11 @@ import kotlin.math.max
 import kotlin.random.Random
 
 abstract class GameType(
-    val type: Games,
-    val noNotes: Boolean = false,
-    val numColumns: Int,
-    val numRows: Int,
-    protected val random: Random,
+    open val type: Games,
+    open val noNotes: Boolean = false,
+    open val numColumns: Int,
+    open val numRows: Int,
+    protected open val random: Random,
     protected val score: Score
 ) {
     protected val numPositions: Int = numColumns * numRows

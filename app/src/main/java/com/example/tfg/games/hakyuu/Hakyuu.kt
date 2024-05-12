@@ -8,6 +8,7 @@ import com.example.tfg.common.utils.Direction
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
+import kotlinx.parcelize.Parcelize
 import kotlin.math.max
 import kotlin.random.Random
 

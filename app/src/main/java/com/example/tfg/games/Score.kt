@@ -1,8 +1,12 @@
 package com.example.tfg.games
 
-abstract class Score(
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+open class Score(
     protected var score: Int = 0
-) {
+) : Parcelable {
     fun get(): Int {
         return this.score
     }
