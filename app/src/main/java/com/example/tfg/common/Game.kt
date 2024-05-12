@@ -1,7 +1,6 @@
 package com.example.tfg.common
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.Hakyuu
@@ -11,7 +10,7 @@ import kotlin.random.Random
 class Game private constructor(
     val gameType: GameType,
     val difficulty: Difficulty,
-    val state: SnapshotStateList<GameState>,
+    val state: MutableList<GameState>,
     val startDate: LocalDateTime = LocalDateTime.now(),
     val endDate: LocalDateTime? = null,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
