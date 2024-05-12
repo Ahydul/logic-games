@@ -64,6 +64,7 @@ import com.example.tfg.R
 import com.example.tfg.common.Difficulty
 import com.example.tfg.common.Game
 import com.example.tfg.games.Games
+import com.example.tfg.games.hakyuu.Hakyuu
 import com.example.tfg.ui.components.common.ClippedRectangleShape
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomFilledButton
@@ -225,7 +226,7 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
 
 private fun startActiveGameActivity(context: Context, game: Game) {
     val intent = Intent(context, ActiveGameView::class.java)
-//    intent.putExtra("game", game) // Add your parameter here
+    intent.putExtra("game", game) // Add your parameter here
     context.startActivity(intent)
 }
 

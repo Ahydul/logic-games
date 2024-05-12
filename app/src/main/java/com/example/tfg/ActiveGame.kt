@@ -19,12 +19,12 @@ import com.example.tfg.state.CustomGameViewModelFactory
 import com.example.tfg.ui.components.activegame.ActiveGameScreen
 import com.example.tfg.ui.theme.TFGTheme
 
-class ActiveGameView(game: Game = Game.example()) : ComponentActivity() {
-    //private val viewModel: ActiveGameViewModel = ActiveGameViewModel(game)
-    private val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(game) }
+class ActiveGameView : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val game = intent.getParcelableExtra("game")?: Game.example()
+        val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(game) }
         setContent {
             TFGTheme {
                 // A surface container using the 'background' color from the theme
