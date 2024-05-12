@@ -13,7 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.tfg.common.Difficulty
 import com.example.tfg.common.Game
+import com.example.tfg.games.Games
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
 import com.example.tfg.ui.components.activegame.ActiveGameScreen
@@ -51,7 +53,7 @@ class ActiveGameView : ComponentActivity() {
 fun GreetingPreview() {
     TFGTheme {
         ActiveGameScreen(
-            viewModel = ActiveGameViewModel(Game.example()),
+            viewModel = ActiveGameViewModel(Game.create(Games.HAKYUU, Difficulty.EASY, 4,10, 0)),
             modifier = Modifier
                 .background(colorResource(id = R.color.primary_background))
                 .fillMaxWidth()

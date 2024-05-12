@@ -5,11 +5,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import kotlin.math.min
 
+private val HorizontalSpaceBetween = { layoutWidth: Int, childrenSize: Int, numChildrenRow: Int ->
+    if (numChildrenRow == 1) 0
+    else (layoutWidth - numChildrenRow*childrenSize) / (numChildrenRow - 1)
+}
+
+private val VerticalCenter = { layoutHeight: Int, childrenSize: Int, numRows: Int ->
+    (layoutHeight - numRows*childrenSize) / numRows
+}
+
 @Composable
 fun HorizontalGrid(
     modifier: Modifier = Modifier,
-    rows: Int = 2,
+    numRows: Int = 2,
     placement: GridPlacement = GridPlacement.HORIZONTAL,
+    verticalSpreadFactor: Float = 1f,
+    horizontalSpreadFactor: Float = 1f,
+    componentsScale: Float = 1f,
     content: @Composable () -> Unit
 ) {
     Layout(
@@ -18,11 +30,11 @@ fun HorizontalGrid(
     ) { measurables, constraints ->
         val layoutWidth = constraints.maxWidth
         val layoutHeight = constraints.maxHeight
-        val numChildrenRow = measurables.size / rows + if (measurables.size % rows == 0) 0 else 1
+        val numChildrenPerRow = measurables.size / numRows + if (measurables.size % numRows == 0) 0 else 1
 
-        if (numChildrenRow==0) return@Layout layout(0,0) {}
+        if (numChildrenPerRow==0) return@Layout layout(0,0) {}
 
-        val childrenSize = min(layoutWidth / numChildrenRow, layoutHeight / rows)
+        val childrenSize = (min(layoutWidth / numChildrenPerRow, layoutHeight / numRows) * componentsScale).toInt()
 
         val itemConstraints = constraints.copy(
             minHeight = childrenSize,
@@ -33,24 +45,29 @@ fun HorizontalGrid(
 
         val placeables = measurables.map { it.measure(itemConstraints) }
 
-        val horizontalSpaceBetween = if (numChildrenRow == 1) {0} else { (layoutWidth - numChildrenRow*childrenSize) / (numChildrenRow - 1) }
-        val verticalSpaceBetween = (layoutHeight - rows*childrenSize) / rows
+        val horizontalFreeSpace = layoutWidth - numChildrenPerRow*childrenSize
+        val horizontalSpaceBetween = if (numChildrenPerRow == 1) 0
+            else ((horizontalFreeSpace / (numChildrenPerRow - 1)) * horizontalSpreadFactor).toInt()
+        val initialHorizontalSpace = (horizontalFreeSpace - (numChildrenPerRow - 1) * horizontalSpaceBetween ) / 2
+
+        val verticalFreeSpace = layoutHeight - numRows*childrenSize
+        val verticalSpaceBetween = if (numRows == 1) 0
+            else ((verticalFreeSpace / (numRows - 1)) * verticalSpreadFactor).toInt()
+        val initialVerticalSpace = (verticalFreeSpace - (numRows - 1) * verticalSpaceBetween ) / 2
 
         layout(
             width = layoutWidth,
             height = layoutHeight,
         ) {
-            val rowX = Array(rows) { 0 }
+            val rowX = Array(numRows) { initialHorizontalSpace }
 
             placeables.forEachIndexed { index, placeable ->
-                val row = if (placement == GridPlacement.HORIZONTAL) {
-                    index / numChildrenRow
-                }else {
-                    index % rows
-                }
+                val row = if (placement == GridPlacement.HORIZONTAL) index / numChildrenPerRow
+                            else index % numRows
+                val verticalSpace = initialVerticalSpace + if (row == 0) 0 else verticalSpaceBetween
                 placeable.placeRelative(
                     x = rowX[row],
-                    y = row * childrenSize + verticalSpaceBetween
+                    y = row * childrenSize + verticalSpace
                 )
                 rowX[row] += placeable.width + horizontalSpaceBetween
             }

@@ -66,12 +66,14 @@ fun BottomActionRow(
     val defaultCellBackground = colorResource(id = R.color.cell_background)
 
     HorizontalGrid(
-        rows = 2,
+        numRows = 2,
+        verticalSpreadFactor = 0.5f,
+        horizontalSpreadFactor = 0.7f,
+        componentsScale = 0.85f,
         modifier = modifier
     ) {
         val shape = RoundedCornerShape(15.dp)
         val modifierValueButtons = Modifier
-            .padding(8.dp)
             .clip(shape)
             .background(
                 color = defaultCellBackground,
@@ -119,10 +121,10 @@ fun TopActionRow(
     modifier: Modifier
 ){
     val actionModifier = Modifier
-        .padding(15.dp) //This controls the size
-
     HorizontalGrid(
-        rows = 1,
+        numRows = 1,
+        horizontalSpreadFactor = 0.85f,
+        componentsScale = 0.5f,
         modifier = modifier
     ) {
         /*
