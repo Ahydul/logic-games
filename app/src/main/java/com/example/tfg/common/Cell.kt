@@ -1,18 +1,19 @@
 package com.example.tfg.common
 
-import androidx.compose.runtime.Stable
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 /*
 * Manages the content of a cell
 * */
-@Stable
+@Parcelize
 class Cell private constructor(
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,
     val backgroundColor: Int,
     val isError: Boolean = false
-) {
+) : Parcelable {
 
     fun isEmpty(): Boolean {
         return value == 0 && notes.all { it == 0 }
@@ -108,12 +109,6 @@ class Cell private constructor(
             return if (value == 0) emptyCell()
             else readOnlyCell(value)
         }
-
-        fun create2(value: Int) : Cell {
-            return if (value == 0) allNotes()
-            else readOnlyCell(value)
-        }
-
     }
 
 

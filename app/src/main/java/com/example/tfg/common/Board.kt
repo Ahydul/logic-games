@@ -1,15 +1,18 @@
 package com.example.tfg.common
 
+import android.os.Parcelable
 import androidx.compose.runtime.mutableStateListOf
+import kotlinx.parcelize.Parcelize
 
 /*
 * Manages the indexes of the different cells
 * */
+@Parcelize
 data class Board private constructor(
     val numColumns: Int,
     val numRows: Int,
     val cells: MutableList<Cell>, // numColumns * numRows
-) {
+) : Parcelable {
 
     fun clone(): Board {
         val newCells = mutableStateListOf<Cell>()
@@ -33,7 +36,7 @@ data class Board private constructor(
     companion object {
         fun create(numColumns: Int, numRows: Int, cellValues: IntArray) : Board{
             require(numColumns*numRows == cellValues.size) {
-                "Array must be of size $numColumns * $numRows = ${numColumns * numRows}"
+                "Array must be of size $numColumns * $numRows = ${numColumns * numRows}. Actual size = ${cellValues.size}"
             }
 
             val cells = mutableStateListOf<Cell>()

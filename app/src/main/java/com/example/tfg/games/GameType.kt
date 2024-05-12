@@ -1,5 +1,6 @@
 package com.example.tfg.games
 
+import android.os.Parcelable
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import kotlin.math.max
@@ -12,13 +13,14 @@ abstract class GameType(
     open val numRows: Int,
     protected open val random: Random,
     protected val score: Score
-) {
-    protected val numPositions: Int = numColumns * numRows
-    val completedBoard: IntArray = IntArray(numPositions)
-    val boardRegions: IntArray = IntArray(numPositions)
-    val startBoard: IntArray = IntArray(numPositions)
-    val maxRegionSize = max(numColumns, numRows)
-
+): Parcelable {
+    // Use lazy to ensure numColumns and numRows are initialized. If not used numPositions will be 0
+    // I still don't understand this so I consider this a hack
+    protected val numPositions: Int by lazy { numColumns * numRows }
+    val completedBoard: IntArray by lazy { IntArray(numPositions) }
+    val boardRegions: IntArray by lazy { IntArray(numPositions) }
+    val startBoard: IntArray by lazy { IntArray(numPositions) }
+    val maxRegionSize: Int by lazy { max(numColumns, numRows) }
     private val colors: Colors = Colors()
 
     protected open fun reset() {
