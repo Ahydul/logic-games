@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,32 +37,37 @@ fun NavigationBar(
         val fontSize = 12.sp
         val iconPadding = 15.dp
 
+        val homeLabel = stringResource(id = R.string.home)
         LabeledIconButton(
             onClick = { navController.navigate(MainActivity.Home.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.house),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
-            label = "Inicio",
+            label = homeLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,
             modifier = mod
         )
+
+        val gamesLabel = stringResource(id = R.string.games)
         LabeledIconButton(
             onClick = { navController.navigate(MainActivity.Games.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.controller_game),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
-            label = "Juegos",
+            label = gamesLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,
             modifier = mod
         )
+
+        val statsLabel = stringResource(id = R.string.stats)
         LabeledIconButton(
             onClick = { navController.navigate(MainActivity.Stats.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),
-            label = "Estadísticas",
+            label = statsLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,
             modifier = mod

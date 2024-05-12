@@ -9,7 +9,23 @@
     <string name="home_screen">Home Screen</string>
     <string name="games_screen">Games Screen</string>
     <string name="stats_screen">Stats Screen</string>
+    <string name="difficulty">Difficulty</string>
     <string name="easy">Easy</string>
     <string name="medium">Medium</string>
     <string name="hard">Hard</string>
+    <string name="num_columns">Número de columnas</string>
+    <string name="num_rows">Número de filas</string>
+    <string name="seed">Seed</string>
+    <string name="custom_board">Custom board</string>
+    <string name="create">Create</string>
+    <string name="rules">Rules</string>
+    <string name="in_progress">In progress</string>
+    <string name="stats">Statistics</string>
+    <string name="home">Home</string>
+    <string name="games">Games</string>
+    <string name="_continue">Continue</string>
+    <string name="other_games_in_progress">Other games in progress</string>
+    <string name="errors">Errors</string>
+    <string name="clues">Clues</string>
+    <string name="time">Time</string>
 </resources>

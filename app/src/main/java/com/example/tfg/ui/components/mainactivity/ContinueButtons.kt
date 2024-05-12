@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import com.example.tfg.R
 import com.example.tfg.ui.components.common.CustomFilledButton
@@ -21,23 +22,27 @@ fun ContinueButtons(modifier: Modifier = Modifier) {
     ) {
         val buttonModifier = Modifier.fillMaxWidth(0.8f)
         val textModifier = Modifier.fillMaxWidth(0.7f)
+
+        val continueLabel = stringResource(id = R.string._continue)
         CustomFilledButton(
             onClick = { Log.d("navigation","CONTINUE") },
             color = colorResource(id = R.color.board_grid),
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = colorResource(id = R.color.primary_color),
-            mainText = "Continuar",
+            mainText = continueLabel,
             secondaryText = "Hakyuu - 11:00 - fácil",
             fontSize = 22.sp,
             buttonModifier = buttonModifier,
             textModifier = textModifier
         )
+
+        val otherGamesInProgressLabel = stringResource(id = R.string.other_games_in_progress)
         CustomFilledButton(
             onClick = { Log.d("navigation","OTHER GAMES") },
             color = colorResource(id = R.color.board_grid),
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = colorResource(id = R.color.primary_color),
-            mainText = "Otras partidas en curso",
+            mainText = otherGamesInProgressLabel,
             fontSize = 22.sp,
             buttonModifier = buttonModifier,
             textModifier = textModifier

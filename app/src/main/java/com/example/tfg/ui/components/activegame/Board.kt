@@ -11,8 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.colorResource
-import com.example.tfg.R
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.state.ActiveGameViewModel
 
@@ -87,7 +85,6 @@ fun Board(
         val cellModifier = modifier
             .weight(1f)
             .fillMaxHeight()
-        val defaultTileBackground = colorResource(id = R.color.cell_background)
 
         for (row in 0..<numRows) {
 
