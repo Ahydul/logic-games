@@ -26,7 +26,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
     private val ERRORCELLBACKGROUNDCOLOR = Color.Red.toArgb()
     private val game = game
-    private var numErrors = mutableStateOf(0)
+    private var numErrors = mutableStateOf(game.errors.size)
     private var statePointer = mutableIntStateOf(0)
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
