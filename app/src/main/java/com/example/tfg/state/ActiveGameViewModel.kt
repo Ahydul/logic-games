@@ -437,7 +437,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     fun setIsNote() {
-        if (game.gameType.noNotes) return
+        if (getGameType().noNotes) return
         isNote.value = !isNote()
     }
 
