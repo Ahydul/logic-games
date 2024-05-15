@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tfg.common.Difficulty
-import com.example.tfg.common.Game
+import com.example.tfg.common.entities.Game
 import com.example.tfg.games.Games
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
