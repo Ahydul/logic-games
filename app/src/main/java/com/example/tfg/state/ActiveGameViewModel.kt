@@ -35,7 +35,6 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     private val selectedTiles = mutableStateListOf<Coordinate>()
     private val cells = getBoard().cells.map { mutableStateOf(it) }.toTypedArray()
 
-
     init {
         Log.d("VM","ViewModel")
     }
@@ -162,9 +161,6 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         setCell(index = index, newCell = newCell)
 
         if (isError) addError(index = index, value = value)
-        Log.d("d","add $index to errors")
-        Log.d("d","${getNumErrors()}")
-
     }
 
     private fun setCellNote(index: Int, noteIndex: Int, note: Int) {
@@ -207,6 +203,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     private fun setCell(index: Int, newCell: Cell) {
+        getBoard().cells[index] = newCell
         cells[index].value = newCell
     }
 
@@ -447,6 +444,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
             val index = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
 
             // Paint positions that causes the error
+            // TODO: fix when putting 1 on index 0 and then putting x (delete) it paints red some cells
             val errors = checkValue(position = index, value = value).map { Coordinate.fromIndex(it, getNumRows(),getNumColumns()) }
             previousCells.addAll(getCells(errors))
             setCellsBackgroundColor(color = ERRORCELLBACKGROUNDCOLOR, coordinates = errors)
