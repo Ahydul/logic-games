@@ -18,8 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
-import com.example.tfg.games.Games
-import com.example.tfg.games.hakyuu.HakyuuValue
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.HorizontalGrid
@@ -92,15 +90,12 @@ fun BottomActionRow(
             }
         }
         else {
-            for(it in 0..< viewModel.getMaxValue()) {
-                val value = when(viewModel.getGame()) {
-                    Games.HAKYUU -> HakyuuValue.get(it)
-                }
+            for(v in 0..< viewModel.getMaxValue()) {
+                val value = viewModel.getValue(v)
                 val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
                                 else colorResource(id = R.color.primary_color)
                 val icon = ImageVector.vectorResource(id = value.icon)
 
-                //TODO: FIX THIS
                 CustomIconButton(
                     onClick = { viewModel.noteOrWriteAction(value.value) },
                     imageVector = icon,

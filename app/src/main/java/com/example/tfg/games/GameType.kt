@@ -3,6 +3,7 @@ package com.example.tfg.games
 import android.os.Parcelable
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
+import com.example.tfg.games.hakyuu.NumberValue
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -121,4 +122,7 @@ abstract class GameType(
         return completedBoard[position] != value
     }
 
+    fun getValue(value: Int): GameValue {
+        return NumberValue.get(value)
+    }
 }

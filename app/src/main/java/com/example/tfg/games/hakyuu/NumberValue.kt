@@ -1,8 +1,9 @@
 package com.example.tfg.games.hakyuu
 
 import com.example.tfg.R
+import com.example.tfg.games.GameValue
 
-enum class HakyuuValue(val value: Int, val icon: Int) {
+enum class NumberValue(override val value: Int, override val icon: Int): GameValue {
     EMPTY(0, R.drawable.outline_close_24),
     ONE(1, R.drawable.number_1),
     TWO(2, R.drawable.number_2),
@@ -26,7 +27,7 @@ enum class HakyuuValue(val value: Int, val icon: Int) {
     TWENTY(20, R.drawable.number_20);
 
     companion object {
-        fun get(value: Int): HakyuuValue {
+        fun get(value: Int): NumberValue {
             if (value < 21) return entries[value]
             return EMPTY
         }

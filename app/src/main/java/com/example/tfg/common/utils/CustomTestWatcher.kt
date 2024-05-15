@@ -1,4 +1,4 @@
-package com.example.tfg.games.hakyuu
+package com.example.tfg.common.utils
 
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.TestWatcher
