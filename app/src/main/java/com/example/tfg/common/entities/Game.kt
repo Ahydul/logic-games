@@ -1,7 +1,12 @@
-package com.example.tfg.common
+package com.example.tfg.common.entities
 
 import android.os.Parcelable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.example.tfg.common.Board
+import com.example.tfg.common.Difficulty
+import com.example.tfg.common.GameState
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.Hakyuu
@@ -10,7 +15,10 @@ import java.time.LocalDateTime
 import kotlin.random.Random
 
 @Parcelize
+@Entity
 class Game private constructor(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0, // Insert methods treat 0 as not-set while inserting the item.
     val gameType: GameType,
     val difficulty: Difficulty,
     val state: MutableList<GameState>,
@@ -34,7 +42,11 @@ class Game private constructor(
             val numColumns = 8
             val numRows = 8
             val hakyuu = Hakyuu.example()
-            val board = Board.create(numRows = numRows, numColumns = numColumns, cellValues = hakyuu.startBoard)
+            val board = Board.create(
+                numRows = numRows,
+                numColumns = numColumns,
+                cellValues = hakyuu.startBoard
+            )
 
             board.cells[2].notes[0] = 1
             board.cells[2].notes[1] = 10
@@ -56,7 +68,11 @@ class Game private constructor(
 
             // Create game board
             game.createGame()
-            val board = Board.create(numRows = numRows, numColumns = numColumns, cellValues = game.startBoard)
+            val board = Board.create(
+                numRows = numRows,
+                numColumns = numColumns,
+                cellValues = game.startBoard
+            )
 
             return create(
                 gameType = game,

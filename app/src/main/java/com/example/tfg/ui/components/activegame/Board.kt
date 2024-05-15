@@ -91,8 +91,10 @@ fun Board(
         ) {
             (0..< viewModel.getNumCells()).forEach { index ->
                 val coordinate = Coordinate.fromIndex(index = index, numRows = numRows, numColumns = numColumns)
+                val cell = viewModel.getCell(coordinate)
+
                 Cell (
-                    cell = viewModel.getCell(coordinate),
+                    cell = cell,
                     borderColor = borderColor,
                     dividersToDraw = remember { viewModel.dividersToDraw(coordinate) },
                     isSelected = remember { { viewModel.isTileSelected(coordinate) } },

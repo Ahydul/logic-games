@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -14,7 +15,7 @@ import com.example.tfg.common.Board
 import com.example.tfg.common.Cell
 import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
-import com.example.tfg.common.Game
+import com.example.tfg.common.entities.Game
 import com.example.tfg.common.GameState
 import com.example.tfg.common.Move
 import com.example.tfg.common.utils.Quadruple
@@ -26,15 +27,13 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
     private val ERRORCELLBACKGROUNDCOLOR = Color.Red.toArgb()
     private val game = game
-    private var numErrors = mutableStateOf(game.errors.size)
-    private var statePointer = mutableIntStateOf(0)
+    private val numErrors = mutableStateOf(game.errors.size)
+    private val statePointer = mutableIntStateOf(0)
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
+    private val cells = getBoard().cells.toMutableStateList()
 
-    fun tmp(): List<Int> {
-        return getCells().map { it.value }
-    }
 
     init {
         Log.d("VM","ViewModel")
@@ -61,7 +60,6 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     fun getDifficulty(context: Context): String {
         return game.difficulty.toString(context)
     }
-
 
     fun getGame(): Games {
         return getGameType().type
@@ -121,9 +119,11 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return getNumRows() * getNumColumns()
     }
 
+    /*
     private fun getCells(): MutableList<Cell> {
-        return getBoard().cells
+        return cells
     }
+     */
 
     fun getNumErrors(): Int {
         return numErrors.value
@@ -155,7 +155,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
     // Getters
     private fun getCell(index: Int): Cell {
-        return getCells()[index]
+        return cells[index]
     }
 
     fun getCell(coordinate: Coordinate): Cell {
@@ -244,11 +244,11 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     private fun setCell(coordinate: Coordinate, newCell: Cell) {
-        getCells()[coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!] = newCell
+        setCell(index = coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!, newCell = newCell)
     }
 
     private fun setCell(index: Int, newCell: Cell) {
-        getCells()[index] = newCell
+        cells[index] = newCell
     }
 
     private fun setCellsNotes(note: Int, coordinates: List<Coordinate>, ordered: Boolean) {

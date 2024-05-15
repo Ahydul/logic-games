@@ -76,7 +76,8 @@ class Cell private constructor(
         if (value != other.value) return false
         if (!notes.contentEquals(other.notes)) return false
         if (readOnly != other.readOnly) return false
-        return backgroundColor == other.backgroundColor
+        if (backgroundColor != other.backgroundColor) return false
+        return isError == other.isError
     }
 
     override fun hashCode(): Int {
@@ -84,8 +85,10 @@ class Cell private constructor(
         result = 31 * result + notes.contentHashCode()
         result = 31 * result + readOnly.hashCode()
         result = 31 * result + backgroundColor
+        result = 31 * result + isError.hashCode()
         return result
     }
+
 
     companion object {
         private fun emptyCell(backgroundColor: Int = 0) =

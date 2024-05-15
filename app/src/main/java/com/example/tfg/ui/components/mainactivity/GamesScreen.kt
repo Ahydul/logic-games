@@ -2,19 +2,16 @@ package com.example.tfg.ui.components.mainactivity
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.ColorSpace
 import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,18 +25,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,10 +53,8 @@ import androidx.compose.ui.window.PopupProperties
 import com.example.tfg.ActiveGameView
 import com.example.tfg.R
 import com.example.tfg.common.Difficulty
-import com.example.tfg.common.Game
+import com.example.tfg.common.entities.Game
 import com.example.tfg.games.Games
-import com.example.tfg.games.hakyuu.Hakyuu
-import com.example.tfg.ui.components.common.ClippedRectangleShape
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomFilledButton
 import com.example.tfg.ui.components.common.CustomIconButton
@@ -74,8 +62,6 @@ import com.example.tfg.ui.components.common.CustomTextField
 import com.example.tfg.ui.components.common.InTransitionDuration
 import com.example.tfg.ui.components.common.LabeledIconButton
 import com.example.tfg.ui.components.common.OutTransitionDuration
-import com.example.tfg.ui.components.common.SlowOutFastInEasing
-import kotlin.random.Random
 
 @Composable
 private fun ChooseGameButton(
