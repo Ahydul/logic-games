@@ -6,7 +6,6 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
@@ -21,9 +20,6 @@ fun Board(
     modifier: Modifier = Modifier
 ) {
     Log.d("recomposition", "BOARD recomposition")
-
-    val numColumns = viewModel.getNumColumns()
-    val numRows = viewModel.getNumRows()
 
     Box(
         modifier = modifier
@@ -84,6 +80,11 @@ fun Board(
 
     ) {
         val borderColor = colorResource(id = R.color.section_border)
+        val gridColor = colorResource(id = R.color.board_grid)
+        val noteColor = colorResource(id = R.color.cell_note)
+        val numColumns = viewModel.getNumColumns()
+        val numRows = viewModel.getNumRows()
+
         HorizontalGrid(
             numRows = numRows,
             horizontalSpreadFactor = 0f,
@@ -91,13 +92,13 @@ fun Board(
         ) {
             (0..< viewModel.getNumCells()).forEach { index ->
                 val coordinate = Coordinate.fromIndex(index = index, numRows = numRows, numColumns = numColumns)
-                val cell = viewModel.getCell(coordinate)
 
                 Cell (
-                    cell = cell,
+                    viewModel = viewModel,
+                    coordinate = coordinate,
                     borderColor = borderColor,
-                    dividersToDraw = remember { viewModel.dividersToDraw(coordinate) },
-                    isSelected = remember { { viewModel.isTileSelected(coordinate) } },
+                    gridColor = gridColor,
+                    noteColor = noteColor
                 )
             }
         }

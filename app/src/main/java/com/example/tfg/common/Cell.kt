@@ -89,6 +89,10 @@ class Cell private constructor(
         return result
     }
 
+    override fun toString(): String {
+        return "Cell(value=$value, notes=${notes.contentToString()}, backgroundColor=$backgroundColor, isError=$isError)"
+    }
+
 
     companion object {
         private fun emptyCell(backgroundColor: Int = 0) =

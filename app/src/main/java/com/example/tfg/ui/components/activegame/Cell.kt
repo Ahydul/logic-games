@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -15,29 +16,32 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
-import com.example.tfg.common.Cell
-import com.example.tfg.common.utils.Quadruple
+import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.hakyuu.NumberValue
+import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.HorizontalGrid
 
 
 @Composable
 fun Cell(
-    cell: Cell,
-    isSelected: () -> Boolean,
+    viewModel: ActiveGameViewModel,
+    coordinate: Coordinate,
     borderColor: Color,
-    dividersToDraw: Quadruple<Boolean>
-) {
-    Log.d("recomposition", "CELL recomposition")
+    noteColor: Color,
+    gridColor: Color
+    ) {
+    val cell = viewModel.getCell(coordinate)
 
-    val gridColor = colorResource(id = R.color.board_grid)
+    Log.d("recomposition", "CELL recomposition $cell")
+
+    val isSelected = remember { { viewModel.isTileSelected(coordinate) } }
+    val dividersToDraw = remember { viewModel.dividersToDraw(coordinate) }
 
     val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.cell_background)
                             else Color(cell.backgroundColor).copy(alpha = 0.4f)
     val iconColor = if (cell.isError) colorResource(id = R.color.cell_value_error)
                         else colorResource(id = R.color.cell_value)
 
-    val noteColor = colorResource(id = R.color.cell_note)
     val value = cell.value
 
     Box {
@@ -106,7 +110,5 @@ fun Cell(
                 drawOval(color = Color.Red, alpha = 0.2f)
             }
         }
-
-
     }
 }
