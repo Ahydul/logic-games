@@ -33,7 +33,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
-    private val cells = getBoard().cells.toMutableStateList()
+    private val cells = getBoard().cells.map { mutableStateOf(it) }.toTypedArray()
 
 
     init {
@@ -126,7 +126,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
  */
 
     // Getters
-    private fun getCell(index: Int) = cells[index]
+    private fun getCell(index: Int): Cell = cells[index].value
 
     fun getCell(coordinate: Coordinate) = getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
 
@@ -207,7 +207,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
 
     private fun setCell(index: Int, newCell: Cell) {
-        cells[index] = newCell
+        cells[index].value = newCell
     }
 
     private fun setCellsNotes(note: Int, coordinates: List<Coordinate>, ordered: Boolean) {

@@ -10,13 +10,11 @@ import kotlinx.parcelize.Parcelize
 data class Board private constructor(
     val numColumns: Int,
     val numRows: Int,
-    val cells: List<Cell>, // numColumns * numRows
+    val cells: Array<Cell>, // numColumns * numRows
 ) : Parcelable {
 
     fun clone(): Board {
-        val newCells = mutableListOf<Cell>()
-        newCells.addAll(cells)
-        return this.copy(cells = newCells)
+        return this.copy(cells = cells.clone())
     }
 
     override fun equals(other: Any?): Boolean {
@@ -25,7 +23,7 @@ data class Board private constructor(
 
         other as Board
 
-        return cells == other.cells
+        return cells.contentEquals(other.cells)
     }
 
     override fun hashCode(): Int {
@@ -38,8 +36,7 @@ data class Board private constructor(
                 "Array must be of size $numColumns * $numRows = ${numColumns * numRows}. Actual size = ${cellValues.size}"
             }
 
-            val cells = mutableListOf<Cell>()
-            cells.addAll(Array(size = numColumns*numRows, init = { Cell.create(cellValues[it]) }))
+            val cells = Array(size = numColumns*numRows, init = { Cell.create(cellValues[it]) })
 
             return Board(
                 numColumns = numColumns,
