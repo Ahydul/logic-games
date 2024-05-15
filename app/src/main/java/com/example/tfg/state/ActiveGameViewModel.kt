@@ -20,6 +20,7 @@ import com.example.tfg.common.GameState
 import com.example.tfg.common.Move
 import com.example.tfg.common.utils.Quadruple
 import com.example.tfg.games.GameType
+import com.example.tfg.games.GameValue
 import com.example.tfg.games.Games
 import java.util.SortedMap
 
@@ -41,37 +42,25 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
 
 //  Main getters
 
-    private fun getGameStates(): MutableList<GameState> {
-        return game.state
-    }
+    private fun getGameStates() = game.state
 
-    private fun getGameType(): GameType {
-        return game.gameType
-    }
+    private fun getGameType() = game.gameType
 
-    fun getNumClues(): Int {
-        return game.numClues
-    }
+    fun getNumClues() = game.numClues
 
-    fun getDifficulty(): Difficulty {
-        return game.difficulty
-    }
+    fun getDifficulty() = game.difficulty
 
-    fun getDifficulty(context: Context): String {
-        return game.difficulty.toString(context)
-    }
+    fun getDifficulty(context: Context) = game.difficulty.toString(context)
 
-    fun getGame(): Games {
-        return getGameType().type
-    }
+    private fun getGame() = getGameType().type
 
-    fun getMaxValue(): Int {
-        return getGameType().maxRegionSize
-    }
+    fun getValue(value: Int): GameValue = getGameType().getValue(value)
 
-    private fun getRegions(): Map<Int, List<Coordinate>> {
-        return getGameType().getRegions()
-    }
+    fun getMaxValue() = getGameType().maxRegionSize
+
+    private fun getRegions() = getGameType().getRegions()
+
+    fun getRegionSize() = getRegions().size
 
     fun getNumberRegionSizes(): SortedMap<Int, Int> {
         val res = sortedMapOf<Int,Int>()
@@ -83,41 +72,21 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return res
     }
 
-    fun getRegionSize(): Int {
-        return getRegions().size
-    }
+    private fun getActualState() = getGameStates()[statePointer.intValue]
 
-    private fun getActualState(): GameState {
-        return getGameStates()[statePointer.intValue]
-    }
+    private fun getActualMovesPointer() = getActualState().pointer
 
-    private fun getActualMovesPointer(): Int {
-        return getActualState().pointer
-    }
+    private fun getMoves() = getActualState().moves
 
-    private fun getMoves(): MutableList<Move> {
-        return getActualState().moves
-    }
+    private fun getMove(pointer: Int) = getMoves()[pointer]
 
-    private fun getMove(pointer: Int): Move {
-        return getMoves()[pointer]
-    }
+    private fun getBoard() = getActualState().board
 
-    private fun getBoard(): Board {
-        return getActualState().board
-    }
+    fun getNumColumns() = getBoard().numColumns
 
-    fun getNumColumns(): Int {
-        return getBoard().numColumns
-    }
+    fun getNumRows() = getBoard().numRows
 
-    fun getNumRows(): Int {
-        return getBoard().numRows
-    }
-
-    fun getNumCells(): Int {
-        return getNumRows() * getNumColumns()
-    }
+    fun getNumCells() = getNumRows() * getNumColumns()
 
     /*
     private fun getCells(): MutableList<Cell> {
@@ -125,9 +94,12 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     }
      */
 
-    fun getNumErrors(): Int {
-        return numErrors.value
-    }
+    fun getNumErrors() = numErrors.value
+
+    fun isPaint() = isPaint.value
+
+    fun isNote() = isNote.value
+
 
     /*
         GameState functions
@@ -154,33 +126,20 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
  */
 
     // Getters
-    private fun getCell(index: Int): Cell {
-        return cells[index]
-    }
+    private fun getCell(index: Int) = cells[index]
 
-    fun getCell(coordinate: Coordinate): Cell {
-        return getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
-    }
+    fun getCell(coordinate: Coordinate) = getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
 
-    private fun getCells(coordinates: List<Coordinate>): List<Cell> {
-        return coordinates.map { getCell(it) }
-    }
+    private fun getCells(coordinates: List<Coordinate>) = coordinates.map { getCell(it) }
 
-    private fun isReadOnly(index: Int): Boolean {
-        return getCell(index).readOnly
-    }
+    private fun isReadOnly(index: Int) = getCell(index).readOnly
 
-    private fun isReadOnly(coordinate: Coordinate): Boolean {
-        return isReadOnly(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
-    }
+    private fun isReadOnly(coordinate: Coordinate) = isReadOnly(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
 
-    private fun getCellColor(index: Int): Int {
-        return getCell(index).backgroundColor
-    }
+    private fun getCellColor(index: Int) = getCell(index).backgroundColor
 
-    fun getCellColor(coordinate: Coordinate): Int {
-        return getCellColor(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
-    }
+    fun getCellColor(coordinate: Coordinate) = getCellColor(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
+
 
     // Setters
 
@@ -273,10 +232,25 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         }
     }
 
+    fun setIsPaint() {
+        isPaint.value = !isPaint()
+    }
+
+    fun setIsNote() {
+        if (getGameType().noNotes) return
+        isNote.value = !isNote()
+    }
+
 
     /*
         SelectedTiles functions
      */
+
+    fun isTileSelected(coordinate: Coordinate?) = selectedTiles.contains(coordinate)
+
+    private fun getColumn(x: Float, width: Int) = (x * getNumColumns() / width).toInt()
+
+    private fun getRow(y: Float, height: Int) = (y * getNumRows() / height).toInt()
 
     private fun coordinateFromPosition(size: IntSize, position: Offset): Coordinate? {
         val coordinate = Coordinate(
@@ -284,16 +258,12 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
             column = getColumn(x = position.x, width = size.width)
         )
         return if (coordinate.isOutOfBounds(numRows = getNumRows(), numColumns = getNumColumns())) null
-            else {coordinate}
+        else {coordinate}
     }
 
     fun isSelected(size: IntSize, position: Offset): Boolean {
         val coordinate = coordinateFromPosition(size = size, position = position)
-        return isSelected(coordinate)
-    }
-
-    private fun isSelected(coordinate: Coordinate?): Boolean {
-        return selectedTiles.contains(coordinate)
+        return isTileSelected(coordinate)
     }
 
     fun removeSelections() {
@@ -307,20 +277,20 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     //If tile is not selected and not a null coordinate select it
     fun selectTile(size: IntSize, position: Offset) {
         val coordinate = coordinateFromPosition(size = size, position = position)
-        if (coordinate!=null && !isSelected(coordinate)) selectedTiles.add(coordinate)
+        if (coordinate!=null && !isTileSelected(coordinate)) selectedTiles.add(coordinate)
     }
 
     //If tile is selected and not a null coordinate deselect it
     fun deselectTile(size: IntSize, position: Offset) {
         val coordinate = coordinateFromPosition(size = size, position = position)
-        if (isSelected(coordinate)) selectedTiles.remove(coordinate)
+        if (isTileSelected(coordinate)) selectedTiles.remove(coordinate)
     }
 
     //If tile is selected the action is to deselect and vice versa
     fun setSelection(size: IntSize, position: Offset, removePrevious: Boolean = false) {
         val coordinate = coordinateFromPosition(size = size, position = position)
         if(coordinate!=null){
-            val selecting = !isSelected(coordinate)
+            val selecting = !isTileSelected(coordinate)
 
             if (removePrevious) removeSelections()
 
@@ -329,20 +299,6 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         }
     }
 
-    /*
-    Color functions
-     */
-
-    private fun getColumn(x: Float, width: Int) : Int {
-        return  (x * getNumColumns() / width).toInt()
-    }
-    private fun getRow(y: Float, height: Int) : Int {
-        return (y * getNumRows() / height).toInt()
-    }
-
-    fun isTileSelected(coordinate: Coordinate): Boolean {
-        return selectedTiles.contains(coordinate)
-    }
 
     /*
     Move functions
@@ -420,31 +376,14 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         movePointerLeft()
     }
 
+
     /*
     Other
      */
 
-    fun isPaint(): Boolean {
-        return isPaint.value
-    }
-
-    fun isNote(): Boolean {
-        return isNote.value
-    }
-
-    fun setIsPaint() {
-        isPaint.value = !isPaint()
-    }
-
-    fun setIsNote() {
-        if (getGameType().noNotes) return
-        isNote.value = !isNote()
-    }
-
     private fun findRegionID(coordinate: Coordinate): Int? {
         for (entry in getRegions().entries)
             if (entry.value.contains(coordinate)) return entry.key
-
         return null
     }
 
@@ -458,22 +397,13 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
         return other == null || !fromSameRegion(original, other)
     }
 
-    private fun drawDividerRight(coordinate: Coordinate): Boolean {
-        return drawDivisorBetween(coordinate, coordinate.moveRight(numColumns = getNumColumns()))
-    }
+    private fun drawDividerRight(coordinate: Coordinate) = drawDivisorBetween(coordinate, coordinate.moveRight(getNumColumns()))
 
-    private fun drawDividerDown(coordinate: Coordinate): Boolean {
-        return drawDivisorBetween(coordinate, coordinate.moveDown(numRows = getNumRows()))
-    }
+    private fun drawDividerDown(coordinate: Coordinate) = drawDivisorBetween(coordinate, coordinate.moveDown(getNumRows()))
 
-    private fun drawDividerLeft(coordinate: Coordinate): Boolean {
-        return drawDivisorBetween(coordinate,coordinate.moveLeft())
-    }
+    private fun drawDividerLeft(coordinate: Coordinate) = drawDivisorBetween(coordinate,coordinate.moveLeft())
 
-    private fun drawDividerUp(coordinate: Coordinate): Boolean {
-        return drawDivisorBetween(coordinate, coordinate.moveUp())
-    }
-
+    private fun drawDividerUp(coordinate: Coordinate) = drawDivisorBetween(coordinate, coordinate.moveUp())
 
     fun dividersToDraw(coordinate: Coordinate): Quadruple<Boolean> {
         return Quadruple(
@@ -483,6 +413,7 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
             right = drawDividerRight(coordinate)
         )
     }
+
 
     /*
     Game Actions

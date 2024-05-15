@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.common.Cell
 import com.example.tfg.common.utils.Quadruple
-import com.example.tfg.games.hakyuu.HakyuuValue
+import com.example.tfg.games.hakyuu.NumberValue
 import com.example.tfg.ui.components.common.HorizontalGrid
 
 
@@ -45,7 +45,7 @@ fun Cell(
         Surface(color = backgroundColor) {
             if (value != 0) {
                 Icon(
-                    painter = painterResource(id = HakyuuValue.get(value).icon),
+                    painter = painterResource(id = NumberValue.get(value).icon),
                     tint = iconColor,
                     contentDescription = "Value $value"
                 )
@@ -55,7 +55,7 @@ fun Cell(
                 cell.notes.forEach {
                     if (it != 0) {
                         Icon(
-                            painter = painterResource(id = HakyuuValue.get(it).icon),
+                            painter = painterResource(id = NumberValue.get(it).icon),
                             tint = noteColor,
                             contentDescription = "Value $it",
                             modifier = Modifier.padding(2.dp)

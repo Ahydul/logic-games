@@ -1,5 +1,6 @@
 package com.example.tfg.games.hakyuu
 
+import com.example.tfg.common.utils.CustomTestWatcher
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
