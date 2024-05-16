@@ -1,4 +1,4 @@
-package com.example.tfg.common
+package com.example.tfg.common.entities
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 /*
 * Manages the indexes of the different cells
 * */
+@Suppress("DataClassPrivateConstructor")
 @Parcelize
 data class Board private constructor(
     val numColumns: Int,
@@ -31,7 +32,7 @@ data class Board private constructor(
     }
 
     companion object {
-        fun create(numColumns: Int, numRows: Int, cellValues: IntArray) : Board{
+        fun create(numColumns: Int, numRows: Int, cellValues: IntArray) : Board {
             require(numColumns*numRows == cellValues.size) {
                 "Array must be of size $numColumns * $numRows = ${numColumns * numRows}. Actual size = ${cellValues.size}"
             }

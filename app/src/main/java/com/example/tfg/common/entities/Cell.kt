@@ -1,4 +1,4 @@
-package com.example.tfg.common
+package com.example.tfg.common.entities
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
