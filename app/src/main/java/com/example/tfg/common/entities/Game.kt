@@ -2,11 +2,10 @@ package com.example.tfg.common.entities
 
 import android.os.Parcelable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.tfg.common.Board
 import com.example.tfg.common.Difficulty
-import com.example.tfg.common.GameState
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import com.example.tfg.games.hakyuu.Hakyuu
@@ -15,13 +14,13 @@ import java.time.LocalDateTime
 import kotlin.random.Random
 
 @Parcelize
-@Entity
+@Entity(tableName = "game")
 class Game private constructor(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0, // Insert methods treat 0 as not-set while inserting the item.
+    val id: Long = 0,
     val gameType: GameType,
     val difficulty: Difficulty,
-    val state: MutableList<GameState>,
+    //val state: MutableList<GameState>,
     val startDate: LocalDateTime = LocalDateTime.now(),
     val endDate: LocalDateTime? = null,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),

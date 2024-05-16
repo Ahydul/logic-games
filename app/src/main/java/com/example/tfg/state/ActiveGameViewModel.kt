@@ -5,29 +5,23 @@ import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
-import com.example.tfg.common.Board
-import com.example.tfg.common.Cell
-import com.example.tfg.common.Difficulty
+import com.example.tfg.common.entities.Cell
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.entities.Game
-import com.example.tfg.common.GameState
-import com.example.tfg.common.Move
+import com.example.tfg.common.entities.Move
 import com.example.tfg.common.utils.Quadruple
-import com.example.tfg.games.GameType
+import com.example.tfg.data.GameRepository
 import com.example.tfg.games.GameValue
-import com.example.tfg.games.Games
 import java.util.SortedMap
 
-class ActiveGameViewModel(game: Game) : ViewModel() {
+class ActiveGameViewModel(private val game: Game, private val gameRepository: GameRepository?) : ViewModel() {
 
     private val ERRORCELLBACKGROUNDCOLOR = Color.Red.toArgb()
-    private val game = game
     private val numErrors = mutableStateOf(game.errors.size)
     private val statePointer = mutableIntStateOf(0)
     private val isNote = mutableStateOf(false)
@@ -38,6 +32,14 @@ class ActiveGameViewModel(game: Game) : ViewModel() {
     init {
         Log.d("VM","ViewModel")
     }
+
+//  Database functionality
+
+    suspend fun saveGame() {
+        if (gameRepository != null)
+            gameRepository.insertGame(game)
+    }
+
 
 //  Main getters
 
