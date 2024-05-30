@@ -1,10 +1,7 @@
 package com.example.tfg.common.utils
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
-data class Coordinate(val row: Int, val column: Int) : Parcelable {
+data class Coordinate(val row: Int, val column: Int) {
     fun moveRight(numColumns: Int, value: Int = 1): Coordinate? {
         if (column >= numColumns - value) return null
         return Coordinate(row, column + value)

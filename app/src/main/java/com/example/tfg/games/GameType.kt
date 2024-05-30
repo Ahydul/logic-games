@@ -1,6 +1,6 @@
 package com.example.tfg.games
 
-import android.os.Parcelable
+import androidx.room.Ignore
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.hakyuu.NumberValue
@@ -8,19 +8,24 @@ import kotlin.math.max
 import kotlin.random.Random
 
 abstract class GameType(
-    open val type: Games,
-    open val noNotes: Boolean = false,
-    open val numColumns: Int,
-    open val numRows: Int,
-    protected open val random: Random,
-    protected val score: Score,
-    protected open val numPositions: Int = numColumns * numRows,
-    open val completedBoard: IntArray = IntArray(numPositions),
-    open val boardRegions: IntArray = IntArray(numPositions),
-    open val startBoard: IntArray = IntArray(numPositions),
-    val maxRegionSize: Int = max(numColumns, numRows),
+    val type: Games,
+    val numColumns: Int,
+    val numRows: Int,
+    val seed: Long,
+    val score: Score,
+
+    var completedBoard: IntArray = IntArray(numColumns * numRows),
+    var boardRegions: IntArray = IntArray(numColumns * numRows),
+    var startBoard: IntArray = IntArray(numColumns * numRows)
+) {
+
+    @Ignore
     private val colors: Colors = Colors()
-): Parcelable {
+    @Ignore
+    protected var random: Random = Random(seed)
+
+    protected fun numPositions(): Int = numColumns * numRows
+    fun maxRegionSize(): Int = max(numColumns, numRows)
 
     protected open fun reset() {
         completedBoard.map { 0 }
@@ -28,7 +33,7 @@ abstract class GameType(
         startBoard.map { 0 }
     }
 
-    fun getScore(): Int {
+    fun getScoreValue(): Int {
         return score.get()
     }
 
@@ -37,11 +42,12 @@ abstract class GameType(
     }
 
     fun printBoard(board: IntArray) {
-        val colorMap = mutableMapOf<Int,String>()
+        val colorMap = mutableMapOf<Int, String>()
 
-        var htmlCode = """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""
+        var htmlCode =
+            """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""
 
-        (0..<numPositions).forEach {
+        (0..<numPositions()).forEach {
             val num = board[it]
             val id = boardRegions[it]
 
@@ -50,18 +56,18 @@ abstract class GameType(
                 colorMap[id] = color
             }
 
-            if (it%numColumns == 0){
+            if (it % numColumns == 0) {
                 htmlCode += """<tr>"""
             }
 
             htmlCode += """<td style="background-color: ${colorMap[id]}; vertical-align: middle; text-align: center; height: 40px; width: 40px;">$num</td>"""
 
-            if (it%numColumns == numColumns-1){
+            if (it % numColumns == numColumns - 1) {
                 htmlCode += """</tr>"""
             }
 
         }
-        htmlCode +="""</tbody></table>"""
+        htmlCode += """</tbody></table>"""
         print(htmlCode)
     }
 
@@ -69,7 +75,7 @@ abstract class GameType(
         val ls = boardRegions.groupBy { it }.map { it.value.size }
         val result = IntArray(size = ls.max())
         ls.forEach {
-            result[it-1]++
+            result[it - 1]++
         }
         return result
     }
@@ -104,7 +110,8 @@ abstract class GameType(
     }
 
     protected fun getRegionPositions(regionId: Int): Set<Int> {
-        return boardRegions.withIndex().filter { (_, id) -> id == regionId }.map { (index, _) -> index }.toSet()
+        return boardRegions.withIndex().filter { (_, id) -> id == regionId }
+            .map { (index, _) -> index }.toSet()
     }
 
     fun boardMeetsRules(): Boolean {

@@ -1,5 +1,6 @@
 package com.example.tfg.games.hakyuu
 
+import com.example.tfg.common.GameFactory
 import com.example.tfg.common.utils.CustomTestWatcher
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
@@ -25,7 +26,7 @@ class HakyuuUnitTest {
 
     @BeforeEach
     fun setUp() {
-        hakyuu = Hakyuu.example()
+        hakyuu = GameFactory.exampleHakyuu()
         region = (0..<9).toList()
         possibleValues = region.map { (1..9).toMutableList() }.toTypedArray()
     }
@@ -256,7 +257,7 @@ class HakyuuUnitTest {
 
         println("Num of iterations: ${hakyuu.iterations}")
         println("Time ${endTime - startTime}")
-        println("Score ${hakyuu.getScore()}")
+        println("Score ${hakyuu.getScoreValue()}")
 
         assert(result)
     }
@@ -371,11 +372,11 @@ class HakyuuUnitTest {
     @Test
     fun testCreateSeededHakyuuBoard() {
         val input = 11
-        val seed = 5598423764
+        val seed = 5598423764L
         val random = Random(seed)
 
         val startTime = System.currentTimeMillis()
-        val gameType = Hakyuu.create(numColumns = input, numRows = input, random = random)
+        val gameType = Hakyuu(numColumns = input, numRows = input, seed = seed)
 
         val res = gameType.createGame()
 
@@ -414,9 +415,8 @@ class HakyuuUnitTest {
             val startTime = System.currentTimeMillis()
 
             val seed = (Math.random()*10000000000).toLong()
-            val random = Random(seed)
 
-            val gameType = Hakyuu.create(numColumns = numColumns, numRows = numRows, random = random)
+            val gameType = Hakyuu(numColumns = numColumns, numRows = numRows, seed = seed)
 
             val res = gameType.createGame()
 

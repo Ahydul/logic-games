@@ -1,19 +1,22 @@
 package com.example.tfg.common.entities
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 
 /*
 * Manages the content of a cell
 * */
-@Parcelize
-class Cell private constructor(
+@Entity
+class Cell(
+    @PrimaryKey(autoGenerate = true)
+    val cellId: Long = 0,
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,
     val backgroundColor: Int,
     val isError: Boolean = false
-) : Parcelable {
+) {
 
     fun isEmpty(): Boolean {
         return value == 0 && notes.all { it == 0 }
@@ -28,6 +31,7 @@ class Cell private constructor(
         notes.forEachIndexed { index, n -> if (n == note) return index }
         return null
     }
+
     //Find last empty index or null
     private fun lastEmptyIndex() : Int? {
         val res = notes.indexOfFirst { it == 0 }
@@ -60,12 +64,21 @@ class Cell private constructor(
     }
 
     fun copy(value: Int = this.value, notes: IntArray = this.notes, backgroundColor: Int = this.backgroundColor, isError: Boolean = this.isError): Cell {
-        return Cell(value = value, notes = notes, readOnly = this.readOnly, backgroundColor = backgroundColor, isError = isError)
+        return Cell(cellId = this.cellId, value = value, notes = notes, readOnly = this.readOnly, backgroundColor = backgroundColor, isError = isError)
     }
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {
-        return Cell(value = this.value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false, backgroundColor = this.backgroundColor)
+        return Cell(cellId = this.cellId, value = this.value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false, backgroundColor = this.backgroundColor)
     }
+
+    fun copyErase(): Cell {
+        return Cell(cellId = this.cellId, value = 0, notes = emptyNotes(), readOnly = this.readOnly, backgroundColor = this.backgroundColor)
+    }
+
+    private fun emptyNotes(): IntArray {
+        return IntArray(9){0}
+    }
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -101,22 +114,21 @@ class Cell private constructor(
         private fun readOnlyCell(value: Int) =
             Cell(value = value, notes = IntArray(0), readOnly = true, backgroundColor = 0)
 
-        private fun allNotes(): Cell {
-            val arr = arrayOf(1,2,3,4,5,6,7,8,9)
-            return Cell(value = 0, notes = arr.toIntArray(), readOnly = false, backgroundColor = 0)
-        }
-
         fun emptyNotes(): IntArray {
             return IntArray(9){0}
         }
-
-        fun createWithBackground(backgroundColor: Int) = emptyCell(backgroundColor)
 
         fun create(value: Int) : Cell {
             return if (value == 0) emptyCell()
             else readOnlyCell(value)
         }
-    }
 
+        fun create(str: String) : Cell {
+            val value = str.toInt()
+            return if (value == 0) emptyCell()
+            else readOnlyCell(value)
+        }
+
+    }
 
 }

@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.tfg.data.GameDao
 
 
-class CustomGameViewModelFactory(private val gameId: Long, private val gameDao: GameDao) : ViewModelProvider.Factory {
+class CustomMainViewModelFactory(private val gameDao: GameDao) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ActiveGameViewModel::class.java)) {
-            return ActiveGameViewModel(gameId, gameDao) as T
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            return MainViewModel(gameDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
