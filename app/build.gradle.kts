@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-parcelize")
+    //id("kotlin-android")
+    id("kotlin-kapt")
 }
 
 android {
@@ -59,6 +60,7 @@ android {
 
 }
 
+
 dependencies {
 
     implementation("androidx.core:core-ktx:1.13.1")
@@ -89,18 +91,21 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("com.google.guava:guava:33.0.0-jre")
 
-    val roomVersion = "2.6.1"
+    // Java to Json converters
+    implementation("com.google.code.gson:gson:2.8.8")
 
+    val roomVersion = "2.6.1"
+    
     implementation("androidx.room:room-runtime:$roomVersion")
-    annotationProcessor("androidx.room:room-compiler:$roomVersion")
+    //annotationProcessor("androidx.room:room-compiler:$room_version")
 
     // To use Kotlin annotation processing tool (kapt)
-    //kapt("androidx.room:room-compiler:$room_version")
+    kapt("androidx.room:room-compiler:$roomVersion")
     // To use Kotlin Symbol Processing (KSP)
     //ksp("androidx.room:room-compiler:$room_version")
 
     // optional - Kotlin Extensions and Coroutines support for Room
-    //implementation("androidx.room:room-ktx:$room_version")
+    implementation("androidx.room:room-ktx:$roomVersion")
 
     // optional - RxJava2 support for Room
     //implementation("androidx.room:room-rxjava2:$room_version")

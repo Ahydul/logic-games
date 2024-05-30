@@ -6,38 +6,33 @@ import com.example.tfg.common.utils.Direction
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
 import kotlin.random.Random
 
-@Parcelize
-class Hakyuu private constructor(
-    override val numColumns: Int,
-    override val numRows: Int,
-    override val random: @RawValue Random,
+class Hakyuu(
+    numColumns: Int,
+    numRows: Int,
+    seed: Long,
+    score: HakyuuScore = HakyuuScore(),
+    completedBoard: IntArray = IntArray(numColumns * numRows),
+    startBoard: IntArray = IntArray(numColumns * numRows),
+    regions: IntArray = IntArray(numColumns * numRows),
     var iterations: Int = 1,
-    // The next parameters are here bc @Parcelize is bs and doesn't work properly
-    override val numPositions: Int = numColumns * numRows,
-    override val completedBoard: IntArray = IntArray(numPositions),
-    override val boardRegions: IntArray = IntArray(numPositions),
-    override val startBoard: IntArray = IntArray(numPositions),
 ): GameType(
     type = Games.HAKYUU,
     numColumns = numColumns,
     numRows = numRows,
-    random = random,
-    score = HakyuuScore()
+    seed = seed,
+    score = score,
+    completedBoard = completedBoard,
+    startBoard = startBoard,
+    boardRegions = regions
 ) {
-    @IgnoredOnParcel
     private val remainingPositions: MutableSet<Int> = initRemainingPositions()
-    @IgnoredOnParcel
     private var currentID = 0
-    @IgnoredOnParcel
     private var bruteForce = 0
 
     private fun initRemainingPositions():  MutableSet<Int> {
-        return (0..< numPositions).toMutableSet()
+        return (0..< numPositions()).toMutableSet()
     }
 
     override fun reset() {
@@ -46,6 +41,7 @@ class Hakyuu private constructor(
         startBoard.map { 0 }
         remainingPositions.addAll(initRemainingPositions())
         bruteForce = 0
+        random = Random(seed)
     }
 
     override fun createGame(): Boolean {
@@ -58,6 +54,71 @@ class Hakyuu private constructor(
         startBoard.indices.forEach { startBoard[it] = completedBoard[it] }
 
         return boardMeetsRules()
+    }
+
+    public override fun solveBoard(board: IntArray): Boolean {
+        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
+        val possibleValues = Array(numPositions()) { position ->
+            if (board[position] == 0) (1.. getRegionPositions(getRegionId(position)).size).toMutableList()
+            else mutableListOf()
+        }
+        val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
+        printBoard(board)
+        return res
+    }
+
+    override fun boardMeetsRules(board: IntArray): Boolean {
+        val tmp = mutableMapOf<Int, MutableSet<Int>>()
+
+        board.withIndex().filter { (_, value) -> value != 0 }.forEach { (position, value) ->
+            val regionID = getRegionId(position)
+            if (!checkRule3(value = value, position = position, actualValues = board)) {
+                println("Rule 3 failed: with value:$value, position:$position")
+                return false
+            }
+            if (tmp.containsKey(regionID)) {
+                val elementAdded = tmp[regionID]!!.add(value)
+                if (!elementAdded) {
+                    println("Rule 2 failed: with region:${tmp[regionID]}")
+                    return false
+                }
+            }
+            else{
+                tmp[regionID] = mutableSetOf(value)
+            }
+        }
+        return true
+    }
+
+    override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
+        val res = mutableSetOf<Int>()
+        val positions = getRegionPositions(regionId = getRegionId(position = position))
+
+        //Check rule 1
+        if (value > positions.size) res.add(position)
+
+        //Check rule 2
+        positions.filter { pos -> pos != position && actualValues[pos] == value}
+            .forEach { res.add(it) }
+
+        //Check rule 3
+        Direction.entries.forEach { direction: Direction ->
+            (1..value).mapNotNull { moveValue: Int ->
+                Coordinate.move(
+                    direction = direction,
+                    position = position,
+                    numRows = numRows,
+                    numColumns = numColumns,
+                    value = moveValue
+                )
+            } //Null values are out of bounds of the board and can be ignored
+                .filter { otherPosition: Int ->
+                    actualValues[otherPosition] == value
+                }
+                .forEach { res.add(it) }
+        }
+
+        return res
     }
 
     private fun boardCreated(): Boolean {
@@ -90,8 +151,8 @@ class Hakyuu private constructor(
     }
 
     private fun randomPropagationNumber(): Int {
-        //return random.nextInt(maxRegionSize - 1) + 1
-        return ((maxRegionSize - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
+        //return random.nextInt(maxRegionSize() - 1) + 1
+        return ((maxRegionSize() - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
     }
     
     private fun modifyNeighbouringRegions(seed: Int) {
@@ -188,32 +249,9 @@ class Hakyuu private constructor(
         }
         return errorNotFound
     }
-    
-    override fun boardMeetsRules(board: IntArray): Boolean {
-        val tmp = mutableMapOf<Int, MutableSet<Int>>()
-
-        board.withIndex().filter { (_, value) -> value != 0 }.forEach { (position, value) ->
-            val regionID = getRegionId(position)
-            if (!checkRule3(value = value, position = position, actualValues = board)) {
-                println("Rule 3 failed: with value:$value, position:$position")
-                return false
-            }
-            if (tmp.containsKey(regionID)) {
-                val elementAdded = tmp[regionID]!!.add(value)
-                if (!elementAdded) {
-                    println("Rule 2 failed: with region:${tmp[regionID]}")
-                    return false
-                }
-            }
-            else{
-                tmp[regionID] = mutableSetOf(value)
-            }
-        }
-        return true
-    }
 
     private fun propagateOnce(region: MutableList<Int>) {
-        if (region.size == maxRegionSize) return
+        if (region.size == maxRegionSize()) return
 
         for (position in region.shuffled(random)) {
             for (direction in Direction.entries.shuffled(random)) {
@@ -233,18 +271,6 @@ class Hakyuu private constructor(
             return true
         }
         return false
-    }
-
-
-    public override fun solveBoard(board: IntArray): Boolean {
-        val remainingPositions = (0..< numPositions).filter { board[it] == 0 }.toMutableSet()
-        val possibleValues = Array(numPositions) { position ->
-            if (board[position] == 0) (1.. getRegionPositions(getRegionId(position)).size).toMutableList()
-            else mutableListOf()
-        }
-        val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
-        printBoard(board)
-        return res
     }
 
     private fun populatePositions(
@@ -584,124 +610,26 @@ class Hakyuu private constructor(
         return res
     }
 
-    override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
-        val res = mutableSetOf<Int>()
-        val positions = getRegionPositions(regionId = getRegionId(position = position))
-
-        //Check rule 1
-        if (value > positions.size) res.add(position)
-
-        //Check rule 2
-        positions.filter { pos -> pos != position && actualValues[pos] == value}
-            .forEach { res.add(it) }
-
-        //Check rule 3
-        Direction.entries.forEach { direction: Direction ->
-            (1..value).mapNotNull { moveValue: Int ->
-                    Coordinate.move(
-                        direction = direction,
-                        position = position,
-                        numRows = numRows,
-                        numColumns = numColumns,
-                        value = moveValue
-                    )
-                } //Null values are out of bounds of the board and can be ignored
-                .filter { otherPosition: Int ->
-                    actualValues[otherPosition] == value
-                }
-                .forEach { res.add(it) }
-        }
-
-        return res
-    }
-
-
     companion object {
-        fun create(numColumns: Int, numRows: Int, random: Random): Hakyuu {
-            return Hakyuu(
+        fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, regions: String): Hakyuu {
+            val hakyuu = Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
-                random = random
-            )
-        }
-
-        fun create(numColumns: Int, numRows: Int, random: Random, regions: IntArray, startBoard: IntArray, completedBoard: IntArray): Hakyuu {
-            val res = Hakyuu(
-                numRows = numRows,
-                numColumns = numColumns,
-                random = random
+                seed = seed
             )
 
-            res.boardRegions.indices.forEach { res.boardRegions[it] = regions[it] }
-            res.startBoard.indices.forEach { res.startBoard[it] = startBoard[it] }
-            res.completedBoard.indices.forEach { res.completedBoard[it] = completedBoard[it] }
+            hakyuu.startBoard = Hakyuu.parseBoardString(startBoard)
+            hakyuu.completedBoard = Hakyuu.parseBoardString(completedBoard)
+            hakyuu.boardRegions = Hakyuu.parseRegionString(regions)
 
-            return res
+            return hakyuu
         }
 
-        fun example(): Hakyuu {
-            val numColumns = 8
-            val numRows = 8
-            val regions = "5:[(7,0)]\n" +
-                    "7:[(3,1)]\n" +
-                    "10:[(0,3)]\n" +
-                    "11:[(2,3)]\n" +
-                    "12:[(7,3)]\n" +
-                    "17:[(4,5)]\n" +
-                    "19:[(0,6)]\n" +
-                    "21:[(7,7)]\n" +
-                    "2:[(2,0), (3,0)]\n" +
-                    "4:[(5,0), (6,0)]\n" +
-                    "6:[(1,1), (2,1)]\n" +
-                    "9:[(3,2), (3,3), (4,3)]\n" +
-                    "20:[(0,7), (1,7), (2,7)]\n" +
-                    "14:[(4,4), (5,4), (6,4), (6,5)]\n" +
-                    "8:[(6,1), (7,1), (6,2), (7,2), (6,3)]\n" +
-                    "13:[(0,4), (1,4), (2,4), (3,4), (3,5)]\n" +
-                    "16:[(0,5), (1,5), (2,5), (1,6), (2,6)]\n" +
-                    "3:[(4,0), (4,1), (5,1), (4,2), (5,2), (5,3)]\n" +
-                    "15:[(7,4), (7,5), (6,6), (7,6), (5,7), (6,7)]\n" +
-                    "18:[(5,5), (3,6), (4,6), (5,6), (3,7), (4,7)]\n" +
-                    "1:[(0,0), (1,0), (0,1), (0,2), (1,2), (2,2), (1,3)]"
-
-            val start =
-                "- 4 - - 3 1 - -\n" +
-                "- - 2 - - 2 - -\n" +
-                "- - - - - - - 5\n" +
-                "- - - - - - - -\n" +
-                "- - - - - 4 - -\n" +
-                "3 - - - - - - -\n" +
-                "- - 4 - - 6 - -\n" +
-                "- - 3 5 - - 6 -"
-
-            val completed =
-                "1 4 1 2 3 1 2 1\n" +
-                "3 1 2 1 4 2 1 3\n" +
-                "5 2 7 3 6 1 4 5\n" +
-                "1 6 1 2 1 5 2 1\n" +
-                "2 3 5 1 2 4 3 2\n" +
-                "3 5 1 4 1 2 1 3\n" +
-                "1 2 4 1 3 6 5 4\n" +
-                "2 1 3 5 4 1 6 1"
-
-            val startBoard = parseBoardString(start)
-            val completedBoard = parseBoardString(completed)
-
-            return create(
-                regions = parseRegionString(regions),
-                startBoard = startBoard,
-                completedBoard = completedBoard,
-                numRows = numRows,
-                numColumns = numColumns,
-                random = Random(1)
-            )
-        }
-
-        private fun parseBoardString(str: String): IntArray {
+        fun parseBoardString(str: String): IntArray {
             return str.replace('\n',' ').split(" ").map { if (it=="-") 0 else it.toInt() }.toIntArray()
         }
 
-        private fun parseRegionString(str: String): IntArray {
+        fun parseRegionString(str: String): IntArray {
             val map = mutableMapOf<Int, List<Coordinate>>()
             val lines = str.replace("[","").replace("]","").split('\n')
 

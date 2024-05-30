@@ -2,7 +2,7 @@ package com.example.tfg.state
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
@@ -10,42 +10,124 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.tfg.common.entities.Action
+import com.example.tfg.common.entities.Board
 import com.example.tfg.common.entities.Cell
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.entities.Game
+import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.Move
+import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.common.utils.Quadruple
-import com.example.tfg.data.GameRepository
+import com.example.tfg.data.GameDao
 import com.example.tfg.games.GameValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.SortedMap
 
-class ActiveGameViewModel(private val game: Game, private val gameRepository: GameRepository?) : ViewModel() {
+class ActiveGameViewModel(private val gameId: Long, private val gameDao: GameDao) : ViewModel() {
+
+    private var game: Game
+    private var actualGameStatePointer = 0
+    private val gameStateIds: List<Long>
+    private var actualGameState: GameState
+    private var moves: MutableList<MoveWithActions>
+    private var board: Board
+    private val cells: Array<MutableState<Cell>>
 
     private val ERRORCELLBACKGROUNDCOLOR = Color.Red.toArgb()
-    private val numErrors = mutableStateOf(game.errors.size)
-    private val statePointer = mutableIntStateOf(0)
+    private val numErrors = mutableStateOf(0)
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
-    private val cells = getBoard().cells.map { mutableStateOf(it) }.toTypedArray()
+
+    private fun getActualGameStateId(): Long {
+        return gameStateIds[actualGameStatePointer]
+    }
 
     init {
         Log.d("VM","ViewModel")
+        game = getGameById(gameId)
+        gameStateIds = getGameStateIdsFromDb(gameId)
+        actualGameState = getActualGameStateFromDb()
+        moves = getMovesFromDb(getActualGameStateId()).toMutableList()
+        board = getBoardFromDb(getActualGameStateId())
+        cells = getCellsFromDb(board.boardId).map { mutableStateOf(it) }.toTypedArray()
+        numErrors.value = game.errors.size
     }
 
-//  Database functionality
+//  GameDao functionality
 
-    suspend fun saveGame() {
-        if (gameRepository != null)
-            gameRepository.insertGame(game)
+    private fun getGameById(gameId: Long): Game {
+        /*
+        viewModelScope.launch(Dispatchers.IO) {
+            return gameDao.getGameById(gameId)
+        }
+
+         */
+
+        return runBlocking { gameDao.getGameById(gameId) }
     }
 
+    private fun getGameStateIdsFromDb(gameId: Long): List<Long> {
+        return runBlocking { gameDao.getGameStateIdsByGameId(gameId) }
+    }
+
+    private fun getActualGameStateFromDb(): GameState {
+        return runBlocking { gameDao.getGameStateById(getActualGameStateId()) }
+    }
+
+    private fun getMovesFromDb(gameStateId: Long): List<MoveWithActions> {
+        return runBlocking { gameDao.getMovesByGameStateId(gameStateId) }
+    }
+
+    private fun getBoardFromDb(gameStateId: Long): Board {
+        return runBlocking { gameDao.getBoardByGameStateId(gameStateId) }
+    }
+
+    private fun getCellsFromDb(boardId: Long): List<Cell> {
+        return runBlocking { gameDao.getBoardCells(boardId) }
+    }
+
+    private fun updateCellToDb(cell: Cell) {
+        runBlocking { gameDao.updateCell(cell) }
+    }
+
+    private suspend fun deleteMoves(movesIds: List<Long>) {
+        gameDao.deleteMoves(movesIds)
+    }
+
+    private suspend fun addMoveToDb(moveWithActions: MoveWithActions) {
+        gameDao.insertMove(moveWithActions.move)
+        gameDao.insertActions(moveWithActions.actions)
+    }
+
+    private fun addMoveDB(moveWithActions: MoveWithActions, toRemove: List<Long>) {
+        runBlocking {
+            deleteMoves(toRemove)
+            addMoveToDb(moveWithActions)
+        }
+    }
+
+    private fun updateGameState() {
+        runBlocking { gameDao.updateGameState(actualGameState) }
+    }
 
 //  Main getters
 
-    private fun getGameStates() = game.state
-
     private fun getGameType() = game.gameType
+
+    private fun getMoves() = moves
+
+    private fun getGame() = getGameType().type
+
+    private fun getActualState() = actualGameState
+
+    private fun getActualMovesPointer() = getActualState().pointer
+
+    private fun getMove(pointer: Int) = getMoves()[pointer]
 
     fun getNumClues() = game.numClues
 
@@ -53,11 +135,9 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
 
     fun getDifficulty(context: Context) = game.difficulty.toString(context)
 
-    private fun getGame() = getGameType().type
-
     fun getValue(value: Int): GameValue = getGameType().getValue(value)
 
-    fun getMaxValue() = getGameType().maxRegionSize
+    fun getMaxValue() = getGameType().maxRegionSize()
 
     private fun getRegions() = getGameType().getRegions()
 
@@ -73,27 +153,11 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
         return res
     }
 
-    private fun getActualState() = getGameStates()[statePointer.intValue]
+    fun getNumColumns() = board.numColumns
 
-    private fun getActualMovesPointer() = getActualState().pointer
-
-    private fun getMoves() = getActualState().moves
-
-    private fun getMove(pointer: Int) = getMoves()[pointer]
-
-    private fun getBoard() = getActualState().board
-
-    fun getNumColumns() = getBoard().numColumns
-
-    fun getNumRows() = getBoard().numRows
+    fun getNumRows() = board.numRows
 
     fun getNumCells() = getNumRows() * getNumColumns()
-
-    /*
-    private fun getCells(): MutableList<Cell> {
-        return cells
-    }
-     */
 
     fun getNumErrors() = numErrors.value
 
@@ -105,21 +169,28 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
     /*
         GameState functions
      */
-
+//TODO: STATE
     //Actual state is updated with unsync data and cloned into a new GameState
     fun newGameState() {
+        /*
         Log.d("state", "${getActualState()}")
-        getGameStates().add(getActualState().clone())
+        val newGameState = getActualState().copy(gameStateId = 0)
+        getGameStates().add()
+
+         */
     }
 
     //Actual state is updated with unsync data and actual state is changed
     fun setActualState(pointer: Int) {
+        /*
         Log.d("state", "Changing to $pointer")
         if (pointer < getGameStates().size && pointer != statePointer.intValue){
             statePointer.intValue = pointer
             Log.d("state", "${getActualState()}")
         }
         removeSelections()
+
+         */
     }
 
 /*
@@ -144,8 +215,18 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
 
     // Setters
 
-    private fun eraseValue(index: Int) {
-        if (!getCell(index).isEmpty()) setCell(index = index, newCell = Cell.createWithBackground(backgroundColor = 0))
+    private fun setCell(index: Int, newCell: Cell) {
+        cells[index].value = newCell
+        updateCellToDb(newCell)
+    }
+
+    private fun eraseValue(index: Int): Boolean {
+        val cell = getCell(index)
+        if (!cell.isEmpty()) {
+            setCell(index = index, newCell = cell.copyErase())
+            return true
+        }
+        return false
     }
 
     private fun addError(index: Int, value: Int) {
@@ -204,11 +285,6 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
         setCell(index = coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!, newCell = newCell)
     }
 
-    private fun setCell(index: Int, newCell: Cell) {
-        getBoard().cells[index] = newCell
-        cells[index].value = newCell
-    }
-
     private fun setCellsNotes(note: Int, coordinates: List<Coordinate>, ordered: Boolean) {
         coordinates.forEach {
             val index = it.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
@@ -236,7 +312,6 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
     }
 
     fun setIsNote() {
-        if (getGameType().noNotes) return
         isNote.value = !isNote()
     }
 
@@ -267,6 +342,10 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
 
     fun removeSelections() {
         selectedTiles.removeAll { true }
+    }
+
+    fun addSelection(coordinate: Coordinate) {
+        selectedTiles.add(coordinate)
     }
 
     fun addSelections(coordinates: List<Coordinate>) {
@@ -305,57 +384,66 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
 
     private fun movePointerRight() {
         getActualState().pointer = getActualState().pointer + 1
+        updateGameState()
     }
 
     private fun movePointerLeft() {
         getActualState().pointer = getActualState().pointer - 1
+        updateGameState()
     }
 
-    private fun addMove(move: Move) {
-        //Remove moves that won't be accesed anymore
-        while (getActualMovesPointer() < getMoves().size - 1) {
-            getMoves().removeLast()
+    private fun addMove(coordinates: List<Coordinate>, newCells: List<Cell>, previousCells: List<Cell>) {
+        val actions = coordinates.mapIndexedNotNull { index, coordinate ->
+            val newCell = newCells[index]
+            val previousCell = previousCells[index]
+
+            if (newCell == previousCell) null
+            else{
+                val position = coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+                Action(
+                    newCell = newCell,
+                    previousCell = previousCell,
+                    position = position,
+                    moveId = 0
+                )
+            }
+        }.toList()
+
+        if (actions.isEmpty()) return
+
+        // Remove moves that won't be accessed anymore
+        val toRemove = mutableListOf<Long>()
+        val pointer = getActualMovesPointer()
+        while (pointer < getMoves().size - 1) {
+            toRemove.add(getMoves().removeLast().move.moveId)
         }
 
-        getMoves().add(move)
+        val move = Move(moveId = 0, position = pointer + 1, gameStateId = getActualGameStateId())
+        val moveWithAction = MoveWithActions(move, actions)
+
+        getMoves().add(moveWithAction)
         movePointerRight()
+
+        addMoveDB(moveWithActions = moveWithAction, toRemove = toRemove)
     }
 
-    fun applyMove(move: Move) {
-        var valuesChanged = mutableListOf<Coordinate>()
-        for (i in 0..move.coordinates.size - 1) {
-            val newCell = move.newCells[i]
-            val coordinate = move.coordinates[i]
-            if (getCell(coordinate).value != newCell.value) valuesChanged.add(coordinate)
-
+    fun applyMove(moveWithActions: MoveWithActions) {
+        removeSelections()
+        moveWithActions.actions.forEach {
+            val newCell = it.newCell
+            val coordinate = Coordinate.fromIndex(it.position, getNumRows(), getNumColumns())
+            addSelection(coordinate)
             setCell(coordinate = coordinate, newCell = newCell)
         }
-
-        removeSelections()
-
-        if (valuesChanged.isNotEmpty()) {
-            addSelections(valuesChanged)
-        }else {
-            addSelections(move.coordinates)
-        }
     }
 
-    fun unapplyMove(move: Move) {
-        var valuesChanged = mutableListOf<Coordinate>()
-        for (i in 0..move.coordinates.size - 1) {
-            val previousCell = move.previousCells[i]
-            val coordinate = move.coordinates[i]
-            if (getCell(coordinate).value != previousCell.value) valuesChanged.add(coordinate)
-
-            setCell(coordinate = coordinate, newCell = previousCell)
-        }
-
+    fun unapplyMove(moveWithActions: MoveWithActions) {
         removeSelections()
-
-        if (valuesChanged.isNotEmpty()) {
-            addSelections(valuesChanged)
-        }else {
-            addSelections(move.coordinates)
+        moveWithActions.actions.forEach {
+            val previousCell = it.previousCell
+            val coordinate = Coordinate.fromIndex(it.position, getNumRows(), getNumColumns())
+            addSelection(coordinate)
+            setCell(coordinate = coordinate, newCell = previousCell)
         }
     }
 
@@ -374,6 +462,83 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
         unapplyMove(getMove(getActualMovesPointer()))
         movePointerLeft()
     }
+
+
+    /*
+    Game Actions
+     */
+
+    private fun checkValue(position: Int, value: Int): Set<Int> {
+        return getGameType().checkValue(
+            position = position,
+            value = value,
+            actualValues = cells.map { if (it.value.isError) 0 else it.value.value }.toIntArray()
+        )
+    }
+
+    private fun isError(position: Int, value: Int): Boolean {
+        return getGameType().isError(
+            position = position,
+            value = value
+        )
+    }
+
+    fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
+        val coordinates = selectedTiles.filter { !isReadOnly(it) }.toMutableList()
+        if (coordinates.isEmpty()) return
+
+        var previousCells = getCells(coordinates).toMutableList()
+
+        if (isNote()) {
+            setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
+        }
+        else if (coordinates.size == 1) {
+            val index = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+
+            // Paint positions that causes the error
+            // TODO: fix when putting 1 on index 0 and then putting x (delete) it paints red some cells
+            val errors = checkValue(position = index, value = value).map { Coordinate.fromIndex(it, getNumRows(),getNumColumns()) }
+            previousCells.addAll(getCells(errors))
+            setCellsBackgroundColor(color = ERRORCELLBACKGROUNDCOLOR, coordinates = errors)
+            coordinates.addAll(errors)
+
+            val isError = isError(position = index, value = value)
+            setCellValue(value = value, index = index, isError = isError)
+
+            removeSelections()
+        }
+        else return
+
+        val newCells = getCells(coordinates)
+        addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
+    }
+
+    fun paintAction(colorInt: Int) {
+        val coordinates = selectedTiles.toList()
+        val previousCells = getCells(coordinates)
+
+        if (coordinates.isEmpty()) return
+
+        setCellsBackgroundColor(color = colorInt, coordinates = coordinates)
+
+        val newCells = getCells(coordinates)
+        addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
+    }
+
+    fun eraseAction() {
+        val coordinates = selectedTiles.filter { !isReadOnly(it) }
+        if (coordinates.isEmpty()) return
+
+        val previousCells = getCells(coordinates)
+
+        eraseCells(coordinates)
+        removeSelections()
+
+        val newCells = getCells(coordinates)
+
+        addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
+    }
+
 
 
     /*
@@ -411,81 +576,6 @@ class ActiveGameViewModel(private val game: Game, private val gameRepository: Ga
             left = drawDividerLeft(coordinate),
             right = drawDividerRight(coordinate)
         )
-    }
-
-
-    /*
-    Game Actions
-     */
-
-    private fun checkValue(position: Int, value: Int): Set<Int> {
-        return getGameType().checkValue(
-            position = position,
-            value = value,
-            actualValues = getBoard().cells.map { if (it.isError) 0 else it.value }.toIntArray()
-        )
-    }
-
-    private fun isError(position: Int, value: Int): Boolean {
-        return getGameType().isError(
-            position = position,
-            value = value
-        )
-    }
-
-    fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
-        val coordinates = selectedTiles.filter { !isReadOnly(it) }.toMutableList()
-        if (coordinates.isEmpty()) return
-
-        var previousCells = getCells(coordinates).toMutableList()
-
-        if (isNote()) {
-            setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
-        }
-        else if (coordinates.size == 1) {
-            val index = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
-
-            // Paint positions that causes the error
-            // TODO: fix when putting 1 on index 0 and then putting x (delete) it paints red some cells
-            val errors = checkValue(position = index, value = value).map { Coordinate.fromIndex(it, getNumRows(),getNumColumns()) }
-            previousCells.addAll(getCells(errors))
-            setCellsBackgroundColor(color = ERRORCELLBACKGROUNDCOLOR, coordinates = errors)
-            coordinates.addAll(errors)
-
-            val isError = isError(position = index, value = value)
-            setCellValue(value = value, index = index, isError = isError)
-
-            removeSelections()
-        }
-
-        val newCells = getCells(coordinates)
-        addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
-    }
-
-    fun paintAction(colorInt: Int) {
-        val coordinates = selectedTiles.toList()
-        val previousCells = getCells(coordinates)
-
-        if (coordinates.isEmpty()) return
-
-        setCellsBackgroundColor(color = colorInt, coordinates = coordinates)
-
-        val newCells = getCells(coordinates)
-        addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
-    }
-
-    fun eraseAction() {
-        val coordinates = selectedTiles.filter { !isReadOnly(it) }
-        if (coordinates.isEmpty()) return
-
-        val previousCells = getCells(coordinates)
-
-        eraseCells(coordinates)
-        removeSelections()
-
-        val newCells = getCells(coordinates)
-
-        addMove(Move(coordinates = coordinates, newCells = newCells, previousCells = previousCells))
     }
 
 }

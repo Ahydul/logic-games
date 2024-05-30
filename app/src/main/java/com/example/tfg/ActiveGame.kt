@@ -9,19 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.tfg.common.Difficulty
-import com.example.tfg.common.entities.Game
+import com.example.tfg.common.GameFactory
 import com.example.tfg.data.GameDatabase
-import com.example.tfg.data.OfflineGameRepository
-import com.example.tfg.games.Games
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
 import com.example.tfg.ui.components.activegame.ActiveGameScreen
 import com.example.tfg.ui.theme.TFGTheme
+import kotlinx.coroutines.runBlocking
 
 class ActiveGameView : ComponentActivity() {
 
@@ -29,9 +25,14 @@ class ActiveGameView : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val game = intent.getParcelableExtra("game")?: Game.example()
-        val repository = OfflineGameRepository(GameDatabase.getDatabase(this).gameDao())
-        val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(game, repository) }
+        var gameId = intent.getLongExtra("gameId", -1)
+        val dao = GameDatabase.getDatabase(this).gameDao()
+
+        if (gameId == -1L) {
+            gameId = runBlocking { GameFactory(dao).exampleHakyuuToDB() }
+        }
+
+        val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameId, dao) }
 
         setContent {
             TFGTheme {
@@ -51,22 +52,6 @@ class ActiveGameView : ComponentActivity() {
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TFGTheme {
-        ActiveGameScreen(
-            viewModel = ActiveGameViewModel(
-                Game.create(Games.HAKYUU, Difficulty.EASY, 4,10, 0),
-                null
-            ),
-            modifier = Modifier
-                .background(colorResource(id = R.color.primary_background))
-                .fillMaxWidth()
-        )
     }
 }
 

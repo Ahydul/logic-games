@@ -1,10 +1,8 @@
 package com.example.tfg.games.hakyuu
 
 import com.example.tfg.games.Score
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
-class HakyuuScore : Score() {
+class HakyuuScore(score: Int = 0) : Score(score) {
 
     fun addScoreRule3() {
         score += 1

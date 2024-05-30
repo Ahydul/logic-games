@@ -53,8 +53,10 @@ import androidx.compose.ui.window.PopupProperties
 import com.example.tfg.ActiveGameView
 import com.example.tfg.R
 import com.example.tfg.common.Difficulty
+import com.example.tfg.common.GameFactory
 import com.example.tfg.common.entities.Game
 import com.example.tfg.games.Games
+import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomFilledButton
 import com.example.tfg.ui.components.common.CustomIconButton
@@ -148,7 +150,12 @@ private fun ChooseGameButton(
 }
 
 @Composable
-fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Games) {
+fun TextFields(
+    modifier: Modifier = Modifier,
+    textColor: Color,
+    chosenGame: Games,
+    viewModel: MainViewModel
+) {
     val textFieldModifier = modifier
         .border(
             1.dp,
@@ -218,10 +225,9 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
                 val rows = numRows.value.toInt()
                 val cols = numColumns.value.toInt()
                 val diff = Difficulty.get(difficulty.value)
-                val game = if (seed.value.isEmpty()) Game.create(chosenGame = chosenGame, difficulty = diff, numRows = rows, numColumns = cols)
-                else Game.create(chosenGame = chosenGame, difficulty = diff, numRows = rows, numColumns = cols, seed = seed.value.hashCode().toLong())
+                val gameId = viewModel.createGame(chosenGame, rows, cols, diff)
 
-                startActiveGameActivity(context, game)
+                startActiveGameActivity(context, gameId)
             },
             color = colorResource(id = R.color.board_grid),
             borderColor = colorResource(id = R.color.board_grid2),
@@ -232,15 +238,20 @@ fun TextFields(modifier: Modifier = Modifier, textColor: Color, chosenGame: Game
     }
 }
 
-private fun startActiveGameActivity(context: Context, game: Game) {
+private fun startActiveGameActivity(context: Context, gameId: Long) {
     val intent = Intent(context, ActiveGameView::class.java)
-    intent.putExtra("game", game)
+    intent.putExtra("gameId", gameId)
     context.startActivity(intent)
 }
 
 
 @Composable
-fun ChosenGame(expandedStates: MutableTransitionState<Boolean>, onDismissRequest: (() -> Unit), chosenGame: Games) {
+fun ChosenGame(
+    expandedStates: MutableTransitionState<Boolean>,
+    onDismissRequest: (() -> Unit),
+    chosenGame: Games,
+    viewModel: MainViewModel
+) {
     val transition = updateTransition(expandedStates, "DropDownMenu")
     val scale by transition.animateFloat(
         transitionSpec = {
@@ -291,7 +302,7 @@ fun ChosenGame(expandedStates: MutableTransitionState<Boolean>, onDismissRequest
                 ) {
                     val modifier = Modifier.padding(top = 15.dp)
                     Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color)
-                    TextFields(textColor = color, modifier = modifier, chosenGame = chosenGame)
+                    TextFields(textColor = color, modifier = modifier, chosenGame = chosenGame, viewModel = viewModel)
                 }
             }
             CustomIconButton(
@@ -305,7 +316,7 @@ fun ChosenGame(expandedStates: MutableTransitionState<Boolean>, onDismissRequest
 
 
 @Composable
-fun GamesScreen(modifier: Modifier = Modifier) {
+fun GamesScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
     val chosenGame = remember { mutableStateOf(Games.HAKYUU) }
     val expandedStates = remember { MutableTransitionState(false) }
 
@@ -340,6 +351,11 @@ fun GamesScreen(modifier: Modifier = Modifier) {
     val onDismissRequest = { expandedStates.targetState = false }
 
     if (expandedStates.targetState || expandedStates.currentState) {
-        ChosenGame(expandedStates = expandedStates, onDismissRequest = onDismissRequest, chosenGame = chosenGame.value)
+        ChosenGame(
+            expandedStates = expandedStates,
+            onDismissRequest = onDismissRequest,
+            chosenGame = chosenGame.value,
+            viewModel = viewModel
+        )
     }
 }

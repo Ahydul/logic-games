@@ -10,13 +10,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.MainHeader
 import com.example.tfg.ui.components.common.NavigationBar
 
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    //viewModel: OrderViewModel = viewModel(),
+    viewModel: MainViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     Column(modifier = modifier
@@ -34,7 +35,7 @@ fun MainScreen(
                 HomeScreen(modifier = modifier)
             }
             composable(route = MainActivity.Games.name) {
-                GamesScreen(modifier = modifier)
+                GamesScreen(modifier = modifier, viewModel = viewModel)
             }
             composable(route = MainActivity.Stats.name) {
                 StatsScreen(modifier = modifier)
