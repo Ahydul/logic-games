@@ -139,6 +139,12 @@ class GameFactory(private val gameDao: GameDao) {
                 regions = REGION_STR
             )
         }
+
+        fun exampleHakyuuGame() = Game.create(exampleHakyuu(), Difficulty.EASY)
+        fun exampleGameState(gameId: Long) = GameState(gameId = gameId)
+        fun exampleBoard(gameStateId: Long) = Board(numRows = 8, numColumns = 8, gameStateId = gameStateId)
+        fun exampleCells(cellArray: IntArray) = cellArray.map { Cell.create(it) }.toTypedArray()
+
     }
 
 }

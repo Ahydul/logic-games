@@ -36,6 +36,13 @@ abstract class GameDatabase : RoomDatabase() {
             }
         }
 
+        // For preview purposesz
+        fun getInMemoryDatabase(context: Context): GameDatabase {
+            return Room.inMemoryDatabaseBuilder(context, GameDatabase::class.java)
+                .allowMainThreadQueries()
+                .build()
+        }
+
     }
 
 }
