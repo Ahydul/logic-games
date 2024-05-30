@@ -25,6 +25,8 @@
     <string name="games">Games</string>
     <string name="_continue">Continue</string>
     <string name="other_games_in_progress">Other games in progress</string>
+    <string name="no_active_games_found">No other active games found</string>
+    <string name="new_game">New game</string>
     <string name="errors">Errors</string>
     <string name="clues">Clues</string>
     <string name="time">Time</string>

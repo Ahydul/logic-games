@@ -53,8 +53,8 @@ import androidx.compose.ui.window.PopupProperties
 import com.example.tfg.ActiveGameView
 import com.example.tfg.R
 import com.example.tfg.common.Difficulty
-import com.example.tfg.common.GameFactory
 import com.example.tfg.common.entities.Game
+import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.Games
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
@@ -227,7 +227,7 @@ fun TextFields(
                 val diff = Difficulty.get(difficulty.value)
                 val gameId = viewModel.createGame(chosenGame, rows, cols, diff)
 
-                startActiveGameActivity(context, gameId)
+                Utils.startActiveGameActivity(context, gameId)
             },
             color = colorResource(id = R.color.board_grid),
             borderColor = colorResource(id = R.color.board_grid2),
@@ -237,13 +237,6 @@ fun TextFields(
         )
     }
 }
-
-private fun startActiveGameActivity(context: Context, gameId: Long) {
-    val intent = Intent(context, ActiveGameView::class.java)
-    intent.putExtra("gameId", gameId)
-    context.startActivity(intent)
-}
-
 
 @Composable
 fun ChosenGame(

@@ -1,6 +1,7 @@
 package com.example.tfg
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,12 +35,19 @@ class ActiveGameView : ComponentActivity() {
         val database = GameDatabase.getDatabase(this)
         val dao = database.gameDao()
 
-        database.clearAllTables() //TMP TO TEST
-        runBlocking { dao.deletePrimaryKeys() } //TMP TO TEST
-
         if (gameId == -1L) {
+            database.clearAllTables() //TMP TO TEST
+            runBlocking { dao.deletePrimaryKeys() } //TMP TO TEST
             gameId = runBlocking { GameFactory(dao).exampleHakyuuToDB() }
         }
+
+        val sharedPref = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            putLong("lastPlayedGame", gameId)
+            apply() //asynchronous
+        }
+
+
 
         val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameId, dao) }
 

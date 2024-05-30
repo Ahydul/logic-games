@@ -10,12 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
+import com.example.tfg.common.utils.Utils
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.CustomText
 
 @Composable
@@ -23,17 +27,24 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
     Log.d("TAG", "TOPcurrentRecomposeScope $currentRecomposeScope")
 
     Column(modifier = modifier.padding(bottom = 8.dp)) {
+        val context = LocalContext.current
+
         Row {
             Text(
                 text = ""
             )
+            CustomIconButton(
+                onClick = { Utils.startHomeActivity(context)},
+                imageVector = ImageVector.vectorResource(id = R.drawable.back_arrow),
+                contentDescription = "Go back"
+            )
         }
+
         Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = modifier
         ) {
-            val context = LocalContext.current
             val difficultyText = stringResource(id = R.string.difficulty)
             CustomText(mainText = difficultyText, secondaryText = "${viewModel.getDifficulty(context)}", textColor = colorResource(R.color.primary_color))
 
