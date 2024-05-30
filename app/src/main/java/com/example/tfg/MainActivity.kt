@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.data.GameDatabase
+import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.state.CustomGameViewModelFactory
 import com.example.tfg.state.CustomMainViewModelFactory
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.mainactivity.MainScreen
@@ -44,12 +50,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/*
+
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview2() {
+fun MainScreenPreview() {
+    val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
+    val viewModel: MainViewModel = viewModel(factory = CustomMainViewModelFactory(database.gameDao()))
+
     TFGTheme {
         MainScreen(
+            viewModel = viewModel,
             modifier = Modifier
                 .background(colorResource(id = R.color.primary_background))
                 .fillMaxWidth()
@@ -57,5 +67,5 @@ fun GreetingPreview2() {
     }
 }
 
- */
+
 

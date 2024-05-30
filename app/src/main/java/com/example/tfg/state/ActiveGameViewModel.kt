@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tfg.common.GameFactory
 import com.example.tfg.common.entities.Action
 import com.example.tfg.common.entities.Board
 import com.example.tfg.common.entities.Cell
@@ -45,14 +46,26 @@ class ActiveGameViewModel(private val gameId: Long, private val gameDao: GameDao
     private val selectedTiles = mutableStateListOf<Coordinate>()
 
     init {
-        Log.d("VM","ViewModel")
-        game = getGameByIdFromBb(gameId)
-        gameStateIds = getGameStateIdsFromDb(gameId).toMutableList()
-        actualGameState = getActualGameStateFromDb()
-        moves = getMovesFromDb(getActualGameStateId()).toMutableList()
-        board = getBoardFromDb(getActualGameStateId())
-        cells = getCellsFromDb(board.boardId).map { mutableStateOf(it) }.toTypedArray()
-        numErrors.value = game.errors.size
+        //Preview
+        if (gameId == -1L) {
+            game = GameFactory.exampleHakyuuGame()
+            gameStateIds = mutableListOf()
+            actualGameState = GameFactory.exampleGameState(game.gameId)
+            moves = mutableListOf()
+            board = GameFactory.exampleBoard(gameStateId = actualGameState.gameStateId)
+            cells = GameFactory.exampleCells(game.gameType.startBoard).map { mutableStateOf(it) }.toTypedArray()
+            numErrors.value = game.errors.size
+        }
+        else{
+            Log.d("VM","ViewModel")
+            game = getGameByIdFromBb(gameId)
+            gameStateIds = getGameStateIdsFromDb(gameId).toMutableList()
+            actualGameState = getActualGameStateFromDb()
+            moves = getMovesFromDb(getActualGameStateId()).toMutableList()
+            board = getBoardFromDb(getActualGameStateId())
+            cells = getCellsFromDb(board.boardId).map { mutableStateOf(it) }.toTypedArray()
+            numErrors.value = game.errors.size
+        }
     }
 
     private fun getActualGameStateId(): Long {
