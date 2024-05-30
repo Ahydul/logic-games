@@ -1,5 +1,6 @@
 package com.example.tfg
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,12 +22,16 @@ import kotlinx.coroutines.runBlocking
 
 class ActiveGameView : ComponentActivity() {
 
-    @Suppress("DEPRECATION")
+    @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         var gameId = intent.getLongExtra("gameId", -1)
-        val dao = GameDatabase.getDatabase(this).gameDao()
+        val database = GameDatabase.getDatabase(this)
+        val dao = database.gameDao()
+
+        database.clearAllTables() //TMP TO TEST
+        runBlocking { dao.deletePrimaryKeys() } //TMP TO TEST
 
         if (gameId == -1L) {
             gameId = runBlocking { GameFactory(dao).exampleHakyuuToDB() }

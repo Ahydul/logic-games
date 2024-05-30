@@ -77,4 +77,16 @@ interface GameDao {
     suspend fun updateCell(cell: Cell)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertBoardCellCrossRef(boardCellCrossRef: BoardCellCrossRef): Long
+
+    @Query("""
+        DELETE FROM sqlite_sequence 
+        WHERE name = 'Game' 
+        or name = 'GameState'
+        or name = 'Action'
+        or name = 'BoardCellCrossRef'
+        or name = 'Cell'
+        or name = 'Move'
+        or name = 'Board'
+    """)
+    suspend fun deletePrimaryKeys()
 }
