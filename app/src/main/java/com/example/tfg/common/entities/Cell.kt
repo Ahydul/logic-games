@@ -8,9 +8,9 @@ import androidx.room.PrimaryKey
 * Manages the content of a cell
 * */
 @Entity
-class Cell(
+data class Cell(
     @PrimaryKey(autoGenerate = true)
-    val cellId: Long = 0,
+    var cellId: Long = 0,
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean,
@@ -61,10 +61,6 @@ class Cell(
                     else newNotes[i+1]
         }
         return newNotes
-    }
-
-    fun copy(value: Int = this.value, notes: IntArray = this.notes, backgroundColor: Int = this.backgroundColor, isError: Boolean = this.isError): Cell {
-        return Cell(cellId = this.cellId, value = value, notes = notes, readOnly = this.readOnly, backgroundColor = backgroundColor, isError = isError)
     }
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {
