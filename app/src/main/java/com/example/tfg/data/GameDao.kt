@@ -31,6 +31,8 @@ interface GameDao {
     suspend fun getGameById(id: Long): Game
     @Query("SELECT * from Game ORDER BY startDate ASC")
     suspend fun getAllGames(): List<Game>
+    @Query("SELECT EXISTS(SELECT 1 FROM Game)")
+    suspend fun existsAGame(): Boolean
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState): Long

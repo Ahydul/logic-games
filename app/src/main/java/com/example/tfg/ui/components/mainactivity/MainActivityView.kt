@@ -32,7 +32,7 @@ fun MainScreen(
             modifier = modifier.weight(17f)
         ) {
             composable(route = MainActivity.Home.name) {
-                HomeScreen(modifier = modifier)
+                HomeScreen(modifier = modifier, viewModel = viewModel, goGamesScreen = { navController.navigate(MainActivity.Games.name) })
             }
             composable(route = MainActivity.Games.name) {
                 GamesScreen(modifier = modifier, viewModel = viewModel)

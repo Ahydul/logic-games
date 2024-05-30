@@ -1,5 +1,6 @@
 package com.example.tfg
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,8 +17,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.data.GameDatabase
-import com.example.tfg.state.ActiveGameViewModel
-import com.example.tfg.state.CustomGameViewModelFactory
 import com.example.tfg.state.CustomMainViewModelFactory
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.mainactivity.MainScreen
@@ -26,7 +25,9 @@ import com.example.tfg.ui.theme.TFGTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val dao = GameDatabase.getDatabase(this).gameDao()
-        val viewModel: MainViewModel by viewModels{ CustomMainViewModelFactory(dao) }
+        val sharedPref = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
+
+        val viewModel: MainViewModel by viewModels{ CustomMainViewModelFactory(dao, sharedPref) }
 
         super.onCreate(savedInstanceState)
         setContent {
@@ -55,7 +56,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreenPreview() {
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
-    val viewModel: MainViewModel = viewModel(factory = CustomMainViewModelFactory(database.gameDao()))
+    val sharedPreferences = LocalContext.current.getSharedPreferences("Configuration", Context.MODE_PRIVATE)
+    val viewModel: MainViewModel = viewModel(factory = CustomMainViewModelFactory(database.gameDao(), sharedPreferences, true))
 
     TFGTheme {
         MainScreen(

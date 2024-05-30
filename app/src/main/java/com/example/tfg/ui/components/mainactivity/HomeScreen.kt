@@ -6,15 +6,20 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.example.tfg.state.MainViewModel
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    goGamesScreen: () -> Unit
+) {
     val mod = Modifier.fillMaxWidth()
     Column(modifier = modifier
         .fillMaxHeight()
     ) {
         Spacer(modifier = mod.weight(8f))
-        ContinueButtons(modifier = mod.weight(5f))
+        HomeButtons(modifier = mod.weight(5f), viewModel = viewModel, goGamesScreen = goGamesScreen)
         Spacer(modifier = mod.weight(4f))
     }
 }
