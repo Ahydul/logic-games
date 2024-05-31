@@ -95,7 +95,7 @@ abstract class GameType(
     }
 
     abstract fun createGame(): Boolean
-    internal abstract fun solveBoard(board: IntArray): Boolean
+    protected abstract fun solveBoard(board: IntArray): Boolean
 
     protected fun deleteRegion(regionId: Int) {
         boardRegions.withIndex().filter { (_, id) -> id == regionId }

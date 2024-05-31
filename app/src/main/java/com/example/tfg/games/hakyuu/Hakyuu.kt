@@ -57,7 +57,7 @@ class Hakyuu(
         return boardMeetsRules()
     }
 
-    internal override fun solveBoard(board: IntArray): Boolean {
+    override fun solveBoard(board: IntArray): Boolean {
         val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
         val possibleValues = Array(numPositions()) { position ->
             if (board[position] == 0) (1.. getRegionPositions(getRegionId(position)).size).toMutableList()
@@ -613,7 +613,7 @@ class Hakyuu(
         fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String): Hakyuu {
             val start = Hakyuu.parseBoardString(startBoard)
             val completed = Hakyuu.parseBoardString(completedBoard)
-            val regions = Hakyuu.parseBoardString(boardRegions)
+            val regions = Hakyuu.parseRegionString(boardRegions)
 
             require(start.size == completed.size && start.size == regions.size && start.size == numRows*numColumns) { "Incompatible sizes provided to Hakyuu" }
 
@@ -629,21 +629,25 @@ class Hakyuu(
             return hakyuu
         }
 
-        fun solveBoard(numRows: Int, numColumns: Int, seed: Long, boardToSolve: String, boardRegions: String): Hakyuu {
+        fun solveBoard(seed: Long, boardToSolve: String, boardRegions: String): Hakyuu {
             val start = Hakyuu.parseBoardString(boardToSolve)
-            val regions = Hakyuu.parseBoardString(boardRegions)
+            val regions = Hakyuu.parseRegionString(boardRegions)
+            val completed = Hakyuu.parseBoardString(boardToSolve)
+            val numRows = boardToSolve.count { it == '\n' } + 1
+            val numColumns = (boardToSolve.substringBefore(delimiter = "\n").length + 1) / 2
 
-            require(start.size == regions.size && start.size == numRows*numColumns) { "Incompatible sizes provided to Hakyuu" }
+            require(start.size == regions.size) { "Incompatible sizes provided to Hakyuu" }
 
             val hakyuu = Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
                 seed = seed,
                 regions = regions,
-                startBoard = start
+                startBoard = start,
+                completedBoard = completed
             )
 
-            hakyuu.solveBoard(hakyuu.startBoard)
+            hakyuu.solveBoard(hakyuu.completedBoard)
 
             return hakyuu
         }
