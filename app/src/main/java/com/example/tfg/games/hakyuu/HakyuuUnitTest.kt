@@ -290,65 +290,6 @@ class HakyuuUnitTest {
         return currentResult
     }
 
-/*
-    @ParameterizedTest
-    @ValueSource(strings = ["6,46", "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
-    fun testOkJankoBoards(input: String, testInfo: TestInfo) {
-        val spl = input.split(',')
-        val jankoSize = spl[1].toInt()
-        val boardSize = spl[0].toInt()
-
-        val boards = Array(size = jankoSize) {""}
-        val iterations = IntArray(size = jankoSize)
-        val times = LongArray(size = jankoSize)
-        val seeds = LongArray(size = jankoSize)
-        val regionSizes = Array(
-            size = boardSize,
-            init = { IntArray(size = jankoSize) }
-        )
-
-        val fileAreas = File("src/test/testdata/$boardSize-areas.txt")
-        val boardRegions = fileAreas.readText()
-            .split("Tablero")
-            .drop(1)
-            .map {
-                it.substring(it.indexOf('\n')+1)
-            }
-
-        val fileStartBoards = File("src/test/testdata/$boardSize-startboard.txt")
-        val startBoards = fileStartBoards.readText()
-            .split("Tablero")
-            .drop(1)
-            .map {
-                it.substring(it.indexOf('\n')+1)
-            }
-
-        boardRegions.indices.forEach { iteration ->
-            val startTime = System.currentTimeMillis()
-            val seed = (Math.random()*10000000000).toLong()
-            val gameType = Hakyuu.solveBoard(seed = seed, boardToSolve = startBoards[iteration], boardRegions = boardRegions[iteration])
-            val endTime = System.currentTimeMillis()
-
-            val res = gameType.boardMeetsRules()
-
-            assert(res) { "$iteration failed seed: $seed " }
-
-            boards[iteration] = gameType.printBoard()
-            iterations[iteration] = gameType.iterations
-            times[iteration] = endTime - startTime
-            seeds[iteration] = seed
-            gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
-                regionSizes[regionSize][iteration] = value
-            }
-
-        }
-
-        printBoards(numColumns = boardSize, numRows = boardSize, repeat = jankoSize, boards = boards)
-        printBoardsData(iterations = iterations, times = times, seeds = seeds, regionSizes = regionSizes)
-    }
-
- */
-
 
     @Test
     fun testCreateSeededHakyuuBoard() {
@@ -372,45 +313,6 @@ class HakyuuUnitTest {
 
     }
 
-/*
-    @ParameterizedTest
-    @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
-    fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
-        val numRows = (Math.random()*11).toInt() + 3 // [3,13]
-        val repeat = 100
-
-        val boards = Array(size = repeat) {""}
-        val iterations = IntArray(size = repeat)
-        val times = LongArray(size = repeat)
-        val seeds = LongArray(size = repeat)
-        val regionSizes = Array(
-            size = max(numColumns,numRows),
-            init = { IntArray(size = repeat) }
-        )
-
-        repeat(repeat) { iteration ->
-            val seed = (Math.random()*10000000000).toLong()
-
-            val startTime = System.currentTimeMillis()
-            val gameType = Hakyuu(numColumns = numColumns, numRows = numRows, seed = seed)
-            val res = gameType.createGame()
-            val endTime = System.currentTimeMillis()
-
-            assert(res) { "$iteration failed seed: $seed " }
-
-            boards[iteration] = gameType.printBoard()
-            iterations[iteration] = gameType.iterations
-            times[iteration] = endTime - startTime
-            seeds[iteration] = seed
-            gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
-                regionSizes[regionSize][iteration] = value
-            }
-        }
-
-        printBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, boards = boards)
-        printBoardsData(iterations = iterations, times = times, seeds = seeds, regionSizes = regionSizes)
-    }
- */
 
     @ParameterizedTest
     @ValueSource(strings = ["6,46"])//, "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
