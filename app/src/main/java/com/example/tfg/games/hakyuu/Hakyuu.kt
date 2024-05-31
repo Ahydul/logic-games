@@ -57,14 +57,13 @@ class Hakyuu(
         return boardMeetsRules()
     }
 
-    public override fun solveBoard(board: IntArray): Boolean {
+    internal override fun solveBoard(board: IntArray): Boolean {
         val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
         val possibleValues = Array(numPositions()) { position ->
             if (board[position] == 0) (1.. getRegionPositions(getRegionId(position)).size).toMutableList()
             else mutableListOf()
         }
         val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
-        printBoard(board)
         return res
     }
 
@@ -611,16 +610,40 @@ class Hakyuu(
     }
 
     companion object {
-        fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, regions: String): Hakyuu {
+        fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String): Hakyuu {
+            val start = Hakyuu.parseBoardString(startBoard)
+            val completed = Hakyuu.parseBoardString(completedBoard)
+            val regions = Hakyuu.parseBoardString(boardRegions)
+
+            require(start.size == completed.size && start.size == regions.size && start.size == numRows*numColumns) { "Incompatible sizes provided to Hakyuu" }
+
             val hakyuu = Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
-                seed = seed
+                seed = seed,
+                startBoard = start,
+                completedBoard = completed,
+                regions = regions
             )
 
-            hakyuu.startBoard = Hakyuu.parseBoardString(startBoard)
-            hakyuu.completedBoard = Hakyuu.parseBoardString(completedBoard)
-            hakyuu.boardRegions = Hakyuu.parseRegionString(regions)
+            return hakyuu
+        }
+
+        fun solveBoard(numRows: Int, numColumns: Int, seed: Long, boardToSolve: String, boardRegions: String): Hakyuu {
+            val start = Hakyuu.parseBoardString(boardToSolve)
+            val regions = Hakyuu.parseBoardString(boardRegions)
+
+            require(start.size == regions.size && start.size == numRows*numColumns) { "Incompatible sizes provided to Hakyuu" }
+
+            val hakyuu = Hakyuu(
+                numRows = numRows,
+                numColumns = numColumns,
+                seed = seed,
+                regions = regions,
+                startBoard = start
+            )
+
+            hakyuu.solveBoard(hakyuu.startBoard)
 
             return hakyuu
         }
