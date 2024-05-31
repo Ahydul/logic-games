@@ -373,7 +373,6 @@ class HakyuuUnitTest {
     fun testCreateSeededHakyuuBoard() {
         val input = 11
         val seed = 5598423764L
-        val random = Random(seed)
 
         val startTime = System.currentTimeMillis()
         val gameType = Hakyuu(numColumns = input, numRows = input, seed = seed)
