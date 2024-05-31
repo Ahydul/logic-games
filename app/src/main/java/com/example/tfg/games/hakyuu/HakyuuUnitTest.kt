@@ -235,34 +235,19 @@ class HakyuuUnitTest {
     }
 
 
-    private fun startBoard(): IntArray {
-        val start =
-            "- 4 - - 3 1 - -\n" +
-            "- - 2 - - 2 - -\n" +
-            "- - - - - - - 5\n" +
-            "- - - - - - - -\n" +
-            "- - - - - 4 - -\n" +
-            "3 - - - - - - -\n" +
-            "- - 4 - - 6 - -\n" +
-            "- - 3 5 - - 6 -"
-
-        return start.replace('\n',' ').split(" ").map { if (it=="-") 0 else it.toInt() }.toIntArray()
-    }
-
     @Test
     fun testOkBoard() {
         val startTime = System.currentTimeMillis()
-        val board = startBoard()
-        val result = hakyuu.solveBoard(board = board)
+        val hakyuu = Hakyuu.solveBoard(seed = 0, boardToSolve = GameFactory.START_STR, boardRegions = GameFactory.REGION_STR)
         val endTime = System.currentTimeMillis()
 
-        hakyuu.printBoard(board)
+        hakyuu.printBoard(hakyuu.completedBoard)
 
         println("Num of iterations: ${hakyuu.iterations}")
         println("Time ${endTime - startTime}")
         println("Score ${hakyuu.getScoreValue()}")
 
-        assert(result)
+        assert(hakyuu.boardMeetsRules() && hakyuu.iterations == 1)
     }
 
     private fun median(arr: LongArray, size: Int): Number {
@@ -316,11 +301,16 @@ class HakyuuUnitTest {
         val times = LongArray(jankoSize)
         val strategies = Array(jankoSize){""}
 
-        val file = File("src/test/testdata/$size-areas.txt")
+        val fileAreas = File("src/test/testdata/$size-areas.txt")
+        val boardRegions = fileAreas.readText()
+            .split("Tablero")
+            .drop(1)
+            .map {
+                it.substring(it.indexOf('\n')+1)
+            }
 
-        val txt = file.readText()
-
-        val boards = txt
+        val fileStartBoards = File("src/test/testdata/$size-startboard.txt")
+        val startBoards = fileAreas.readText()
             .split("Tablero")
             .drop(1)
             .map {
@@ -328,17 +318,15 @@ class HakyuuUnitTest {
             }
 
 
-        for ((index, board) in boards.withIndex()) {
-            //println("Board $index")
+        for (index in boardRegions.indices) {
+            val startTime = System.currentTimeMillis()
+            val hakyuu = Hakyuu.solveBoard(numColumns = size, numRows = size, seed = 0, boardToSolve = startBoards[index], boardRegions = boardRegions[index])
+            val endTime = System.currentTimeMillis()
 
-            val gameType = Hakyuu.create(numColumns = size, numRows = size, random = random)
-            gameType.boardRegions = Regions.parseString(board.dropLast(1))
+            assert(hakyuu.boardMeetsRules())
+        }
 
-            /*
-            for (a in gameType.boardRegions) {
-                println("${a.key}:${a.value}")
-            }
-             */
+        for ((index, region) in boardRegions.withIndex()) {
 
             val startTime = System.currentTimeMillis()
             val (actualValues, strategiesUsed) = gameType.createNewGame2(difficulty = Difficulty.EASY)
@@ -374,8 +362,6 @@ class HakyuuUnitTest {
     }
 
  */
-
-
 
 
     @Test
