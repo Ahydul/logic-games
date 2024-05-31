@@ -57,12 +57,19 @@ class Hakyuu(
         return boardMeetsRules()
     }
 
+    //TODO FIX THIS SHIT
     override fun solveBoard(board: IntArray): Boolean {
         val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
-        val possibleValues = Array(numPositions()) { position ->
-            if (board[position] == 0) (1.. getRegionPositions(getRegionId(position)).size).toMutableList()
-            else mutableListOf()
+        val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
+
+        for (position in (0..<numPositions())) {
+            val values = getRegionPositions(getRegionId(position))
+            val size = values.size
+            if (size == 1) board[position] = values.first()
+
+            if (board[position] == 0 && size > 1) possibleValues[position].addAll(1.. size)
         }
+
         val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
         return res
     }

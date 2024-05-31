@@ -350,7 +350,9 @@ class HakyuuUnitTest {
         val repeat = 100
 
         val getGameType = { _: Int ->
-            Hakyuu(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong())
+            val res = Hakyuu(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong())
+            res.createGame()
+            res
         }
 
         testHakyuuBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, getGameType = getGameType)
@@ -358,6 +360,7 @@ class HakyuuUnitTest {
 
     private fun testHakyuuBoards(numColumns: Int, numRows: Int, repeat: Int, getGameType: (Int) -> Hakyuu) {
         val boards = Array(size = repeat) { "" }
+        val scores = IntArray(size = repeat)
         val iterations = IntArray(size = repeat)
         val times = LongArray(size = repeat)
         val seeds = LongArray(size = repeat)
@@ -366,15 +369,15 @@ class HakyuuUnitTest {
             init = { IntArray(size = repeat) }
         )
 
-        repeat(1) { iteration ->
+        repeat(repeat) { iteration ->
             val startTime = System.currentTimeMillis()
-            val gameType = getGameType(6)
-            val res = gameType.createGame()
+            val gameType = getGameType(iteration)
             val endTime = System.currentTimeMillis()
 
-            assert(res) { "$iteration failed seed: ${gameType.seed} " }
+            assert(gameType.boardMeetsRules()) { "$iteration failed seed: ${gameType.seed} " }
 
             boards[iteration] = gameType.printBoard()
+            scores[iteration] = gameType.getScoreValue()
             iterations[iteration] = gameType.iterations
             times[iteration] = endTime - startTime
             seeds[iteration] = gameType.seed
@@ -384,7 +387,7 @@ class HakyuuUnitTest {
         }
 
         printBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, boards = boards)
-        printBoardsData(iterations = iterations, times = times, seeds = seeds, regionSizes = regionSizes)
+        printBoardsData(iterations = iterations, scores = scores, times = times, seeds = seeds, regionSizes = regionSizes)
     }
 
 
@@ -404,50 +407,76 @@ class HakyuuUnitTest {
         print("</div>")
     }
 
-    private fun printBoardsData(iterations: IntArray, times: LongArray, seeds: LongArray, regionSizes: Array<IntArray>){
+    private fun printBoardsData(
+        iterations: IntArray,
+        times: LongArray,
+        scores: IntArray,
+        seeds: LongArray,
+        regionSizes: Array<IntArray>
+    ){
         val numBoards = iterations.size
-        require(times.size == numBoards && seeds.size == numBoards && regionSizes[0].size == numBoards) { "Incorrect sizes provided" }
+        require(times.size == numBoards && scores.size == numBoards && seeds.size == numBoards && regionSizes[0].size == numBoards) { "Incorrect sizes provided" }
 
         print("""<br><br><div style="display: flex; font-size: large; justify-content: space-evenly;">""")
 
-        var htmlCode = """<table style="border-spacing: 20px 0;"><tbody>"""
-        htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Region Sizes</th></tr>"""
-        (0..<numBoards).forEach {
-            val sizes = regionSizes.map { arr -> arr[it] }.joinToString(separator = " ")
-            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${sizes}</td></tr>"""
-        }
-        htmlCode += "</tbody></table>"
-        print(htmlCode)
-
+        print(getStatisticsStr(iterations, times, scores, seeds, regionSizes, numBoards))
 
         print("<div>")
-
-        var htmlCode2 = """<table style="border-spacing: 20px 0;"><tbody>"""
-        htmlCode2 += """<tr><th>Region size</th><th>Mode</th><th>Mean</th><th>Median</th></tr>"""
-        regionSizes.forEachIndexed{ size, arr ->
-            arr.sort()
-            htmlCode2 += """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td></tr>"""
-        }
-        htmlCode2 += "</tbody></table>"
-        print(htmlCode2)
-
+        print(getRegionStatsStr(regionSizes, numBoards))
         print("</div>")
 
-
         print("<div>")
+        print(getItTimesScoresStatsStr(iterations, times, scores, numBoards))
+        print("</div>")
 
-        var htmlCode3 = """<table style="border-spacing: 20px 0;"><tbody>"""
-        htmlCode3 += """<tr><th></th><th>Mid Range</th><th>Mean</th><th>Median</th><th>Max</th><th>Min</th><th>Total</th></tr>"""
+        print("</div>")
+    }
 
-        iterations.sort()
-        htmlCode3 += """<tr><td><b>Iterations</b></td><td>${(iterations.first()+iterations.last()) / 2}</td><td>${iterations.average()}</td><td>${median(iterations, numBoards)}</td><td>${iterations.max()}</td><td>${iterations.min()}</td><td>${iterations.sum()}</td></tr>"""
-        times.sort()
-        htmlCode3 += """<tr><td><b>Times (ms)</b></td><td>${(times.first()+times.last()) / 2}</td><td>${times.average()}</td><td>${median(times, numBoards)}</td><td>${times.max()}</td><td>${times.min()}</td><td>${times.sum()}</td></tr>"""
+    private fun getStatisticsStr(iterations: IntArray, times: LongArray, scores: IntArray, seeds: LongArray, regionSizes: Array<IntArray>, numBoards: Int): String {
+        var htmlCode = """<table style="border-spacing: 20px 0;"><tbody>"""
+        htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Scores</th><th>Region Sizes</th></tr>"""
+        (0..<numBoards).forEach {
+            val sizes = regionSizes.map { arr -> arr[it] }.joinToString(separator = " ")
+            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${scores[it]}</td><td>${sizes}</td></tr>"""
+        }
+        htmlCode += "</tbody></table>"
 
-        htmlCode3 += "</tbody></table>"
-        print(htmlCode3)
+        return htmlCode
+    }
 
-        print("</div></div>")
+    private fun getRegionStatsStr(regionSizes: Array<IntArray>, numBoards: Int): String {
+        return """<table style="border-spacing: 20px 0;"><tbody>""" +
+                """<tr><th>Region size</th><th>Mode</th><th>Mean</th><th>Median</th></tr>""" +
+                regionSizes.mapIndexed { size, arr ->
+                    getIndividualRegionStatsStr(arr, numBoards, size)
+                }.joinToString {
+                    it
+                } +
+                "</tbody></table>"
+    }
+
+    private fun getIndividualRegionStatsStr(arr: IntArray, numBoards: Int, size: Int): String {
+        arr.sort()
+        return """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td></tr>"""
+    }
+
+    private fun getItTimesScoresStatsStr(iterations: IntArray, times: LongArray, scores: IntArray, numBoards: Int): String {
+        return """<table style="border-spacing: 20px 0;"><tbody>""" +
+                """<tr><th></th><th>Mid Range</th><th>Mean</th><th>Median</th><th>Max</th><th>Min</th><th>Total</th></tr>""" +
+                getIndividualStats(label = "Iterations", arr = iterations, numBoards = numBoards) +
+                getIndividualStats(label = "Times (ms)", arr = times, numBoards = numBoards) +
+                getIndividualStats(label = "Scores", arr = scores, numBoards = numBoards) +
+                "</tbody></table>"
+    }
+
+    private fun getIndividualStats(label: String, arr: LongArray, numBoards: Int): String {
+        arr.sort()
+        return """<tr><td><b>$label</b></td><td>${(arr.first()+arr.last()) / 2}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td><td>${arr.max()}</td><td>${arr.min()}</td><td>${arr.sum()}</td></tr>"""
+    }
+
+    private fun getIndividualStats(label: String, arr: IntArray, numBoards: Int): String {
+        arr.sort()
+        return """<tr><td><b>$label</b></td><td>${(arr.first()+arr.last()) / 2}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td><td>${arr.max()}</td><td>${arr.min()}</td><td>${arr.sum()}</td></tr>"""
     }
 
 }
