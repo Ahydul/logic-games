@@ -136,7 +136,7 @@ class GameFactory(private val gameDao: GameDao) {
                 seed = seed,
                 startBoard = START_STR,
                 completedBoard = COMPLETED_STR,
-                regions = REGION_STR
+                boardRegions = REGION_STR
             )
         }
 

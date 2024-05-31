@@ -252,8 +252,11 @@ class HakyuuUnitTest {
     @Test
     fun testOkBoard() {
         val startTime = System.currentTimeMillis()
-        val result = hakyuu.solveBoard(board = startBoard())
+        val board = startBoard()
+        val result = hakyuu.solveBoard(board = board)
         val endTime = System.currentTimeMillis()
+
+        hakyuu.printBoard(board)
 
         println("Num of iterations: ${hakyuu.iterations}")
         println("Time ${endTime - startTime}")
@@ -301,7 +304,7 @@ class HakyuuUnitTest {
         return currentResult
     }
 
-    /*
+/*
     @ParameterizedTest
     @ValueSource(strings = ["6,46", "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
     fun testOkJankoBoards(input: String, testInfo: TestInfo) {
@@ -317,9 +320,13 @@ class HakyuuUnitTest {
 
         val txt = file.readText()
 
-        val boards = txt.split("Tablero").drop(1).map {
-            it.substring(it.indexOf('\n')+1)
-        }
+        val boards = txt
+            .split("Tablero")
+            .drop(1)
+            .map {
+                it.substring(it.indexOf('\n')+1)
+            }
+
 
         for ((index, board) in boards.withIndex()) {
             //println("Board $index")
@@ -366,7 +373,9 @@ class HakyuuUnitTest {
 
     }
 
-     */
+ */
+
+
 
 
     @Test
