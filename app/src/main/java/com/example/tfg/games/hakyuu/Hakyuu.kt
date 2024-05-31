@@ -365,6 +365,7 @@ class Hakyuu(
             remainingPositions.remove(position)
         }
 
+        // Possible values changed
         if (score.get() > 0) return score
 
         for (region in regions.values) {
@@ -395,6 +396,7 @@ class Hakyuu(
 
         }
 
+        // Possible values changed
         if (score.get() > 0) {
             for (position in remainingPositions.toList()) {
                 val values = possibleValues[position]
@@ -411,7 +413,7 @@ class Hakyuu(
             }
         }
 
-
+        // Possible values changed
         if (score.get() > 0) return score
 
         // If the possible values didn't change: Brute force a value
@@ -657,29 +659,29 @@ class Hakyuu(
         }
 
         fun parseRegionString(str: String): IntArray {
-            val map = mutableMapOf<Int, List<Coordinate>>()
+            val map = mutableMapOf<Coordinate, Int>()
             val lines = str.replace("[","").replace("]","").split('\n')
 
-            val tmp = mutableListOf<Coordinate>()
+            var maxCoordinate = Coordinate(0,0)
             for (line in lines) {
                 val spl = line.split(':')
-                val coordinates = spl[1].split(", ").map { Coordinate.parseString(it,true) }
-                tmp.addAll(coordinates)
-                map[spl[0].toInt()] = coordinates
-            }
-
-            val maxCoordinate = tmp.maxBy { it.column + it.row }
-
-            val res = Array(map.values.sumOf { it.size }) { position ->
-                val pair = map.map { it.key to it.value.map { it2 ->
-                        it2.toIndex(numRows = maxCoordinate.row + 1, numColumns = maxCoordinate.column + 1)!!
-                    }
+                val coords = spl[1].split(", ").map { Coordinate.parseString(it,false) }
+                val regionId = spl[0].toInt()
+                coords.forEach { coordinate ->
+                    if (coordinate > maxCoordinate) maxCoordinate = coordinate
+                    map[coordinate] = regionId
                 }
-                .find { it.second.contains(position) }!!
-                pair.first
             }
 
-            return res.toIntArray()
+            val numColumns = maxCoordinate.column + 1
+            val numRows = maxCoordinate.row + 1
+
+            val res = IntArray(size = numColumns * numRows) {
+                val coord = Coordinate.fromIndex(index = it, numRows = numRows, numColumns = numColumns)
+                map[coord]!!
+            }
+
+            return res
         }
     }
 }

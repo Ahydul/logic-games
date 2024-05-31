@@ -37,11 +37,11 @@ abstract class GameType(
         return score.get()
     }
 
-    fun printBoard() {
+    fun printBoard(): String {
         return printBoard(completedBoard)
     }
 
-    fun printBoard(board: IntArray) {
+    fun printBoard(board: IntArray): String {
         val colorMap = mutableMapOf<Int, String>()
 
         var htmlCode =
@@ -68,7 +68,7 @@ abstract class GameType(
 
         }
         htmlCode += """</tbody></table>"""
-        print(htmlCode)
+        return htmlCode
     }
 
     fun getRegionStatData(): IntArray {

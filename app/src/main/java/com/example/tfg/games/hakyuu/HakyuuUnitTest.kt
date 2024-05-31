@@ -9,6 +9,7 @@ import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.io.File
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -241,7 +242,7 @@ class HakyuuUnitTest {
         val hakyuu = Hakyuu.solveBoard(seed = 0, boardToSolve = GameFactory.START_STR, boardRegions = GameFactory.REGION_STR)
         val endTime = System.currentTimeMillis()
 
-        hakyuu.printBoard(hakyuu.completedBoard)
+        print(hakyuu.printBoard(hakyuu.completedBoard))
 
         println("Num of iterations: ${hakyuu.iterations}")
         println("Time ${endTime - startTime}")
@@ -295,13 +296,18 @@ class HakyuuUnitTest {
     fun testOkJankoBoards(input: String, testInfo: TestInfo) {
         val spl = input.split(',')
         val jankoSize = spl[1].toInt()
-        val size = spl[0].toInt()
+        val boardSize = spl[0].toInt()
 
-        val iterations = IntArray(jankoSize)
-        val times = LongArray(jankoSize)
-        val strategies = Array(jankoSize){""}
+        val boards = Array(size = jankoSize) {""}
+        val iterations = IntArray(size = jankoSize)
+        val times = LongArray(size = jankoSize)
+        val seeds = LongArray(size = jankoSize)
+        val regionSizes = Array(
+            size = boardSize,
+            init = { IntArray(size = jankoSize) }
+        )
 
-        val fileAreas = File("src/test/testdata/$size-areas.txt")
+        val fileAreas = File("src/test/testdata/$boardSize-areas.txt")
         val boardRegions = fileAreas.readText()
             .split("Tablero")
             .drop(1)
@@ -309,56 +315,36 @@ class HakyuuUnitTest {
                 it.substring(it.indexOf('\n')+1)
             }
 
-        val fileStartBoards = File("src/test/testdata/$size-startboard.txt")
-        val startBoards = fileAreas.readText()
+        val fileStartBoards = File("src/test/testdata/$boardSize-startboard.txt")
+        val startBoards = fileStartBoards.readText()
             .split("Tablero")
             .drop(1)
             .map {
                 it.substring(it.indexOf('\n')+1)
             }
 
-
-        for (index in boardRegions.indices) {
+        boardRegions.indices.forEach { iteration ->
             val startTime = System.currentTimeMillis()
-            val hakyuu = Hakyuu.solveBoard(numColumns = size, numRows = size, seed = 0, boardToSolve = startBoards[index], boardRegions = boardRegions[index])
+            val seed = (Math.random()*10000000000).toLong()
+            val gameType = Hakyuu.solveBoard(seed = seed, boardToSolve = startBoards[iteration], boardRegions = boardRegions[iteration])
             val endTime = System.currentTimeMillis()
 
-            assert(hakyuu.boardMeetsRules())
+            val res = gameType.boardMeetsRules()
+
+            assert(res) { "$iteration failed seed: $seed " }
+
+            boards[iteration] = gameType.printBoard()
+            iterations[iteration] = gameType.iterations
+            times[iteration] = endTime - startTime
+            seeds[iteration] = seed
+            gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
+                regionSizes[regionSize][iteration] = value
+            }
+
         }
 
-        for ((index, region) in boardRegions.withIndex()) {
-
-            val startTime = System.currentTimeMillis()
-            val (actualValues, strategiesUsed) = gameType.createNewGame2(difficulty = Difficulty.EASY)
-            val result = gameType.boardMeetsRules(actualValues)
-            val endTime = System.currentTimeMillis()
-
-            //gameType.printActualValues(actualValues)
-
-            assert(result && gameType.numIterations==1) { "Failed: $index " }
-
-            iterations[index] = gameType.numIterations
-            times[index] = endTime - startTime
-            strategies[index] = strategiesUsed.withIndex().joinToString { (index, value) -> "${Hakyuu.Strategy.values()[index]}: $value" }
-        }
-        println("Test with sizes ${size}x$size")
-
-        println("Test\tNum Iterations\tTime (ms)\t")
-
-        (0..<jankoSize).forEach {
-            println("${it + 1}\t\t${iterations[it]}\t\t\t\t${times[it]}\t\t${strategies[it]}")
-        }
-
-        iterations.sort()
-        println("Iterations Mid range: ${(iterations.first()+iterations.last()) / 2}")
-        println("Iterations Mean: ${iterations.average()}")
-        println("Iterations Median: ${median(iterations,jankoSize)}")
-
-        times.sort()
-        println("Times Mid range: ${(times.first()+times.last()) / 2}")
-        println("Times Mean: ${times.average()}")
-        println("Times Median: ${median(times,jankoSize)}")
-
+        printBoards(numColumns = boardSize, numRows = boardSize, repeat = jankoSize, boards = boards)
+        printBoardsData(iterations = iterations, times = times, seeds = seeds, regionSizes = regionSizes)
     }
 
  */
@@ -376,7 +362,7 @@ class HakyuuUnitTest {
 
         val endTime = System.currentTimeMillis()
 
-        gameType.printBoard()
+        print(gameType.printBoard())
 
         assert(res) { "Failed: $seed " }
 
@@ -386,14 +372,14 @@ class HakyuuUnitTest {
 
     }
 
-
+/*
     @ParameterizedTest
     @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
     fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
         val numRows = (Math.random()*11).toInt() + 3 // [3,13]
-        println("<h1>Test with sizes ${numColumns}x$numRows</h1>")
         val repeat = 100
 
+        val boards = Array(size = repeat) {""}
         val iterations = IntArray(size = repeat)
         val times = LongArray(size = repeat)
         val seeds = LongArray(size = repeat)
@@ -402,40 +388,129 @@ class HakyuuUnitTest {
             init = { IntArray(size = repeat) }
         )
 
-        print("""<button onclick="var el = document.getElementById('boards-$numColumns');el.style.display = (el.style.display == 'none') ? 'flex' : 'none'; ">Show boards</button> """)
-        print("""<div id="boards-$numColumns"style="display:none; flex-wrap: wrap;">""")
-
         repeat(repeat) { iteration ->
-            val startTime = System.currentTimeMillis()
-
             val seed = (Math.random()*10000000000).toLong()
 
+            val startTime = System.currentTimeMillis()
             val gameType = Hakyuu(numColumns = numColumns, numRows = numRows, seed = seed)
-
             val res = gameType.createGame()
-
             val endTime = System.currentTimeMillis()
 
-            print("""<div style="margin: 10px;">""")
-            print("<h1>Board ${iteration+1}</h1>")
-            gameType.printBoard()
-            print("</div>")
+            assert(res) { "$iteration failed seed: $seed " }
 
+            boards[iteration] = gameType.printBoard()
             iterations[iteration] = gameType.iterations
             times[iteration] = endTime - startTime
             seeds[iteration] = seed
             gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
                 regionSizes[regionSize][iteration] = value
             }
-
-            assert(res) { "$iteration failed seed: $seed " }
         }
+
+        printBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, boards = boards)
+        printBoardsData(iterations = iterations, times = times, seeds = seeds, regionSizes = regionSizes)
+    }
+ */
+
+    @ParameterizedTest
+    @ValueSource(strings = ["6,46"])//, "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
+    fun testOkJankoBoards(input: String, testInfo: TestInfo) {
+        val spl = input.split(',')
+        val jankoSize = spl[1].toInt()
+        val boardSize = spl[0].toInt()
+
+        val fileAreas = File("src/test/testdata/$boardSize-areas.txt")
+        val boardRegions = fileAreas.readText()
+            .split(Regex("""Tablero \d+\n"""))
+            .drop(1)
+            .map {
+                it.substring(startIndex = 0, endIndex = it.lastIndexOf('\n')) }
+
+        val fileStartBoards = File("src/test/testdata/$boardSize-startboard.txt")
+        val startBoards = fileStartBoards.readText()
+            .split(Regex("""Tablero \d+\n"""))
+            .drop(1)
+            .map { it.substring(startIndex = 0, endIndex = it.lastIndexOf('\n')) }
+
+        val seed = (Math.random()*10000000000).toLong()
+
+        val getGameType = { iteration: Int ->
+            Hakyuu.solveBoard(seed = seed, boardToSolve = startBoards[iteration], boardRegions = boardRegions[iteration])
+        }
+
+        testHakyuuBoards(numColumns = boardSize, numRows = boardSize, repeat = jankoSize, getGameType = getGameType)
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
+    fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
+        val numRows = (Math.random()*11).toInt() + 3 // [3,13]
+        val repeat = 100
+
+        val getGameType = { _: Int ->
+            Hakyuu(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong())
+        }
+
+        testHakyuuBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, getGameType = getGameType)
+    }
+
+    private fun testHakyuuBoards(numColumns: Int, numRows: Int, repeat: Int, getGameType: (Int) -> Hakyuu) {
+        val boards = Array(size = repeat) { "" }
+        val iterations = IntArray(size = repeat)
+        val times = LongArray(size = repeat)
+        val seeds = LongArray(size = repeat)
+        val regionSizes = Array(
+            size = max(numColumns, numRows),
+            init = { IntArray(size = repeat) }
+        )
+
+        repeat(1) { iteration ->
+            val startTime = System.currentTimeMillis()
+            val gameType = getGameType(6)
+            val res = gameType.createGame()
+            val endTime = System.currentTimeMillis()
+
+            assert(res) { "$iteration failed seed: ${gameType.seed} " }
+
+            boards[iteration] = gameType.printBoard()
+            iterations[iteration] = gameType.iterations
+            times[iteration] = endTime - startTime
+            seeds[iteration] = gameType.seed
+            gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
+                regionSizes[regionSize][iteration] = value
+            }
+        }
+
+        printBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, boards = boards)
+        printBoardsData(iterations = iterations, times = times, seeds = seeds, regionSizes = regionSizes)
+    }
+
+
+    private fun printBoards(numColumns: Int, numRows: Int, repeat: Int, boards: Array<String>) {
+        println("<h1>Test with sizes ${numColumns}x$numRows</h1>")
+
+        print("""<button onclick="var el = document.getElementById('boards-$numColumns');el.style.display = (el.style.display == 'none') ? 'flex' : 'none'; ">Show boards</button> """)
+        print("""<div id="boards-$numColumns"style="display:none; flex-wrap: wrap;">""")
+
+        repeat(repeat) { iteration ->
+            print("""<div style="margin: 10px;">""")
+            print("<h1>Board ${iteration+1}</h1>")
+            print(boards[iteration])
+            print("</div>")
+        }
+
         print("</div>")
+    }
+
+    private fun printBoardsData(iterations: IntArray, times: LongArray, seeds: LongArray, regionSizes: Array<IntArray>){
+        val numBoards = iterations.size
+        require(times.size == numBoards && seeds.size == numBoards && regionSizes[0].size == numBoards) { "Incorrect sizes provided" }
+
         print("""<br><br><div style="display: flex; font-size: large; justify-content: space-evenly;">""")
 
         var htmlCode = """<table style="border-spacing: 20px 0;"><tbody>"""
         htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Region Sizes</th></tr>"""
-        (0..<repeat).forEach {
+        (0..<numBoards).forEach {
             val sizes = regionSizes.map { arr -> arr[it] }.joinToString(separator = " ")
             htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${sizes}</td></tr>"""
         }
@@ -449,7 +524,7 @@ class HakyuuUnitTest {
         htmlCode2 += """<tr><th>Region size</th><th>Mode</th><th>Mean</th><th>Median</th></tr>"""
         regionSizes.forEachIndexed{ size, arr ->
             arr.sort()
-            htmlCode2 += """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, repeat)}</td></tr>"""
+            htmlCode2 += """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td></tr>"""
         }
         htmlCode2 += "</tbody></table>"
         print(htmlCode2)
@@ -463,15 +538,14 @@ class HakyuuUnitTest {
         htmlCode3 += """<tr><th></th><th>Mid Range</th><th>Mean</th><th>Median</th><th>Max</th><th>Min</th><th>Total</th></tr>"""
 
         iterations.sort()
-        htmlCode3 += """<tr><td><b>Iterations</b></td><td>${(iterations.first()+iterations.last()) / 2}</td><td>${iterations.average()}</td><td>${median(iterations, repeat)}</td><td>${iterations.max()}</td><td>${iterations.min()}</td><td>${iterations.sum()}</td></tr>"""
+        htmlCode3 += """<tr><td><b>Iterations</b></td><td>${(iterations.first()+iterations.last()) / 2}</td><td>${iterations.average()}</td><td>${median(iterations, numBoards)}</td><td>${iterations.max()}</td><td>${iterations.min()}</td><td>${iterations.sum()}</td></tr>"""
         times.sort()
-        htmlCode3 += """<tr><td><b>Times (ms)</b></td><td>${(times.first()+times.last()) / 2}</td><td>${times.average()}</td><td>${median(times, repeat)}</td><td>${times.max()}</td><td>${times.min()}</td><td>${times.sum()}</td></tr>"""
+        htmlCode3 += """<tr><td><b>Times (ms)</b></td><td>${(times.first()+times.last()) / 2}</td><td>${times.average()}</td><td>${median(times, numBoards)}</td><td>${times.max()}</td><td>${times.min()}</td><td>${times.sum()}</td></tr>"""
 
         htmlCode3 += "</tbody></table>"
         print(htmlCode3)
 
         print("</div></div>")
-
     }
 
 }
