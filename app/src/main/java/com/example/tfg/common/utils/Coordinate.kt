@@ -45,6 +45,14 @@ data class Coordinate(val row: Int, val column: Int) {
         return (row < 0 || column < 0 || row >= numRows || column >= numColumns)
     }
 
+    operator fun compareTo(other: Coordinate): Int {
+        return if (this.column == other.column) {
+            this.row - other.row
+        } else {
+            this.column - other.column
+        }
+    }
+
 
     companion object {
         fun fromIndex(index: Int, numRows: Int, numColumns: Int): Coordinate {
