@@ -42,6 +42,7 @@ class Hakyuu(
         remainingPositions.addAll(initRemainingPositions())
         bruteForce = 0
         random = Random(seed)
+        score.reset()
     }
 
     override fun createGame(): Boolean {
@@ -279,7 +280,6 @@ class Hakyuu(
         remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int> = mutableListOf()
     ): Boolean {
-        score.reset()
         while (true)
         {
             // If ended populating return if its a correct board
