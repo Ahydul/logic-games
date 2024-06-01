@@ -238,16 +238,16 @@ class HakyuuUnitTest {
     @Test
     fun testOkBoard() {
         val startTime = System.currentTimeMillis()
-        val hakyuu = Hakyuu.solveBoard(seed = 0, boardToSolve = GameFactory.START_STR, boardRegions = GameFactory.REGION_STR)
+        val gameType = Hakyuu.solveBoard(seed = 0, boardToSolve = GameFactory.START_STR, boardRegions = GameFactory.REGION_STR)
         val endTime = System.currentTimeMillis()
 
-        print(hakyuu.printBoard(hakyuu.completedBoard))
+        print(gameType.printBoard(gameType.completedBoard))
 
-        println("Num of iterations: ${hakyuu.iterations}")
+        println("Num of iterations: ${gameType.iterations}")
         println("Time ${endTime - startTime}")
-        println("Score ${hakyuu.getScoreValue()}")
+        println("Score ${gameType.getScoreValue()}")
 
-        assert(hakyuu.boardMeetsRules() && hakyuu.iterations == 1)
+        assert(gameType.boardMeetsRules() && gameType.iterations == 1)
     }
 
     private fun median(arr: LongArray, size: Int): Number {
