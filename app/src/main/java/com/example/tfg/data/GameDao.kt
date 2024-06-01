@@ -41,19 +41,14 @@ interface GameDao {
     @Query("SELECT * FROM GameState WHERE gameStateId = :gameStateId")
     suspend fun getGameStateById(gameStateId: Long): GameState
     @Query("SELECT gameStateId FROM GameState WHERE gameId = :gameId")
-    suspend fun getGameStateIdsByGameId(gameId: Long): List<Long>
+    suspend fun getGameStateIdsByGameId(gameId: Long): MutableList<Long>
 
     @Transaction
     @Query("SELECT * FROM Move WHERE gameStateId = :gameStateId ORDER BY position DESC")
-    suspend fun getMovesByGameStateId(gameStateId: Long): List<MoveWithActions>
-    @Transaction
-    @Query("SELECT * FROM Move WHERE moveId = :moveId")
-    suspend fun getMove(moveId: Long): MoveWithActions
+    suspend fun getMovesByGameStateId(gameStateId: Long): MutableList<MoveWithActions>
 
-    @Query("DELETE FROM Move WHERE moveId = :moveId")
-    suspend fun deleteMove(moveId: Long)
-    @Query("DELETE FROM Move WHERE moveId IN (:moveIds)")
-    suspend fun deleteMoves(moveIds: List<Long>)
+    @Query("DELETE FROM Move WHERE moveId IN (:movesId)")
+    suspend fun deleteMoves(movesId: List<Long>)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMove(move: Move): Long
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -61,7 +56,6 @@ interface GameDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertBoard(board: Board): Long
-    @Transaction
     @Query("SELECT * FROM Board WHERE gameStateId = :gameStateId")
     suspend fun getBoardByGameStateId(gameStateId: Long): Board
 

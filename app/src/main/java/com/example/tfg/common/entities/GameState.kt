@@ -8,5 +8,6 @@ data class GameState(
     @PrimaryKey(autoGenerate = true)
     val gameStateId: Long = 0,
     var pointer: Int = -1,
+    val position: Int,
     var gameId: Long, // Foreign key referencing Game
 )

@@ -4,13 +4,13 @@ import androidx.room.Embedded
 import androidx.room.Entity
 
 @Entity(
-    primaryKeys = ["moveId", "position"]
+    primaryKeys = ["moveId", "cellIndex"]
 )
 data class Action(
     @Embedded(prefix = "new_")
     val newCell: Cell,
     @Embedded(prefix = "previous_")
     val previousCell: Cell,
-    val position: Int,
+    val cellIndex: Int,
     val moveId: Long
 )

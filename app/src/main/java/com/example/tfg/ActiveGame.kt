@@ -18,6 +18,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.common.GameFactory
+import com.example.tfg.common.GameInstance
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
@@ -47,9 +48,8 @@ class ActiveGameView : ComponentActivity() {
             apply() //asynchronous
         }
 
-
-
-        val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameId, dao) }
+        val gameInstance = GameInstance.create(gameId, dao)
+        val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao) }
 
         setContent {
             TFGTheme {
@@ -77,7 +77,8 @@ class ActiveGameView : ComponentActivity() {
 @Composable
 fun ActiveGameScreenPreview() {
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
-    val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(-1, database.gameDao()))
+    val gameInstance = GameInstance.example()
+    val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
 
     TFGTheme {
         ActiveGameScreen(

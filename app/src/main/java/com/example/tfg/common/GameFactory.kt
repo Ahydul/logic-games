@@ -45,7 +45,7 @@ class GameFactory(private val gameDao: GameDao) {
         val gameId = gameDao.insertGame(game)
 
         // Create GameState
-        val gameState = GameState(gameId = gameId)
+        val gameState = GameState(gameId = gameId, position = 0)
         val gameStateId = gameDao.insertGameState(gameState)
 
         // Create board
@@ -98,7 +98,7 @@ class GameFactory(private val gameDao: GameDao) {
         }
 
         fun exampleHakyuuGame() = Game.create(exampleHakyuu(), Difficulty.EASY)
-        fun exampleGameState(gameId: Long) = GameState(gameId = gameId)
+        fun exampleGameState(gameId: Long) = GameState(gameId = gameId, position = 0)
         fun exampleBoard(gameStateId: Long) = Board(numRows = 8, numColumns = 8, gameStateId = gameStateId)
         fun exampleCells(cellArray: IntArray) = cellArray.map { Cell.create(it) }.toTypedArray()
 
