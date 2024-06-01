@@ -207,7 +207,7 @@ fun TextFields(
     Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
         val customBoardText = stringResource(id = R.string.custom_board)
         CustomFilledButton(
-            onClick = { /*TODO*/ },
+            onClick = { /*TODO: Custom board*/ },
             color = colorResource(id = R.color.board_grid),
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = textColor,

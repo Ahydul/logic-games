@@ -19,8 +19,8 @@ fun MainHeader(modifier: Modifier = Modifier) {
             expandedColor = colorResource(id = R.color.primary_color),
             dismissedColor = colorResource(id = R.color.primary_background)
         ) {
-            CustomFilledIconButton(
-                onClick = {  },
+            CustomFilledIconButton( /*TODO: THEMES*/
+                onClick = { },
                 imageVector = ImageVector.vectorResource(id = R.drawable.paint_brush),
                 contentDescription = "Click me for menu",
                 color = Color.Red,
@@ -39,7 +39,7 @@ fun MainHeader(modifier: Modifier = Modifier) {
             )
         }
         CustomIconButton(
-            onClick = {  },
+            onClick = { /*TODO: Configuration menu*/ },
             imageVector = ImageVector.vectorResource(id = R.drawable.gear),
             contentDescription = "Click me for menu",
         )
