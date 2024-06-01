@@ -24,7 +24,7 @@ import com.example.tfg.ui.components.common.CustomText
 
 @Composable
 fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
-    Log.d("TAG", "TOPcurrentRecomposeScope $currentRecomposeScope")
+    Log.d("TAG", "TOP currentRecomposeScope $currentRecomposeScope")
 
     Column(modifier = modifier.padding(bottom = 8.dp)) {
         val context = LocalContext.current
@@ -46,7 +46,7 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
             modifier = modifier
         ) {
             val difficultyText = stringResource(id = R.string.difficulty)
-            CustomText(mainText = difficultyText, secondaryText = "${viewModel.getDifficulty(context)}", textColor = colorResource(R.color.primary_color))
+            CustomText(mainText = difficultyText, secondaryText = viewModel.getDifficulty(context), textColor = colorResource(R.color.primary_color))
 
             val errorsText = stringResource(id = R.string.errors)
             CustomText(mainText = errorsText, secondaryText = "${viewModel.getNumErrors()}", textColor = colorResource(R.color.primary_color))

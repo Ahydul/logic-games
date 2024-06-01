@@ -1,7 +1,5 @@
 package com.example.tfg.ui.components.mainactivity
 
-import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
@@ -50,10 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.example.tfg.ActiveGameView
 import com.example.tfg.R
 import com.example.tfg.common.Difficulty
-import com.example.tfg.common.entities.Game
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.Games
 import com.example.tfg.state.MainViewModel
@@ -119,7 +115,7 @@ private fun ChooseGameButton(
                     modifier = mod
                 )
 
-                val inProgressLabel = stringResource(id = R.string.in_progress)
+                val inProgressLabel = stringResource(id = R.string.in_progress2)
                 LabeledIconButton(
                     onClick = { Log.d("button", "EN CURSO") },
                     imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
@@ -216,7 +212,7 @@ fun TextFields(
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = textColor,
             mainText = customBoardText,
-            buttonModifier = modifier.weight(1.5f)
+            modifier = modifier.weight(1.5f)
         )
 
         val createText = stringResource(id = R.string.create)
@@ -233,7 +229,7 @@ fun TextFields(
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = textColor,
             mainText = createText,
-            buttonModifier = modifier.weight(1f)
+            modifier = modifier.weight(1f)
         )
     }
 }

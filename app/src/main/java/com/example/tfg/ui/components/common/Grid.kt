@@ -5,15 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import kotlin.math.min
 
-private val HorizontalSpaceBetween = { layoutWidth: Int, childrenSize: Int, numChildrenRow: Int ->
-    if (numChildrenRow == 1) 0
-    else (layoutWidth - numChildrenRow*childrenSize) / (numChildrenRow - 1)
-}
-
-private val VerticalCenter = { layoutHeight: Int, childrenSize: Int, numRows: Int ->
-    (layoutHeight - numRows*childrenSize) / numRows
-}
-
 @Composable
 fun HorizontalGrid(
     modifier: Modifier = Modifier,
