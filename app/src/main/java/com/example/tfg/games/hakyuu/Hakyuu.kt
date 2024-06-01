@@ -29,7 +29,6 @@ class Hakyuu(
 ) {
     private val remainingPositions: MutableSet<Int> = initRemainingPositions()
     private var currentID = 0
-    private var bruteForce = 0
 
     private fun initRemainingPositions():  MutableSet<Int> {
         return (0..< numPositions()).toMutableSet()
@@ -40,7 +39,6 @@ class Hakyuu(
         boardRegions.map { 0 }
         startBoard.map { 0 }
         remainingPositions.addAll(initRemainingPositions())
-        bruteForce = 0
         random = Random(seed)
         score.reset()
     }
@@ -444,7 +442,6 @@ class Hakyuu(
         remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int>
     ):Boolean {
-        bruteForce++
         if (remainingPositions.isEmpty()) return true
 
         val (position, minPossibleValues) = remainingPositions.map { it to possibleValues[it] }.minBy { (_, values) -> values.size }
