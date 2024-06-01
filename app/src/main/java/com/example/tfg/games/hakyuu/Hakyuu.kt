@@ -55,7 +55,6 @@ class Hakyuu(
         return boardMeetsRules()
     }
 
-    //TODO FIX THIS SHIT
     override fun solveBoard(board: IntArray): Boolean {
         val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
