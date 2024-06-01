@@ -418,27 +418,31 @@ class HakyuuUnitTest {
         val numBoards = iterations.size
         require(times.size == numBoards && scores.size == numBoards && seeds.size == numBoards && regionSizes[0].size == numBoards) { "Incorrect sizes provided" }
 
-        print("""<br><br><div style="display: flex; font-size: large; justify-content: space-evenly;">""")
+        print("""<br><br><div style="display: flex; font-size: large; justify-content: space-evenly;">""") // A
 
         print(getStatisticsStr(iterations, times, scores, seeds, regionSizes, numBoards))
 
-        print("<div>")
+        print("<div>") // B
+
+        print("<div>") // C
         print(getRegionStatsStr(regionSizes, numBoards))
-        print("</div>")
+        print("</div>") // C
 
-        print("<div>")
+        print("<div style='margin-top: 50px;'>") // D
         print(getItTimesScoresStatsStr(iterations, times, scores, numBoards))
-        print("</div>")
+        print("</div>") // D
 
-        print("</div>")
+        print("</div>") // B
+
+        print("</div>") // A
     }
 
     private fun getStatisticsStr(iterations: IntArray, times: LongArray, scores: IntArray, seeds: LongArray, regionSizes: List<IntArray>, numBoards: Int): String {
-        var htmlCode = """<table style="border-spacing: 20px 0;"><tbody>"""
+        var htmlCode = """<table style="border-spacing: 20px 0;justify-content: start;display: flex;"><tbody>"""
         htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Scores</th><th>Region Sizes</th></tr>"""
         (0..<numBoards).forEach {
-            val sizes = regionSizes.map { arr -> arr[it] }.joinToString(separator = " ")
-            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${scores[it]}</td><td>${sizes}</td></tr>"""
+            val sizes = regionSizes.joinToString(separator = "") { arr -> "<p style='margin: 0'>" + arr[it] + "</p>" }
+            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${scores[it]}</td><td style="display: flex;">${sizes}</td></tr>"""
         }
         htmlCode += "</tbody></table>"
 
@@ -448,17 +452,17 @@ class HakyuuUnitTest {
     private fun getRegionStatsStr(regionSizes: List<IntArray>, numBoards: Int): String {
         return """<table style="border-spacing: 20px 0;"><tbody>""" +
                 """<tr><th>Region size</th><th>Mode</th><th>Mean</th><th>Median</th></tr>""" +
-                regionSizes.mapIndexed { size, arr ->
-                    getIndividualRegionStatsStr(arr, numBoards, size)
-                }.joinToString {
-                    it
-                } +
+                getRegionStatsStr2(regionSizes, numBoards) +
                 "</tbody></table>"
     }
 
-    private fun getIndividualRegionStatsStr(arr: IntArray, numBoards: Int, size: Int): String {
-        arr.sort()
-        return """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td></tr>"""
+    private fun getRegionStatsStr2(regionSizes: List<IntArray>, numBoards: Int): String {
+        return regionSizes.mapIndexed { size, arr ->
+            arr.sort()
+            """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td></tr>"""
+        }.joinToString {
+            it
+        }
     }
 
     private fun getItTimesScoresStatsStr(iterations: IntArray, times: LongArray, scores: IntArray, numBoards: Int): String {
