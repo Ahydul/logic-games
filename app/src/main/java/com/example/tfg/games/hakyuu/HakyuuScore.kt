@@ -28,7 +28,7 @@ class HakyuuScore(score: Int = 0) : Score(score) {
         score += (12*numFound)
     }
 
-    fun addScoreBruteForce() {
-        score += 1000
+    fun addScoreBruteForce(factor: Int) {
+        score += (1000) * factor
     }
 }

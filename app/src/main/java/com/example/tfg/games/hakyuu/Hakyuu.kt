@@ -421,18 +421,17 @@ class Hakyuu(
         if (score.get() > 0) return score
 
         // If the possible values didn't change: Brute force a value
-        return if (bruteForceAValue(
-                possibleValues = possibleValues,
-                actualValues = actualValues,
-                remainingPositions = remainingPositions,
-                foundSPT = foundSPT
-            )
-        ) {
+        val bruteForceResult = bruteForceAValue(
+            possibleValues = possibleValues,
+            actualValues = actualValues,
+            remainingPositions = remainingPositions,
+            foundSPT = foundSPT
+        )
+
+        return bruteForceResult?.let {
             // Brute force was successful
-            score.addScoreBruteForce()
+            score.addScoreBruteForce(it)
             score
-        } else {
-            null
         }
     }
 
@@ -441,8 +440,8 @@ class Hakyuu(
         actualValues: IntArray,
         remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int>
-    ):Boolean {
-        if (remainingPositions.isEmpty()) return true
+    ): Int? {
+        // if (remainingPositions.isEmpty()) return true // This was probably fixed
 
         val (position, minPossibleValues) = remainingPositions.map { it to possibleValues[it] }.minBy { (_, values) -> values.size }
         remainingPositions.remove(position)
@@ -467,17 +466,17 @@ class Hakyuu(
             )
 
             if (result) {
-                //newPossibleValues is invalid now!
+                //newPossibleValues/newActualValues are invalid now!
                 Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
                 Utils.replaceArray(thisArray = actualValues, with = newActualValues)
                 foundSPT.clear()
                 foundSPT.addAll(newFoundSPT)
 
-                return true
+                return minPossibleValues.size
             }
         }
         // If brute force didn't solve the board this is an invalid state
-        return false
+        return null
     }
 
     internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
