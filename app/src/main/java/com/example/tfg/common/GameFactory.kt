@@ -102,7 +102,7 @@ class GameFactory(private val gameDao: GameDao) {
         fun exampleBoard(gameStateId: Long) = Board(numRows = 8, numColumns = 8, gameStateId = gameStateId)
         fun exampleCells(cellArray: IntArray) = cellArray.map { Cell.create(it) }.toTypedArray()
 
-        const val COMPLETED_STR =
+        private const val COMPLETED_STR =
             "1 4 1 2 3 1 2 1\n" +
             "3 1 2 1 4 2 1 3\n" +
             "5 2 7 3 6 1 4 5\n" +
