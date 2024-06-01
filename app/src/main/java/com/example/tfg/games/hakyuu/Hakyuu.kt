@@ -63,9 +63,8 @@ class Hakyuu(
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
 
         for (position in (0..<numPositions())) {
-            val values = getRegionPositions(getRegionId(position))
-            val size = values.size
-            if (size == 1) board[position] = values.first()
+            val size = getRegionSize(getRegionId(position))
+            if (size == 1) board[position] = 1
 
             if (board[position] == 0 && size > 1) possibleValues[position].addAll(1.. size)
         }

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
-import kotlin.math.max
 import kotlin.random.Random
 
 /**
@@ -315,7 +314,7 @@ class HakyuuUnitTest {
 
 
     @ParameterizedTest
-    @ValueSource(strings = ["6,46"])//, "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
+    @ValueSource(strings = ["6,46", "7,48", "8,99", "9,44", "10,105", "12,71", "15,1", "17,1"])
     fun testOkJankoBoards(input: String, testInfo: TestInfo) {
         val spl = input.split(',')
         val jankoSize = spl[1].toInt()
@@ -364,10 +363,7 @@ class HakyuuUnitTest {
         val iterations = IntArray(size = repeat)
         val times = LongArray(size = repeat)
         val seeds = LongArray(size = repeat)
-        val regionSizes = Array(
-            size = max(numColumns, numRows),
-            init = { IntArray(size = repeat) }
-        )
+        val regionSizes = mutableListOf<IntArray>()
 
         repeat(repeat) { iteration ->
             val startTime = System.currentTimeMillis()
@@ -382,7 +378,12 @@ class HakyuuUnitTest {
             times[iteration] = endTime - startTime
             seeds[iteration] = gameType.seed
             gameType.getRegionStatData().forEachIndexed{ regionSize, value ->
-                regionSizes[regionSize][iteration] = value
+                if (regionSizes.size == regionSize) {
+                    val arr = IntArray(size = repeat)
+                    arr[iteration] = value
+                    regionSizes.add(arr)
+                }
+                else regionSizes[regionSize][iteration] = value
             }
         }
 
@@ -412,7 +413,7 @@ class HakyuuUnitTest {
         times: LongArray,
         scores: IntArray,
         seeds: LongArray,
-        regionSizes: Array<IntArray>
+        regionSizes:  List<IntArray>
     ){
         val numBoards = iterations.size
         require(times.size == numBoards && scores.size == numBoards && seeds.size == numBoards && regionSizes[0].size == numBoards) { "Incorrect sizes provided" }
@@ -432,7 +433,7 @@ class HakyuuUnitTest {
         print("</div>")
     }
 
-    private fun getStatisticsStr(iterations: IntArray, times: LongArray, scores: IntArray, seeds: LongArray, regionSizes: Array<IntArray>, numBoards: Int): String {
+    private fun getStatisticsStr(iterations: IntArray, times: LongArray, scores: IntArray, seeds: LongArray, regionSizes: List<IntArray>, numBoards: Int): String {
         var htmlCode = """<table style="border-spacing: 20px 0;"><tbody>"""
         htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Scores</th><th>Region Sizes</th></tr>"""
         (0..<numBoards).forEach {
@@ -444,7 +445,7 @@ class HakyuuUnitTest {
         return htmlCode
     }
 
-    private fun getRegionStatsStr(regionSizes: Array<IntArray>, numBoards: Int): String {
+    private fun getRegionStatsStr(regionSizes: List<IntArray>, numBoards: Int): String {
         return """<table style="border-spacing: 20px 0;"><tbody>""" +
                 """<tr><th>Region size</th><th>Mode</th><th>Mean</th><th>Median</th></tr>""" +
                 regionSizes.mapIndexed { size, arr ->
