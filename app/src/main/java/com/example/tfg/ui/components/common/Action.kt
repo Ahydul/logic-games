@@ -47,11 +47,11 @@ import com.example.tfg.R
 
 @Composable
 fun CustomIconButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     imageVector: ImageVector,
     contentDescription: String?,
-    iconColor: Color = colorResource(id = R.color.primary_color),
-    modifier: Modifier = Modifier
+    iconColor: Color = colorResource(id = R.color.primary_color)
 ) {
     IconButton(
         onClick = onClick,
@@ -68,12 +68,12 @@ fun CustomIconButton(
 
 @Composable
 fun CustomFilledIconButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     imageVector: ImageVector,
     contentDescription: String?,
     color: Color = Color.Red,
-    iconColor: Color = Color.Black,
-    modifier: Modifier = Modifier
+    iconColor: Color = Color.Black
 ) {
     FilledIconButton(
         onClick = onClick,
@@ -91,11 +91,11 @@ fun CustomFilledIconButton(
 
 @Composable
 fun CustomText(
+    modifier: Modifier = Modifier,
     mainText: String,
     textColor: Color = Color.Black,
     mainFontSize: TextUnit = TextUnit.Unspecified,
-    secondaryText: String? = null,
-    modifier: Modifier = Modifier
+    secondaryText: String? = null
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -116,6 +116,7 @@ fun CustomText(
 
 @Composable
 fun CustomFilledButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     mainText: String,
     secondaryText: String? = null,
@@ -123,11 +124,10 @@ fun CustomFilledButton(
     borderColor: Color = Color.Red,
     textColor: Color = Color.Black,
     fontSize: TextUnit = TextUnit.Unspecified,
-    buttonModifier: Modifier = Modifier,
     textModifier: Modifier = Modifier
 ) {
     FilledTonalButton(
-        modifier = buttonModifier.border(width = 0.5.dp, color = borderColor, shape = CircleShape),
+        modifier = modifier.border(width = 0.5.dp, color = borderColor, shape = CircleShape),
         onClick = onClick,
         colors = ButtonDefaults.filledTonalButtonColors(containerColor = color)
     ) {
@@ -143,6 +143,7 @@ fun CustomFilledButton(
 
 @Composable
 fun LabeledIconButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     imageVector: ImageVector,
     iconColor: Color = colorResource(id = R.color.primary_color),
@@ -151,8 +152,7 @@ fun LabeledIconButton(
     fontSize: TextUnit = TextUnit.Unspecified,
     shape: Shape = RectangleShape,
     borderStroke: BorderStroke? = null,
-    iconPadding: Dp = 0.dp,
-    modifier: Modifier = Modifier
+    iconPadding: Dp = 0.dp
 ) {
     CustomButton(
         onClick = onClick,
@@ -207,13 +207,13 @@ fun CustomButton(
 
 @Composable
 fun CustomTextField(
+    modifier: Modifier = Modifier,
     state: MutableState<String>,
-    label: @Composable() (() -> Unit)? = null,
+    label: @Composable (() -> Unit)? = null,
     bgColors: TextFieldColors = TextFieldDefaults.colors(unfocusedContainerColor = Color.Transparent,focusedContainerColor = Color(1f,1f,1f, 0.04f)),
     color: Color,
     numberValues: Boolean = false,
-    range: List<String>? = null,
-    modifier: Modifier = Modifier
+    range: List<String>? = null
 ) {
     val textStyle = TextStyle(color = color)
     val isRange = !range.isNullOrEmpty()
@@ -269,7 +269,7 @@ fun CustomTextField(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.expand_more_24px),
-                        contentDescription = "Substract one",
+                        contentDescription = "Subtract one",
                         tint = color,
                         modifier = iconModifier
                     )

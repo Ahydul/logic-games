@@ -45,7 +45,7 @@ fun HomeButtons(
                 val context = LocalContext.current
                 val secondaryText =
                     game.gameType.type.title + " - " +
-                    "tiempo" + " - " + //TODO: timer
+                    "time" + " - " + //TODO: timer
                     game.difficulty.toString(context = context)
 
                 HomeButton(
@@ -76,7 +76,7 @@ fun HomeButton(onClick: () -> Unit, mainText: String, secondaryText: String? = n
         mainText = mainText,
         secondaryText = secondaryText,
         fontSize = 22.sp,
-        buttonModifier = buttonModifier,
+        modifier = buttonModifier,
         textModifier = textModifier
     )
 }

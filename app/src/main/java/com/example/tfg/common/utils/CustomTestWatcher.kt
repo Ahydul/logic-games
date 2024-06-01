@@ -9,7 +9,6 @@ class CustomTestWatcher : TestWatcher {
         context?.let {
             val testDisplayName = it.displayName
             println("Test $testDisplayName was successful.")
-            // Aquí puedes imprimir la información adicional que desees
         }
     }
 }

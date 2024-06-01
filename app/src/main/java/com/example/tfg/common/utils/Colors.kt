@@ -1,6 +1,6 @@
 package com.example.tfg.common.utils
 
-class Colors(val colors: MutableList<String> = mutableListOf()) {
+class Colors(private val colors: MutableList<String> = mutableListOf()) {
 
     fun newColor(): String {
         var res = randomColor()
