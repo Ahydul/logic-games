@@ -614,10 +614,10 @@ class Hakyuu(
     }
 
     companion object {
-        fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String): Hakyuu {
+        fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String, reverse: Boolean = false): Hakyuu {
             val start = Hakyuu.parseBoardString(startBoard)
             val completed = Hakyuu.parseBoardString(completedBoard)
-            val regions = Hakyuu.parseRegionString(boardRegions)
+            val regions = Hakyuu.parseRegionString(boardRegions, reverse)
 
             require(start.size == completed.size && start.size == regions.size && start.size == numRows*numColumns) { "Incompatible sizes provided to Hakyuu" }
 
@@ -633,9 +633,9 @@ class Hakyuu(
             return hakyuu
         }
 
-        fun solveBoard(seed: Long, boardToSolve: String, boardRegions: String): Hakyuu {
+        fun solveBoard(seed: Long, boardToSolve: String, boardRegions: String, reverseCoordinates: Boolean = false): Hakyuu {
             val start = Hakyuu.parseBoardString(boardToSolve)
-            val regions = Hakyuu.parseRegionString(boardRegions)
+            val regions = Hakyuu.parseRegionString(boardRegions, reverseCoordinates)
             val completed = Hakyuu.parseBoardString(boardToSolve)
             val numRows = boardToSolve.count { it == '\n' } + 1
             val numColumns = (boardToSolve.substringBefore(delimiter = "\n").length + 1) / 2
@@ -660,14 +660,14 @@ class Hakyuu(
             return str.replace('\n',' ').split(" ").map { if (it=="-") 0 else it.toInt() }.toIntArray()
         }
 
-        fun parseRegionString(str: String): IntArray {
+        fun parseRegionString(str: String, reverseCoordinates: Boolean): IntArray {
             val map = mutableMapOf<Coordinate, Int>()
             val lines = str.replace("[","").replace("]","").split('\n')
 
             var maxCoordinate = Coordinate(0,0)
             for (line in lines) {
                 val spl = line.split(':')
-                val coords = spl[1].split(", ").map { Coordinate.parseString(it,false) }
+                val coords = spl[1].split(", ").map { Coordinate.parseString(it, reverseCoordinates) }
                 val regionId = spl[0].toInt()
                 coords.forEach { coordinate ->
                     if (coordinate > maxCoordinate) maxCoordinate = coordinate
