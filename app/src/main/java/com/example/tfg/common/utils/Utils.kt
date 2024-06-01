@@ -5,7 +5,7 @@ import android.content.Intent
 import com.example.tfg.ActiveGameView
 import com.example.tfg.MainActivity
 
-class Utils {
+abstract class Utils {
     companion object {
         fun replaceArray(thisArray: IntArray, with: IntArray) {
             var index = 0

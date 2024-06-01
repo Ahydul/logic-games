@@ -436,6 +436,7 @@ class HakyuuUnitTest {
                 "</tbody></table>"
     }
 
+    @Suppress("SameParameterValue")
     private fun getIndividualStats(label: String, arr: LongArray, numBoards: Int): String {
         arr.sort()
         return """<tr><td><b>$label</b></td><td>${(arr.first()+arr.last()) / 2}</td><td>${arr.average()}</td><td>${Utils.median(arr, numBoards)}</td><td>${arr.max()}</td><td>${arr.min()}</td><td>${arr.sum()}</td></tr>"""
