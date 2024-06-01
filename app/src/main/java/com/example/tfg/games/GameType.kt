@@ -114,6 +114,10 @@ abstract class GameType(
             .map { (index, _) -> index }.toSet()
     }
 
+    protected fun getRegionSize(regionId: Int): Int {
+        return boardRegions.count { id -> id == regionId }
+    }
+
     fun boardMeetsRules(): Boolean {
         return boardMeetsRules(completedBoard)
     }
