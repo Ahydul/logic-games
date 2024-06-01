@@ -2,6 +2,7 @@ package com.example.tfg.games.hakyuu
 
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.utils.CustomTestWatcher
+import com.example.tfg.common.utils.Utils
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
@@ -250,45 +251,6 @@ class HakyuuUnitTest {
         assert(gameType.boardMeetsRules() && gameType.iterations == 1)
     }
 
-    private fun median(arr: LongArray, size: Int): Number {
-        return if (size % 2 == 0) {
-            (arr[size / 2 - 1] + arr[size / 2]) / 2.0
-        } else {
-            arr[size / 2]
-        }
-    }
-
-    private fun median(arr: IntArray, size: Int): Number{
-        return if (size % 2 == 0) {
-            (arr[size / 2 - 1] + arr[size / 2]) / 2.0
-        } else {
-            arr[size / 2]
-        }
-    }
-
-    //arr sorted
-    private fun mode(arr: IntArray): Number{
-        var currentMax = 0
-        var currentResult = 0
-        var tmpMax = 0
-        var tmpResult = 0
-
-        for (i in arr) {
-            if (tmpResult != i) {
-                if (currentMax < tmpMax) {
-                    currentMax = tmpMax
-                    currentResult = tmpResult
-                }
-                tmpMax = 1
-                tmpResult = i
-            }else {
-                tmpMax++
-            }
-        }
-
-        return currentResult
-    }
-
 
     @Test
     fun testCreateSeededHakyuuBoard() {
@@ -459,7 +421,7 @@ class HakyuuUnitTest {
     private fun getRegionStatsStr2(regionSizes: List<IntArray>, numBoards: Int): String {
         return regionSizes.mapIndexed { size, arr ->
             arr.sort()
-            """<tr><td>${size+1}</td><td>${mode(arr)}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td></tr>"""
+            """<tr><td>${size+1}</td><td>${Utils.mode(arr)}</td><td>${arr.average()}</td><td>${Utils.median(arr, numBoards)}</td></tr>"""
         }.joinToString {
             it
         }
@@ -476,12 +438,12 @@ class HakyuuUnitTest {
 
     private fun getIndividualStats(label: String, arr: LongArray, numBoards: Int): String {
         arr.sort()
-        return """<tr><td><b>$label</b></td><td>${(arr.first()+arr.last()) / 2}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td><td>${arr.max()}</td><td>${arr.min()}</td><td>${arr.sum()}</td></tr>"""
+        return """<tr><td><b>$label</b></td><td>${(arr.first()+arr.last()) / 2}</td><td>${arr.average()}</td><td>${Utils.median(arr, numBoards)}</td><td>${arr.max()}</td><td>${arr.min()}</td><td>${arr.sum()}</td></tr>"""
     }
 
     private fun getIndividualStats(label: String, arr: IntArray, numBoards: Int): String {
         arr.sort()
-        return """<tr><td><b>$label</b></td><td>${(arr.first()+arr.last()) / 2}</td><td>${arr.average()}</td><td>${median(arr, numBoards)}</td><td>${arr.max()}</td><td>${arr.min()}</td><td>${arr.sum()}</td></tr>"""
+        return """<tr><td><b>$label</b></td><td>${(arr.first()+arr.last()) / 2}</td><td>${arr.average()}</td><td>${Utils.median(arr, numBoards)}</td><td>${arr.max()}</td><td>${arr.min()}</td><td>${arr.sum()}</td></tr>"""
     }
 
 }
