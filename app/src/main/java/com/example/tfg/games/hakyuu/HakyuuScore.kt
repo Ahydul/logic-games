@@ -3,12 +3,14 @@ package com.example.tfg.games.hakyuu
 import com.example.tfg.games.Score
 
 class HakyuuScore(score: Int = 0) : Score(score) {
-
-    fun addScoreRule3() {
+    fun addScoreNewValue() {
         score += 1
     }
+    fun addScoreRule3() {
+        score += 10
+    }
     fun addScoreRule2() {
-        score += 1
+        score += 10
     }
     fun addScoreHiddenSingle(numFound: Int) {
         score += (20*numFound)
@@ -28,7 +30,7 @@ class HakyuuScore(score: Int = 0) : Score(score) {
         score += (12*numFound)
     }
 
-    fun addScoreBruteForce(factor: Int) {
-        score += (1000) * factor
+    fun addScoreBruteForce() {
+        score += 1000
     }
 }

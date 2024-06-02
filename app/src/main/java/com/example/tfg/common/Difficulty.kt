@@ -3,7 +3,7 @@ package com.example.tfg.common
 import android.content.Context
 import com.example.tfg.R
 
-enum class Difficulty(minScore: Int, maxScore: Int) {
+enum class Difficulty(val minScore: Int, val maxScore: Int) { //TODO: Decide if to ditch maxScore or not
     BEGINNER(16, 32),
     EASY(32, 70),
     MEDIUM(64, 256),

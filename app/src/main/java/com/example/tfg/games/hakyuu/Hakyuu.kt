@@ -7,6 +7,7 @@ import com.example.tfg.common.utils.Direction
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
+import com.example.tfg.games.Score
 import kotlin.random.Random
 
 class Hakyuu(
@@ -46,44 +47,54 @@ class Hakyuu(
         // Create startBoard
 
         startBoard.indices.forEach {
-            if (getRegionSize(getRegionId(it)) > 1) {
-                startBoard[it] = completedBoard[it]
-                remainingPositions.add(it) // Helper variable
+            //if (getRegionSize(getRegionId(it)) > 1) {
+            startBoard[it] = completedBoard[it]
+            remainingPositions.add(it) // Helper variable
+            //}
+        }
+
+        var actualScore = 0
+
+        while (!remainingPositions.isEmpty()) {
+            // Remove random value from startBoard
+            val randomPosition = getRandomPosition()
+            remainingPositions.remove(randomPosition)
+            startBoard[randomPosition] = 0
+
+            val tmpBoard = startBoard.clone()
+            val res = solveBoard(tmpBoard)
+
+            if (res == null) {
+                // Add the value back
+                startBoard[randomPosition] = completedBoard[randomPosition]
+            }
+            else {
+                actualScore = res.get()
+                if (actualScore in difficulty.minScore..difficulty.maxScore) break
             }
         }
-        score.reset()
-        val actualScore = 0
-        val tmpBoard = startBoard.clone()
-
-        // Remove a random value from tmpBoard
-        val randomPosition = getRandomPosition()
-        tmpBoard[randomPosition] = 0
-        remainingPositions.remove(randomPosition)
-
-        // Solve the board
-        solveBoard(tmpBoard)
-
-        // Check score to see if we remove more or we add back or we finished
-
-            // We remove more -> actualScore += score; score.reset(); solve the board
-            // We add back -> resolve the board with new values added
-
-        // We finish ->
+        score.add(actualScore)
     }
 
     // remainingPositions has default value
-    override fun solveBoard(board: IntArray): Boolean {
-        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
+    override fun solveBoard(board: IntArray): Score? {
+        val score = HakyuuScore()
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
-
         for (position in (0..<numPositions())) {
             val size = getRegionSize(getRegionId(position))
-            if (size == 1) board[position] = 1
-
-            if (board[position] == 0 && size > 1) possibleValues[position].addAll(1.. size)
+            if (size == 1) {
+                board[position] = 1
+                score.addScoreNewValue()
+            }
+            else if (board[position] == 0) possibleValues[position].addAll(1.. size)
         }
 
+        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
+        if (remainingPositions.size == 0) return null // Invalid board
+
         val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
+        res?.add(score)
+
         return res
     }
 
@@ -172,7 +183,7 @@ class Hakyuu(
         //return random.nextInt(maxRegionSize() - 1) + 1
         return ((maxRegionSize() - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
     }
-    
+
     private fun modifyNeighbouringRegions(seed: Int) {
         val position = Direction.entries.shuffled(random).mapNotNull { direction: Direction ->
             Coordinate.move(
@@ -195,10 +206,10 @@ class Hakyuu(
         val values = Array(region.size) { emptyList<Int>() }
         val positions = Array(region.size) { -1 }
         region.map { position ->
-                position to (1..region.size)
-                    .filter { value -> checkRule3(value = value, position = position, actualValues = completedBoard) }
-                    .toList()
-            }
+            position to (1..region.size)
+                .filter { value -> checkRule3(value = value, position = position, actualValues = completedBoard) }
+                .toList()
+        }
             .sortedBy { it.second.size }
             .forEachIndexed { index, pair ->
                 values[index] = pair.second
@@ -296,21 +307,37 @@ class Hakyuu(
         actualValues: IntArray,
         remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int> = mutableListOf()
-    ): Boolean {
-        while (true)
+    ): HakyuuScore? {
+        val score = HakyuuScore()
+
+        while (remainingPositions.isNotEmpty())
         {
             // If ended populating return if its a correct board
-            if (boardPopulated(actualValues)) return boardMeetsRules(actualValues)
+            if (boardPopulated(actualValues) && boardMeetsRules(actualValues)) return score
 
             val res = populateValues(
                 possibleValues = possibleValues,
                 actualValues = actualValues,
                 remainingPositions = remainingPositions,
                 foundSPT = foundSPT,
-            ) ?: return false // Found contradiction -> can't populate
+            ) ?: return null // Found contradiction -> can't populate
 
-            score.add(res.get())
+            score.add(res)
         }
+        return null
+    }
+
+    private fun addValueToActualValues(
+        values:  MutableList<Int>,
+        actualValues: IntArray,
+        position: Int,
+        remainingPositions: MutableSet<Int>,
+        score: HakyuuScore
+    ) {
+        actualValues[position] = values.first()
+        values.clear()
+        remainingPositions.remove(position)
+        score.addScoreNewValue()
     }
 
     // Tries to populate values while there is no contradiction
@@ -321,7 +348,6 @@ class Hakyuu(
         remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int>
     ): HakyuuScore? {
-
         val score = HakyuuScore()
 
         val tmpRule2 = mutableMapOf<Int, MutableSet<Int>>()
@@ -332,8 +358,7 @@ class Hakyuu(
         }
 
         val regions = mutableMapOf<Int, MutableList<Int>>()
-        val positionsToRemove = mutableListOf<Int>()
-        for (position in remainingPositions) {
+        for (position in remainingPositions.toList()) {
             val regionID = getRegionId(position)
             for (value in possibleValues[position].toList()) {
                 // Check rule 2
@@ -342,13 +367,8 @@ class Hakyuu(
                     val values = possibleValues[position]
                     values.remove(value)
 
-                    if (values.size == 1) {
-                        actualValues[position] = values.first()
-                        values.clear()
-                        positionsToRemove.add(position)
-                    } else if(values.size == 0) {
-                        return null
-                    }
+                    if (values.size == 1) addValueToActualValues(values, actualValues, position, remainingPositions, score)
+                    else if(values.size == 0)  return null
 
                     continue
                 }
@@ -359,13 +379,8 @@ class Hakyuu(
                     val values = possibleValues[position]
                     values.remove(value)
 
-                    if (values.size == 1) {
-                        actualValues[position] = values.first()
-                        values.clear()
-                        positionsToRemove.add(position)
-                    } else if(values.size == 0) {
-                        return null
-                    }
+                    if (values.size == 1) addValueToActualValues(values, actualValues, position, remainingPositions, score)
+                    else if(values.size == 0)  return null
 
                     continue
                 }
@@ -379,10 +394,6 @@ class Hakyuu(
             }
         }
 
-        for (position in positionsToRemove){
-            remainingPositions.remove(position)
-        }
-
         // Possible values changed
         if (score.get() > 0) return score
 
@@ -392,21 +403,21 @@ class Hakyuu(
             val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
             foundSPT.addAll(singles)
             score.addScoreHiddenSingle(singles.size)
-            region.removeAll(singles)
 
             var pairs = cleanHiddenPairs(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
             foundSPT.addAll(pairs)
             score.addScoreHiddenPairs(pairs.size/2)
-            region.removeAll(pairs)
 
             var triples = cleanHiddenTriples(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
             foundSPT.addAll(triples)
             score.addScoreHiddenTriples(triples.size/3)
-            region.removeAll(triples)
+
+            region.removeAll(foundSPT)
 
             pairs = cleanObviousPairs(region = region, possibleValues = possibleValues)
             foundSPT.addAll(pairs)
             score.addScoreObviousSingle(pairs.size/2)
+            region.removeAll(pairs)
 
             triples = cleanObviousTriples(region = region, possibleValues = possibleValues)
             foundSPT.addAll(triples)
@@ -418,21 +429,11 @@ class Hakyuu(
         if (score.get() > 0) {
             for (position in remainingPositions.toList()) {
                 val values = possibleValues[position]
-                if (values.size == 1) {
-                    actualValues[position] = values.first()
-                    values.clear()
-                    remainingPositions.remove(position)
-                } else if (values.size == 0) {
-                    return null
-                }
+                if (values.size == 1) addValueToActualValues(values, actualValues, position, remainingPositions, score)
+                else if(values.size == 0)  return null
             }
-            if (!boardMeetsRules(actualValues)) {
-                return null
-            }
+            return if (boardMeetsRules(actualValues)) score else null
         }
-
-        // Possible values changed
-        if (score.get() > 0) return score
 
         // If the possible values didn't change: Brute force a value
         val bruteForceResult = bruteForceAValue(
@@ -444,7 +445,7 @@ class Hakyuu(
 
         return bruteForceResult?.let {
             // Brute force was successful
-            score.addScoreBruteForce(it)
+            score.addScoreBruteForce()
             score
         }
     }
@@ -455,8 +456,8 @@ class Hakyuu(
         actualValues: IntArray,
         remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int>
-    ): Int? {
-        // if (remainingPositions.isEmpty()) return true // This was probably fixed
+    ): HakyuuScore? {
+        if (remainingPositions.size == 1) return null
 
         val (position, minPossibleValues) = remainingPositions.map { it to possibleValues[it] }.minBy { (_, values) -> values.size }
         remainingPositions.remove(position)
@@ -480,14 +481,14 @@ class Hakyuu(
                 foundSPT = newFoundSPT,
             )
 
-            if (result) {
+            if (result != null) {
                 //newPossibleValues/newActualValues are invalid now!
                 Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
                 Utils.replaceArray(thisArray = actualValues, with = newActualValues)
                 foundSPT.clear()
                 foundSPT.addAll(newFoundSPT)
 
-                return minPossibleValues.size
+                return result
             }
         }
         // If brute force didn't solve the board this is an invalid state
@@ -678,7 +679,8 @@ class Hakyuu(
                 completedBoard = completed
             )
 
-            hakyuu.solveBoard(hakyuu.completedBoard)
+            val score = hakyuu.solveBoard(hakyuu.completedBoard)
+            hakyuu.score.add(score?.get()?:0)
 
             return hakyuu
         }

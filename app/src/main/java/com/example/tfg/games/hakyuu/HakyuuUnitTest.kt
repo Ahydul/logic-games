@@ -264,7 +264,7 @@ class HakyuuUnitTest {
 
         val endTime = System.currentTimeMillis()
 
-        print(gameType.printBoard())
+        print(gameType.printStartBoard())
 
         assert(gameType.boardMeetsRules()) { "Failed: $seed " }
 
@@ -333,7 +333,7 @@ class HakyuuUnitTest {
 
             assert(gameType.boardMeetsRules()) { "$iteration failed seed: ${gameType.seed} " }
 
-            boards[iteration] = gameType.printBoard()
+            boards[iteration] = gameType.printStartBoard()
             scores[iteration] = gameType.getScoreValue()
             iterations[iteration] = gameType.iterations
             times[iteration] = endTime - startTime
