@@ -28,6 +28,7 @@ class Hakyuu(
     startBoard = startBoard,
     boardRegions = regions
 ) {
+    // Helper variables
     private val remainingPositions: MutableSet<Int> = initRemainingPositions()
     private var currentID = 0
 
@@ -39,9 +40,14 @@ class Hakyuu(
         completedBoard.map { 0 }
         boardRegions.map { 0 }
         startBoard.map { 0 }
-        remainingPositions.addAll(initRemainingPositions())
         random = Random(seed)
+        resetRemainingPositions()
         score.reset()
+        currentID = 0
+    }
+
+    fun resetRemainingPositions() {
+        remainingPositions.addAll(initRemainingPositions())
     }
 
     override fun createGame(difficulty: Difficulty) {
@@ -54,21 +60,28 @@ class Hakyuu(
         startBoard.indices.forEach {
             if (getRegionSize(getRegionId(it)) > 1) startBoard[it] = completedBoard[it]
         }
+
+        score.reset()
+        resetRemainingPositions()
         val actualScore = 0
-        // Remove some values from a copy of startBoard
+        val tmpBoard = startBoard.clone()
+
+        // Remove a value from a copy of startBoard
+        tmpBoard[getRandomPosition()] = 0
 
         // Solve the board
 
         // Check score to see if we remove more or we add back or we finished
 
-            // We remove more -> actualScore += score; score.reset(); solve the board with custom remaining positions
+            // We remove more -> actualScore += score; score.reset(); solve the board
             // We add back -> resolve the board with new values added
 
         // We finish ->
     }
 
     // remainingPositions has default value
-    override fun solveBoard(board: IntArray, remainingPositions: MutableSet<Int>): Boolean {
+    override fun solveBoard(board: IntArray): Boolean {
+        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
 
         for (position in (0..<numPositions())) {
@@ -151,9 +164,7 @@ class Hakyuu(
         val result = populateRegion(region)
 
         if (!result) {
-            if (iterations > 20)
-                modifyNeighbouringRegions(seed)
-
+            if (iterations > 20) modifyNeighbouringRegions(seed)
             propagateRandomRegion(numPropagations = numPropagations, iterations = iterations+1)
         }
         else {
@@ -446,6 +457,7 @@ class Hakyuu(
         }
     }
 
+    //TODO: brute force must return null if it tries all possiblevalues and 2 returns true => null if not unique board
     private fun bruteForceAValue(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
@@ -625,6 +637,18 @@ class Hakyuu(
     }
 
     companion object {
+        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
+            val hakyuu = Hakyuu(
+                numRows = numRows,
+                numColumns = numColumns,
+                seed = seed,
+            )
+
+            hakyuu.createGame(difficulty)
+
+            return hakyuu
+        }
+
         fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String, reverse: Boolean = false): Hakyuu {
             val start = Hakyuu.parseBoardString(startBoard)
             val completed = Hakyuu.parseBoardString(completedBoard)

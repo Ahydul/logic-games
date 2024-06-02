@@ -32,6 +32,7 @@ abstract class GameType(
         completedBoard.map { 0 }
         boardRegions.map { 0 }
         startBoard.map { 0 }
+        score.reset()
     }
 
     fun getScoreValue(): Int {
@@ -95,10 +96,8 @@ abstract class GameType(
         return res
     }
 
-    abstract fun createGame(difficulty: Difficulty)
-
-    private fun initializeRemainingPositions(board: IntArray) = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
-    protected abstract fun solveBoard(board: IntArray, remainingPositions: MutableSet<Int> = initializeRemainingPositions(board)): Boolean
+    protected abstract fun createGame(difficulty: Difficulty)
+    protected abstract fun solveBoard(board: IntArray): Boolean
 
     protected fun deleteRegion(regionId: Int) {
         boardRegions.withIndex().filter { (_, id) -> id == regionId }
