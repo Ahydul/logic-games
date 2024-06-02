@@ -36,40 +36,32 @@ class Hakyuu(
         return (0..< numPositions()).toMutableSet()
     }
 
-    override fun reset() {
-        completedBoard.map { 0 }
-        boardRegions.map { 0 }
-        startBoard.map { 0 }
-        random = Random(seed)
-        resetRemainingPositions()
-        score.reset()
-        currentID = 0
-    }
-
-    fun resetRemainingPositions() {
-        remainingPositions.addAll(initRemainingPositions())
-    }
-
     override fun createGame(difficulty: Difficulty) {
         // Create completedBoard
+
         while (!boardCreated()) {
             propagateRandomRegion()
         }
-        // TODO: IMPLEMENT THIS. For now is the completedBoard
-        // Create startBoard
-        startBoard.indices.forEach {
-            if (getRegionSize(getRegionId(it)) > 1) startBoard[it] = completedBoard[it]
-        }
 
+        // Create startBoard
+
+        startBoard.indices.forEach {
+            if (getRegionSize(getRegionId(it)) > 1) {
+                startBoard[it] = completedBoard[it]
+                remainingPositions.add(it) // Helper variable
+            }
+        }
         score.reset()
-        resetRemainingPositions()
         val actualScore = 0
         val tmpBoard = startBoard.clone()
 
-        // Remove a value from a copy of startBoard
-        tmpBoard[getRandomPosition()] = 0
+        // Remove a random value from tmpBoard
+        val randomPosition = getRandomPosition()
+        tmpBoard[randomPosition] = 0
+        remainingPositions.remove(randomPosition)
 
         // Solve the board
+        solveBoard(tmpBoard)
 
         // Check score to see if we remove more or we add back or we finished
 

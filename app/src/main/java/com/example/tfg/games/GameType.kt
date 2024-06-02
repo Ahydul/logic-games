@@ -28,13 +28,6 @@ abstract class GameType(
     protected fun numPositions(): Int = numColumns * numRows
     fun maxRegionSize(): Int = max(numColumns, numRows)
 
-    protected open fun reset() {
-        completedBoard.map { 0 }
-        boardRegions.map { 0 }
-        startBoard.map { 0 }
-        score.reset()
-    }
-
     fun getScoreValue(): Int {
         return score.get()
     }
