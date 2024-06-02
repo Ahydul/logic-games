@@ -21,15 +21,13 @@ class GameFactory(private val gameDao: GameDao) {
     ): Long {
         // Initialize gameType
         val gameType: GameType = when (chosenGame) {
-            Games.HAKYUU -> Hakyuu(
+            Games.HAKYUU -> Hakyuu.create(
                 numRows = numRows,
                 numColumns = numColumns,
-                seed = seed ?: (Math.random() * 10000000000).toLong()
+                seed = seed ?: (Math.random() * 10000000000).toLong(),
+                difficulty = difficulty
             )
         }
-
-        // Create game board
-        gameType.createGame(difficulty)
 
         return create(
             gameType = gameType,

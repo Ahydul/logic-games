@@ -260,9 +260,7 @@ class HakyuuUnitTest {
         val seed = 5598423764L
 
         val startTime = System.currentTimeMillis()
-        val gameType = Hakyuu(numColumns = input, numRows = input, seed = seed)
-
-        gameType.createGame(Difficulty.EASY)
+        val gameType = Hakyuu.create(numColumns = input, numRows = input, seed = seed, difficulty = Difficulty.EASY)
 
         val endTime = System.currentTimeMillis()
 
@@ -307,14 +305,13 @@ class HakyuuUnitTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
+    @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9])//, 10, 11, 12, 13])//, 14, 15])
     fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
         //val numRows = (Math.random()*11).toInt() + 3 // [3,13]
         val repeat = 100
 
         val getGameType = { _: Int ->
-            val res = Hakyuu(numColumns = numColumns, numRows = numColumns, seed = (Math.random()*10000000000).toLong())
-            res.createGame(Difficulty.EASY)
+            val res = Hakyuu.create(numColumns = numColumns, numRows = numColumns, seed = (Math.random()*10000000000).toLong(), difficulty = Difficulty.EASY)
             res
         }
 

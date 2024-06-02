@@ -8,7 +8,7 @@ enum class Difficulty(minScore: Int, maxScore: Int) {
     EASY(32, 70),
     MEDIUM(64, 256),
     HARD(256, 512),
-    EXPERT(1024, 2048),
+    EXPERT(512, 2048),
     MASTER(2048, 10000);
 
     fun toString(context: Context): String {
