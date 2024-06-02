@@ -32,8 +32,12 @@ abstract class GameType(
         return score.get()
     }
 
-    fun printBoard(): String {
+    fun printCompletedBoard(): String {
         return printBoard(completedBoard)
+    }
+
+    fun printStartBoard(): String {
+        return printBoard(startBoard)
     }
 
     fun printBoard(board: IntArray): String {
@@ -90,7 +94,7 @@ abstract class GameType(
     }
 
     protected abstract fun createGame(difficulty: Difficulty)
-    protected abstract fun solveBoard(board: IntArray): Boolean
+    protected abstract fun solveBoard(board: IntArray): Score?
 
     protected fun deleteRegion(regionId: Int) {
         boardRegions.withIndex().filter { (_, id) -> id == regionId }
