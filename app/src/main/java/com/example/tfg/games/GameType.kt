@@ -1,6 +1,7 @@
 package com.example.tfg.games
 
 import androidx.room.Ignore
+import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.hakyuu.NumberValue
@@ -94,8 +95,10 @@ abstract class GameType(
         return res
     }
 
-    abstract fun createGame(): Boolean
-    protected abstract fun solveBoard(board: IntArray): Boolean
+    abstract fun createGame(difficulty: Difficulty)
+
+    private fun initializeRemainingPositions(board: IntArray) = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
+    protected abstract fun solveBoard(board: IntArray, remainingPositions: MutableSet<Int> = initializeRemainingPositions(board)): Boolean
 
     protected fun deleteRegion(regionId: Int) {
         boardRegions.withIndex().filter { (_, id) -> id == regionId }

@@ -29,7 +29,7 @@ class GameFactory(private val gameDao: GameDao) {
         }
 
         // Create game board
-        gameType.createGame()
+        gameType.createGame(difficulty)
 
         return create(
             gameType = gameType,
