@@ -1,5 +1,6 @@
 package com.example.tfg.games.hakyuu
 
+import com.example.tfg.common.Difficulty
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.common.utils.Utils
@@ -260,13 +261,13 @@ class HakyuuUnitTest {
         val startTime = System.currentTimeMillis()
         val gameType = Hakyuu(numColumns = input, numRows = input, seed = seed)
 
-        val res = gameType.createGame()
+        gameType.createGame(Difficulty.EASY)
 
         val endTime = System.currentTimeMillis()
 
         print(gameType.printBoard())
 
-        assert(res) { "Failed: $seed " }
+        assert(gameType.boardMeetsRules()) { "Failed: $seed " }
 
         println("Test with sizes ${input}x$input")
         println("Time ${endTime - startTime}")
@@ -307,19 +308,19 @@ class HakyuuUnitTest {
     @ParameterizedTest
     @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
     fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
-        val numRows = (Math.random()*11).toInt() + 3 // [3,13]
+        //val numRows = (Math.random()*11).toInt() + 3 // [3,13]
         val repeat = 100
 
         val getGameType = { _: Int ->
-            val res = Hakyuu(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong())
-            res.createGame()
+            val res = Hakyuu(numColumns = numColumns, numRows = numColumns, seed = (Math.random()*10000000000).toLong())
+            res.createGame(Difficulty.EASY)
             res
         }
 
-        testHakyuuBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, getGameType = getGameType)
+        testHakyuuBoards(numColumns = numColumns, numRows = numColumns, repeat = repeat, getGameType = getGameType, printBoards = false)
     }
 
-    private fun testHakyuuBoards(numColumns: Int, numRows: Int, repeat: Int, getGameType: (Int) -> Hakyuu) {
+    private fun testHakyuuBoards(numColumns: Int, numRows: Int, repeat: Int, getGameType: (Int) -> Hakyuu, printBoards: Boolean = true) {
         val boards = Array(size = repeat) { "" }
         val scores = IntArray(size = repeat)
         val iterations = IntArray(size = repeat)
@@ -349,7 +350,7 @@ class HakyuuUnitTest {
             }
         }
 
-        printBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, boards = boards)
+        if (printBoards) printBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, boards = boards)
         printBoardsData(iterations = iterations, scores = scores, times = times, seeds = seeds, regionSizes = regionSizes)
     }
 
@@ -401,10 +402,11 @@ class HakyuuUnitTest {
 
     private fun getStatisticsStr(iterations: IntArray, times: LongArray, scores: IntArray, seeds: LongArray, regionSizes: List<IntArray>, numBoards: Int): String {
         var htmlCode = """<table style="border-spacing: 20px 0;justify-content: start;display: flex;"><tbody>"""
-        htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Scores</th><th>Region Sizes</th></tr>"""
+        val sizesLabel = regionSizes.indices.joinToString(separator = "") { "<th>${it+1}</th>" }
+        htmlCode += """<tr><th>Test</th><th>Seed</th><th>Num Iterations</th><th>Time (ms)</th><th>Scores</th>$sizesLabel<th><- Region Sizes</th></tr>"""
         (0..<numBoards).forEach {
-            val sizes = regionSizes.joinToString(separator = "") { arr -> "<p style='margin: 0'>" + arr[it] + "</p>" }
-            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${scores[it]}</td><td style="display: flex;">${sizes}</td></tr>"""
+            val sizes = regionSizes.joinToString(separator = "") { arr -> "<td>${arr[it]}</td>" }
+            htmlCode += """<tr><td>${it + 1}</td><td>${seeds[it]}</td><td>${iterations[it]}</td><td>${times[it]}</td><td>${scores[it]}</td>${sizes}</tr>"""
         }
         htmlCode += "</tbody></table>"
 

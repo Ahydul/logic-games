@@ -1,5 +1,6 @@
 package com.example.tfg.games.hakyuu
 
+import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Direction
@@ -43,20 +44,31 @@ class Hakyuu(
         score.reset()
     }
 
-    override fun createGame(): Boolean {
+    override fun createGame(difficulty: Difficulty) {
         // Create completedBoard
         while (!boardCreated()) {
             propagateRandomRegion()
         }
         // TODO: IMPLEMENT THIS. For now is the completedBoard
         // Create startBoard
-        startBoard.indices.forEach { startBoard[it] = completedBoard[it] }
+        startBoard.indices.forEach {
+            if (getRegionSize(getRegionId(it)) > 1) startBoard[it] = completedBoard[it]
+        }
+        val actualScore = 0
+        // Remove some values from a copy of startBoard
 
-        return boardMeetsRules()
+        // Solve the board
+
+        // Check score to see if we remove more or we add back or we finished
+
+            // We remove more -> actualScore += score; score.reset(); solve the board with custom remaining positions
+            // We add back -> resolve the board with new values added
+
+        // We finish ->
     }
 
-    override fun solveBoard(board: IntArray): Boolean {
-        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
+    // remainingPositions has default value
+    override fun solveBoard(board: IntArray, remainingPositions: MutableSet<Int>): Boolean {
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
 
         for (position in (0..<numPositions())) {

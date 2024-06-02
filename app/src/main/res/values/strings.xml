@@ -7,9 +7,12 @@
     <string name="undo_action">Undo</string>
     <string name="redo_action">Redo</string>
     <string name="difficulty">Difficulty</string>
+    <string name="beginner">Beginner</string>
     <string name="easy">Easy</string>
     <string name="medium">Medium</string>
     <string name="hard">Hard</string>
+    <string name="expert">Expert</string>
+    <string name="master">Master</string>
     <string name="num_columns">Number of columns</string>
     <string name="num_rows">Number of rows</string>
     <string name="seed">Seed</string>
