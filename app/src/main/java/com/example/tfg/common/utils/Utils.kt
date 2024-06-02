@@ -34,19 +34,28 @@ abstract class Utils {
             context.startActivity(intent)
         }
 
-        fun median(arr: LongArray, size: Int): Number {
-            return if (size % 2 == 0) {
-                (arr[size / 2 - 1] + arr[size / 2]) / 2.0
+        //arr must be sorted
+        fun percentile(arr: LongArray, percentile: Int = 50): Number {
+            require(percentile in 1..99){ "Invalid percentile" }
+            val size = arr.size
+            val a = 100/percentile.toDouble()
+            val index = (size / a).toInt()
+            return if (size % a == 0.0) {
+                (arr[index - 1] + arr[index]) / 2.0
             } else {
-                arr[size / 2]
+                arr[index]
             }
         }
-
-        fun median(arr: IntArray, size: Int): Number{
-            return if (size % 2 == 0) {
-                (arr[size / 2 - 1] + arr[size / 2]) / 2.0
+        //arr must be sorted
+        fun percentile(arr: IntArray, percentile: Int = 50): Number {
+            require(percentile in 1..99){ "Invalid percentile" }
+            val size = arr.size
+            val a = 100/percentile.toDouble()
+            val index = (size / a).toInt()
+            return if (size % a == 0.0) {
+                (arr[index - 1] + arr[index]) / 2.0
             } else {
-                arr[size / 2]
+                arr[index]
             }
         }
 
@@ -72,5 +81,18 @@ abstract class Utils {
 
             return currentResult
         }
+
+        fun filterIndices(arr: IntArray, indices: IntArray): IntArray {
+            return arr.filterIndexed { index, _ -> indices.contains(index) }.toIntArray()
+        }
+
+        fun filterIndices(arr: LongArray, indices: IntArray): LongArray {
+            return arr.filterIndexed { index, _ -> indices.contains(index) }.toLongArray()
+        }
+
+        fun filterIndices(ls: List<IntArray>, indices: IntArray): List<IntArray> {
+            return ls.map { filterIndices(it, indices) }
+        }
+
     }
 }
