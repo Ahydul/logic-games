@@ -92,7 +92,7 @@ class Hakyuu(
         }
 
         val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
-        res?.add(score)
+        if (res != null) res.add(score)
 
         return res
     }

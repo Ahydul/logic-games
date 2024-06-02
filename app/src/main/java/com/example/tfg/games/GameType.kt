@@ -117,8 +117,12 @@ abstract class GameType(
         return boardRegions.count { id -> id == regionId }
     }
 
+    private fun boardIsCompleted(board: IntArray): Boolean {
+        return !board.any { it == 0 }
+    }
+
     fun boardMeetsRules(): Boolean {
-        return boardMeetsRules(completedBoard)
+        return boardMeetsRules(completedBoard) && boardIsCompleted(completedBoard)
     }
 
     protected abstract fun boardMeetsRules(board: IntArray): Boolean
