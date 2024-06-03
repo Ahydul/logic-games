@@ -330,7 +330,14 @@ class HakyuuUnitTest {
         }
 
         val getTest = { gameType: Hakyuu, iteration: Int ->
-            gameType.printCompletedBoard() == solutions[iteration]
+            val board = gameType.printCompletedBoard()
+            val correctBoard = board == solutions[iteration]
+            val oneIteration = gameType.iterations == 1
+
+            if (!correctBoard) println("Incorrect board:\n$board")
+            if (!oneIteration) println("Took more than one iteration: ${gameType.iterations}")
+
+            correctBoard && oneIteration
         }
 
 
@@ -339,7 +346,8 @@ class HakyuuUnitTest {
             numRows = boardSize,
             repeat = jankoSize,
             getGameType = getGameType,
-            getTest = getTest
+            getTest = getTest,
+            printBoards = false
         )
     }
 
@@ -372,14 +380,16 @@ class HakyuuUnitTest {
         val times = LongArray(size = repeat)
         val seeds = LongArray(size = repeat)
         val regionSizes = mutableListOf<IntArray>()
-        val failed = BooleanArray(size = repeat)
+        val failed = mutableListOf<Int>()
 
         repeat(repeat) { iteration ->
             val startTime = System.currentTimeMillis()
             val gameType = getGameType(iteration)
             val endTime = System.currentTimeMillis()
 
-            failed[iteration] = getTest(gameType, iteration)
+            val res = getTest(gameType, iteration)
+            if (!res) failed.add(iteration)
+
             boards[iteration] = gameType.printCompletedBoardHTML()
             scores[iteration] = gameType.getScoreValue()
             iterations[iteration] = gameType.iterations
@@ -398,9 +408,8 @@ class HakyuuUnitTest {
         if (printBoards) printBoards(numColumns = numColumns, numRows = numRows, repeat = repeat, boards = boards)
         printBoardsData(iterations = iterations, scores = scores, times = times, seeds = seeds, regionSizes = regionSizes, summarizeStats = summarizeStats)
 
-        assert(!failed.any { !it }) {
-            failed.withIndex().filter { (_, res) -> !res }
-                .joinToString(separator = "\n") { (index, _) ->
+        assert(failed.isEmpty()) {
+            failed.joinToString(separator = "\n") { index ->
                     "${index + 1} failed seed: ${seeds[index]} "
                 }
         }
