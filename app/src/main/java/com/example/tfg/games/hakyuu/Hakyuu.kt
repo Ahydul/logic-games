@@ -347,25 +347,34 @@ class Hakyuu(
     ): HakyuuScore? {
         val score = HakyuuScore()
 
-        val regions = mutableMapOf<Int, MutableList<Int>>()
-        //getRemainingPositions(actualValues) instead of getPositions()?????
-        getPositions().forEach { position ->
-            val regionID = getRegionId(position)
+        val addToRegions = { regionID: Int, position: Int, regions: MutableMap<Int, MutableList<Int>> ->
             if (regions.containsKey(regionID)) regions[regionID]!!.add(position)
             else regions[regionID] = mutableListOf(position)
         }
 
+        val removeFromRegions = { regionID: Int, position: Int, regions: MutableMap<Int, MutableList<Int>> ->
+            if (regions.containsKey(regionID)) regions[regionID]!!.remove(position)
+        }
+
+
+        val filteredRegions = mutableMapOf<Int, MutableList<Int>>()
+        val remainingRegions = mutableMapOf<Int, MutableList<Int>>()
+        getPositions().forEach { position ->
+            val regionID = getRegionId(position)
+            if (actualValues[position] != 0) addToRegions(regionID, position, filteredRegions)
+            else addToRegions(regionID, position, remainingRegions)
+        }
+
         for (position in getRemainingPositions(actualValues)) {
             val regionID = getRegionId(position)
-            val possibleValuesInPos = possibleValues[position]
-            val valuesInRegion = regions[regionID]!!
-                .map { actualValues[it] }
-                .filter { it != 0 }
+            val possibleValuesInPosition = possibleValues[position]
+            val region = filteredRegions[regionID]
+            val valuesInRegion = region?.map { actualValues[it] }
 
-            possibleValuesInPos.removeIf { value ->
+            possibleValuesInPosition.removeIf { value ->
                 var res = false
                 // Check rule 2
-                if (valuesInRegion.contains(value)) {
+                if (valuesInRegion!=null && valuesInRegion.contains(value)) {
                     score.addScoreRule2()
                     res = true
                 }
@@ -377,15 +386,18 @@ class Hakyuu(
                 res
             }
 
-            if (possibleValuesInPos.size == 1) addValueToActualValues(possibleValuesInPos, actualValues, position, score)
-            else if(possibleValuesInPos.size == 0) return null
+            if (possibleValuesInPosition.size == 1) {
+                addValueToActualValues(possibleValuesInPosition, actualValues, position, score)
+                addToRegions(regionID, position, filteredRegions)
+                removeFromRegions(regionID, position, remainingRegions)
+            }
+            else if(possibleValuesInPosition.size == 0) return null
         }
 
         // Possible values changed
         if (score.get() > 0) return score
 
-        //TODO: Check if this part works as expected
-        for (region in regions.values) {
+        for (region in remainingRegions.values) {
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
 
             val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
@@ -444,6 +456,7 @@ class Hakyuu(
         actualValues: IntArray,
         foundSPT: MutableList<Int>
     ): HakyuuScore? {
+        iterations++
         val (position, minPossibleValues) = getRemainingPositions(actualValues)
             .map { it to possibleValues[it] }
             .minBy { (_, values) -> values.size }
