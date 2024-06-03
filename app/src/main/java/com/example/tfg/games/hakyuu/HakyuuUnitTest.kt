@@ -260,7 +260,10 @@ class HakyuuUnitTest {
         testHakyuuBoard(getGameType)
     }
 
-    private fun testHakyuuBoard(getGameType: () -> Hakyuu) {
+    private fun testHakyuuBoard(
+        getGameType: () -> Hakyuu,
+        getTest: (Hakyuu) -> Boolean = { gameType: Hakyuu -> gameType.boardMeetsRules() }
+    ) {
         val startTime = System.currentTimeMillis()
         val gameType = getGameType()
         val endTime = System.currentTimeMillis()
@@ -273,7 +276,7 @@ class HakyuuUnitTest {
         println("Iterations: ${gameType.iterations}")
         println("Score: ${gameType.score.get()}")
 
-        assert(gameType.boardMeetsRules()) { "Failed with seed: ${gameType.seed} " }
+        assert(getTest(gameType)) { "Failed with seed: ${gameType.seed} " }
     }
 
     private fun loadJanko(boardSize: Int, fileName: String): List<String> {
@@ -300,16 +303,28 @@ class HakyuuUnitTest {
     fun testOkJankoBoard() {
         val seed = 5598423764L
         val boardSize = 6
-        val board = 41
+        val boardNumber = 7
 
-        val boardRegions = loadJankoRegions(boardSize)[board]
-        val startBoard = loadJankoBoards(boardSize)[board]
+        val boardRegions = loadJankoRegions(boardSize)[boardNumber - 1]
+        val startBoard = loadJankoBoards(boardSize)[boardNumber - 1]
+        val solution = loadJankoSolutions(boardSize)[boardNumber - 1]
 
         val getGameType = {
             Hakyuu.solveBoard(seed = seed, boardToSolve = startBoard, boardRegions = boardRegions)
         }
 
-        testHakyuuBoard(getGameType)
+        val getTest = { gameType: Hakyuu ->
+            val board = gameType.printCompletedBoard()
+            val correctBoard = board == solution
+            val oneIteration = gameType.iterations == 1
+
+            if (!correctBoard) println("Incorrect board:\n$board")
+            if (!oneIteration) println("Took more than one iteration: ${gameType.iterations}")
+
+            correctBoard && oneIteration
+        }
+
+        testHakyuuBoard(getGameType, getTest)
     }
 
     @ParameterizedTest
@@ -409,8 +424,8 @@ class HakyuuUnitTest {
         printBoardsData(iterations = iterations, scores = scores, times = times, seeds = seeds, regionSizes = regionSizes, summarizeStats = summarizeStats)
 
         assert(failed.isEmpty()) {
-            failed.joinToString(separator = "\n") { index ->
-                    "${index + 1} failed seed: ${seeds[index]} "
+            failed.joinToString(separator = "") { index ->
+                    "\n${index + 1} failed seed: ${seeds[index]} "
                 }
         }
     }
