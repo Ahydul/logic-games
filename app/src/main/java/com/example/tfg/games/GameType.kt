@@ -135,6 +135,10 @@ abstract class GameType(
         return boardRegions.count { id -> id == regionId }
     }
 
+    protected fun boardPopulated(board: IntArray): Boolean {
+        return !board.any { it == 0 }
+    }
+
     private fun boardPopulated2(board: IntArray): Boolean {
         val res = board.withIndex().filter { it.value == 0 }
         if (res.isNotEmpty()){
@@ -145,13 +149,15 @@ abstract class GameType(
     }
 
     fun boardMeetsRules(): Boolean {
-        return boardMeetsRules(completedBoard) && boardPopulated2(completedBoard)
+        return boardMeetsRules2(completedBoard) && boardPopulated2(completedBoard)
     }
 
-    protected abstract fun boardMeetsRules(board: IntArray): Boolean
-
-    protected fun boardPopulated(board: IntArray): Boolean {
-        return !board.any { it == 0 }
+    protected abstract fun boardMeetsRulesStr(board: IntArray): String
+    protected fun boardMeetsRules(board: IntArray) = boardMeetsRulesStr(board) == ""
+    private fun boardMeetsRules2(board: IntArray): Boolean {
+        val res = boardMeetsRulesStr(board)
+        print(res)
+        return res == ""
     }
 
     abstract fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int>
