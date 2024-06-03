@@ -145,7 +145,6 @@ abstract class GameType(
     }
 
     fun boardMeetsRules(): Boolean {
-        print("\n\n")
         return boardMeetsRules(completedBoard) && boardPopulated2(completedBoard)
     }
 

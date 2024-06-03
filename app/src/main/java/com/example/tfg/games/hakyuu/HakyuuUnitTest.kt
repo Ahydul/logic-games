@@ -268,12 +268,12 @@ class HakyuuUnitTest {
         print(gameType.printStartBoardHTML())
         print(gameType.printCompletedBoardHTML())
 
-        assert(gameType.boardMeetsRules()) { "Failed with seed: ${gameType.seed} " }
-
         println("Test with sizes ${gameType.numRows}x${gameType.numColumns}")
         println("Time: ${endTime - startTime} ms")
         println("Iterations: ${gameType.iterations}")
         println("Score: ${gameType.score.get()}")
+
+        assert(gameType.boardMeetsRules()) { "Failed with seed: ${gameType.seed} " }
     }
 
     private fun loadJanko(boardSize: Int, fileName: String): List<String> {
