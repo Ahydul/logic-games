@@ -135,8 +135,18 @@ abstract class GameType(
         return boardRegions.count { id -> id == regionId }
     }
 
+    private fun boardPopulated2(board: IntArray): Boolean {
+        val res = board.withIndex().filter { it.value == 0 }
+        if (res.isNotEmpty()){
+            println("The next positions were empty ${res.joinToString(separator = ", "){ it.index.toString() }}")
+            return false
+        }
+        return true
+    }
+
     fun boardMeetsRules(): Boolean {
-        return boardMeetsRules(completedBoard) && boardPopulated(completedBoard)
+        print("\n\n")
+        return boardMeetsRules(completedBoard) && boardPopulated2(completedBoard)
     }
 
     protected abstract fun boardMeetsRules(board: IntArray): Boolean

@@ -395,7 +395,7 @@ class Hakyuu(
 
         // Possible values changed
         if (score.get() > 0) return score
-
+/*
         for (region in regions.values) {
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
 
@@ -423,6 +423,8 @@ class Hakyuu(
             score.addScoreObviousPairs(triples.size/3)
 
         }
+
+ */
 
         // Possible values changed
         if (score.get() > 0) {
