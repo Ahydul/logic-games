@@ -32,11 +32,15 @@ abstract class GameType(
         return score.get()
     }
 
-    fun printBoard(): String {
+    fun printCompletedBoard(): String {
         return printBoard(completedBoard)
     }
 
-    fun printBoard(board: IntArray): String {
+    fun printStartBoard(): String {
+        return printBoard(startBoard)
+    }
+
+    private fun printBoard(board: IntArray): String {
         val colorMap = mutableMapOf<Int, String>()
 
         var htmlCode =
