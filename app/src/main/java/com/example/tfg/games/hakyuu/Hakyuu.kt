@@ -8,7 +8,6 @@ import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import com.example.tfg.games.Score
-import kotlin.random.Random
 
 class Hakyuu(
     numColumns: Int,
@@ -30,11 +29,19 @@ class Hakyuu(
     boardRegions = regions
 ) {
     // Helper variables
-    private val remainingPositions: MutableSet<Int> = initRemainingPositions()
+    private val helperRemainingPositions: MutableSet<Int> = initRemainingPositionsHelper()
     private var currentID = 0
 
-    private fun initRemainingPositions():  MutableSet<Int> {
-        return (0..< numPositions()).toMutableSet()
+    private fun initRemainingPositionsHelper():  MutableSet<Int> {
+        return getPositions().toMutableSet()
+    }
+
+    private fun getPositions(): IntRange {
+        return (0..< numPositions())
+    }
+
+    private fun getRemainingPositions(actualValues: IntArray): List<Int> {
+        return getPositions().filter { actualValues[it] == 0 }
     }
 
     override fun createGame(difficulty: Difficulty) {
@@ -49,16 +56,16 @@ class Hakyuu(
         startBoard.indices.forEach {
             //if (getRegionSize(getRegionId(it)) > 1) {
             startBoard[it] = completedBoard[it]
-            remainingPositions.add(it) // Helper variable
+            helperRemainingPositions.add(it) // Helper variable
             //}
         }
 
         var actualScore = 0
 
-        while (!remainingPositions.isEmpty()) {
+        while (!helperRemainingPositions.isEmpty()) {
             // Remove random value from startBoard
             val randomPosition = getRandomPosition()
-            remainingPositions.remove(randomPosition)
+            helperRemainingPositions.remove(randomPosition)
             startBoard[randomPosition] = 0
 
             val tmpBoard = startBoard.clone()
@@ -88,36 +95,31 @@ class Hakyuu(
             else if (board[position] == 0) possibleValues[position].addAll(1.. size)
         }
 
-        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
-        if (remainingPositions.size == 0) return null // Invalid board
-
-        val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
+        val res = populatePositions(possibleValues = possibleValues, actualValues = board)
         if (res != null) res.add(score)
 
         return res
     }
 
-    override fun boardMeetsRules(board: IntArray): Boolean {
+    override fun boardMeetsRulesStr(board: IntArray): String {
         val tmp = mutableMapOf<Int, MutableSet<Int>>()
 
         board.withIndex().filter { (_, value) -> value != 0 }.forEach { (position, value) ->
             val regionID = getRegionId(position)
             if (!checkRule3(value = value, position = position, actualValues = board)) {
-                println("Rule 3 failed: with value:$value, position:$position")
-                return false
+                return "Rule 3 failed: with value:$value, position:$position"
             }
             if (tmp.containsKey(regionID)) {
                 val elementAdded = tmp[regionID]!!.add(value)
                 if (!elementAdded) {
-                    println("Rule 2 failed: with region:${tmp[regionID]}")
-                    return false
+                    return "Rule 2 failed: with region:${tmp[regionID]}"
                 }
             }
             else{
                 tmp[regionID] = mutableSetOf(value)
             }
         }
-        return true
+        return ""
     }
 
     override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
@@ -152,7 +154,7 @@ class Hakyuu(
     }
 
     private fun boardCreated(): Boolean {
-        return remainingPositions.isEmpty()
+        return helperRemainingPositions.isEmpty()
     }
 
     private fun propagateRandomRegion(numPropagations: Int = randomPropagationNumber(), iterations: Int = 1) {
@@ -175,7 +177,7 @@ class Hakyuu(
     }
 
     private fun getRandomPosition(): Int {
-        return remainingPositions.random(random)
+        return helperRemainingPositions.random(random)
     }
 
     private fun randomPropagationNumber(): Int {
@@ -196,7 +198,7 @@ class Hakyuu(
         if (position != null) {
             val regionId = getRegionId(position)
             val region = getRegionPositions(regionId)
-            remainingPositions.addAll(region)
+            helperRemainingPositions.addAll(region)
             deleteRegion(regionId)
         }
     }
@@ -231,7 +233,7 @@ class Hakyuu(
             val position = p.value
             boardRegions[position] = currentID
             completedBoard[position] = values[p.index]
-            remainingPositions.remove(position)
+            helperRemainingPositions.remove(position)
         }
     }
 
@@ -259,7 +261,7 @@ class Hakyuu(
     // If two fields in a row or column contain the same number Z, there must be at least Z fields with different numbers between these two fields.
     private fun checkRule3(value: Int, position: Int, actualValues: IntArray): Boolean {
         val errorNotFound = Direction.entries.all { direction: Direction ->
-            val errorNotFoundInDirection = (1..value)
+            val errorFoundInDirection = (1..value)
                 .mapNotNull { moveValue: Int ->
                     Coordinate.move(
                         direction = direction,
@@ -269,11 +271,11 @@ class Hakyuu(
                         value = moveValue
                     )
                 } //Null values are out of bounds of the board and can be ignored
-                .all { otherPosition: Int ->
-                    actualValues[otherPosition] != value
+                .any { otherPosition: Int ->
+                    actualValues[otherPosition] == value
                 }
 
-            errorNotFoundInDirection
+            !errorFoundInDirection
         }
         return errorNotFound
     }
@@ -294,7 +296,7 @@ class Hakyuu(
     }
 
     private fun tryPropagate(propagation: Int?, region: MutableList<Int>): Boolean {
-        if (propagation != null && remainingPositions.contains(propagation) && !region.contains(propagation)){
+        if (propagation != null && helperRemainingPositions.contains(propagation) && !region.contains(propagation)){
             region.add(propagation)
             return true
         }
@@ -304,38 +306,34 @@ class Hakyuu(
     private fun populatePositions(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int> = mutableListOf()
     ): HakyuuScore? {
         val score = HakyuuScore()
 
-        while (remainingPositions.isNotEmpty())
+        while (getRemainingPositions(actualValues).isNotEmpty())
         {
             // If ended populating return if its a correct board
-            if (boardPopulated(actualValues) && boardMeetsRules(actualValues)) return score
+            //if (boardPopulated(actualValues) && boardMeetsRules(actualValues)) return score
 
             val res = populateValues(
                 possibleValues = possibleValues,
                 actualValues = actualValues,
-                remainingPositions = remainingPositions,
                 foundSPT = foundSPT,
             ) ?: return null // Found contradiction -> can't populate
 
             score.add(res)
         }
-        return null
+        return if (boardMeetsRules(actualValues)) score else null
     }
 
     private fun addValueToActualValues(
         values:  MutableList<Int>,
         actualValues: IntArray,
         position: Int,
-        remainingPositions: MutableSet<Int>,
         score: HakyuuScore
     ) {
         actualValues[position] = values.first()
         values.clear()
-        remainingPositions.remove(position)
         score.addScoreNewValue()
     }
 
@@ -344,52 +342,52 @@ class Hakyuu(
     private fun populateValues(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int>
     ): HakyuuScore? {
         val score = HakyuuScore()
+        val regions = mutableMapOf<Int, MutableList<Int>>()
 
-        val tmpRule2 = mutableMapOf<Int, MutableSet<Int>>()
-        actualValues.withIndex().filter { (_, value) -> value != 0 }.forEach { (position, value) ->
+        //getRemainingPositions(actualValues) instead of getPositions()?????
+        getPositions().forEach { position ->
             val regionID = getRegionId(position)
-            if (tmpRule2.containsKey(regionID)) tmpRule2[regionID]!!.add(value)
-            else tmpRule2[regionID] = mutableSetOf(value)
+            if (regions.containsKey(regionID)) regions[regionID]!!.add(position)
+            else regions[regionID] = mutableListOf(position)
         }
 
-        val regions = mutableMapOf<Int, MutableList<Int>>()
-        for (position in remainingPositions.toList()) {
-            val regionID = getRegionId(position)
-            for (value in possibleValues[position].toList()) {
-                // Check rule 2
-                if (tmpRule2[regionID]?.contains(value) == true) {
-                    score.addScoreRule2()
-                    val values = possibleValues[position]
-                    values.remove(value)
+        val remainingPositions = getRemainingPositions(actualValues)
 
-                    if (values.size == 1) addValueToActualValues(values, actualValues, position, remainingPositions, score)
-                    else if(values.size == 0)  return null
+        for (position in remainingPositions) {
 
-                    continue
-                }
-
-                // Check rule 3
-                if (!checkRule3(value = value, position = position, actualValues = actualValues)) {
-                    score.addScoreRule3()
-                    val values = possibleValues[position]
-                    values.remove(value)
-
-                    if (values.size == 1) addValueToActualValues(values, actualValues, position, remainingPositions, score)
-                    else if(values.size == 0)  return null
-
-                    continue
-                }
+            if (position == 22 || position == 34){
+                val pito = 0
             }
 
-            // Populate region
-            if (regions.containsKey(regionID)) {
-                regions[regionID]!!.add(position)
-            } else {
-                regions[regionID] = mutableListOf(position)
+            val regionID = getRegionId(position)
+            val valuesInRegion = regions[regionID]!!
+                .map { actualValues[it] }
+                .filter { it != 0 }
+            val values = possibleValues[position]
+
+            values.removeIf { value ->
+                var res = false
+                // Check rule 2
+                if (valuesInRegion.contains(value)) {
+                    score.addScoreRule2()
+                    res = true
+                }
+                // Check rule 3
+                else if (!checkRule3(value = value, position = position, actualValues = actualValues)) {
+                    score.addScoreRule3()
+                    res = true
+                }
+                res
+            }
+
+            if (values.size == 1) {
+                addValueToActualValues(values, actualValues, position, score)
+            }
+            else if(values.size == 0) {
+                return null
             }
         }
 
@@ -421,10 +419,7 @@ class Hakyuu(
             triples = cleanObviousTriples(region = region, possibleValues = possibleValues)
             foundSPT.addAll(triples)
             score.addScoreObviousPairs(triples.size/3)
-
         }
-
- */
 
         // Possible values changed
         if (score.get() > 0) {
@@ -433,14 +428,16 @@ class Hakyuu(
                 if (values.size == 1) addValueToActualValues(values, actualValues, position, remainingPositions, score)
                 else if(values.size == 0)  return null
             }
-            return if (boardMeetsRules(actualValues)) score else null
+            return if (boardMeetsRules(actualValues)) score else {
+                null
+            }
         }
+ */
 
         // If the possible values didn't change: Brute force a value
         val bruteForceResult = bruteForceAValue(
             possibleValues = possibleValues,
             actualValues = actualValues,
-            remainingPositions = remainingPositions,
             foundSPT = foundSPT
         )
 
@@ -455,20 +452,23 @@ class Hakyuu(
     private fun bruteForceAValue(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        remainingPositions: MutableSet<Int>,
         foundSPT: MutableList<Int>
     ): HakyuuScore? {
-        if (remainingPositions.size == 1) return null
-
-        val (position, minPossibleValues) = remainingPositions.map { it to possibleValues[it] }.minBy { (_, values) -> values.size }
-        remainingPositions.remove(position)
-        val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
-            val ls = mutableListOf<Int>()
-            ls.addAll(possibleValues[it])
-            ls
-        }
+        val (position, minPossibleValues) = getRemainingPositions(actualValues)
+            .map { it to possibleValues[it] }
+            .minBy { (_, values) -> values.size }
 
         for(chosenValue in minPossibleValues.toList()) {
+            if (position==4){
+                val pito = 0
+            }
+
+            val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
+                val ls = mutableListOf<Int>()
+                ls.addAll(possibleValues[it])
+                ls
+            }
+
             possibleValues[position].removeAt(0)
             newPossibleValues[position].clear()
             val newActualValues = actualValues.clone()
@@ -478,7 +478,6 @@ class Hakyuu(
             val result = populatePositions(
                 possibleValues = newPossibleValues,
                 actualValues = newActualValues,
-                remainingPositions = remainingPositions,
                 foundSPT = newFoundSPT,
             )
 
