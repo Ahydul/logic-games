@@ -39,8 +39,26 @@ abstract class GameType(
     fun printStartBoard(): String {
         return printBoard(startBoard)
     }
+    
+    private fun printBoard(board: IntArray): String {
+        val res = board.withIndex().joinToString(separator = "") { (index, value) ->
+            val column = Coordinate.getColumn(index = index, numColumns = numColumns)
+            if (index == numPositions()-1) "$value"
+            else if (column == numColumns-1) "$value\n"
+            else "$value "
+        }
+        return res
+    }
 
-    fun printBoard(board: IntArray): String {
+    fun printCompletedBoardHTML(): String {
+        return printBoardHTML(completedBoard)
+    }
+
+    fun printStartBoardHTML(): String {
+        return printBoardHTML(startBoard)
+    }
+
+    private fun printBoardHTML(board: IntArray): String {
         val colorMap = mutableMapOf<Int, String>()
 
         var htmlCode =

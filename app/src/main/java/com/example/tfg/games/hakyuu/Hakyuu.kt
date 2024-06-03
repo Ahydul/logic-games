@@ -77,9 +77,6 @@ class Hakyuu(
     }
 
     override fun solveBoard(board: IntArray): Score? {
-        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
-        if (remainingPositions.size == 0) return null // Invalid board
-
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
         val score = HakyuuScore()
         for (position in (0..<numPositions())) {
@@ -90,6 +87,9 @@ class Hakyuu(
             }
             else if (board[position] == 0) possibleValues[position].addAll(1.. size)
         }
+
+        val remainingPositions = (0..< numPositions()).filter { board[it] == 0 }.toMutableSet()
+        if (remainingPositions.size == 0) return null // Invalid board
 
         val res = populatePositions(possibleValues = possibleValues, actualValues = board, remainingPositions = remainingPositions)
         if (res != null) res.add(score)

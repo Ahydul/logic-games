@@ -55,9 +55,13 @@ data class Coordinate(val row: Int, val column: Int) {
 
 
     companion object {
+        private fun getRow(index: Int, numColumns: Int) = index / numColumns
+
+        fun getColumn(index: Int, numColumns: Int) = index % numColumns
+
         fun fromIndex(index: Int, numRows: Int, numColumns: Int): Coordinate {
-            val row = index / numColumns
-            val column = index % numColumns
+            val row = getRow(index, numColumns)
+            val column = getColumn(index, numColumns)
             require(!invalidParameters(row = row, column = column, numRows = numRows, numColumns = numColumns))
             {"index:$index;row:$row;column:$column;numRows:$numRows;numColumns:$numColumns"}
 
