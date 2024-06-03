@@ -312,9 +312,6 @@ class Hakyuu(
 
         while (getRemainingPositions(actualValues).isNotEmpty())
         {
-            // If ended populating return if its a correct board
-            //if (boardPopulated(actualValues) && boardMeetsRules(actualValues)) return score
-
             val res = populateValues(
                 possibleValues = possibleValues,
                 actualValues = actualValues,
@@ -323,7 +320,11 @@ class Hakyuu(
 
             score.add(res)
         }
-        return if (boardMeetsRules(actualValues)) score else null
+        return if (boardMeetsRules(actualValues)) {
+            score
+        } else {
+            null
+        }
     }
 
     private fun addValueToActualValues(
@@ -345,8 +346,8 @@ class Hakyuu(
         foundSPT: MutableList<Int>
     ): HakyuuScore? {
         val score = HakyuuScore()
-        val regions = mutableMapOf<Int, MutableList<Int>>()
 
+        val regions = mutableMapOf<Int, MutableList<Int>>()
         //getRemainingPositions(actualValues) instead of getPositions()?????
         getPositions().forEach { position ->
             val regionID = getRegionId(position)
@@ -354,21 +355,14 @@ class Hakyuu(
             else regions[regionID] = mutableListOf(position)
         }
 
-        val remainingPositions = getRemainingPositions(actualValues)
-
-        for (position in remainingPositions) {
-
-            if (position == 22 || position == 34){
-                val pito = 0
-            }
-
+        for (position in getRemainingPositions(actualValues)) {
             val regionID = getRegionId(position)
+            val possibleValuesInPos = possibleValues[position]
             val valuesInRegion = regions[regionID]!!
                 .map { actualValues[it] }
                 .filter { it != 0 }
-            val values = possibleValues[position]
 
-            values.removeIf { value ->
+            possibleValuesInPos.removeIf { value ->
                 var res = false
                 // Check rule 2
                 if (valuesInRegion.contains(value)) {
@@ -383,17 +377,14 @@ class Hakyuu(
                 res
             }
 
-            if (values.size == 1) {
-                addValueToActualValues(values, actualValues, position, score)
-            }
-            else if(values.size == 0) {
-                return null
-            }
+            if (possibleValuesInPos.size == 1) addValueToActualValues(possibleValuesInPos, actualValues, position, score)
+            else if(possibleValuesInPos.size == 0) return null
         }
 
         // Possible values changed
         if (score.get() > 0) return score
-/*
+
+        //TODO: Check if this part works as expected
         for (region in regions.values) {
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
 
@@ -423,16 +414,15 @@ class Hakyuu(
 
         // Possible values changed
         if (score.get() > 0) {
-            for (position in remainingPositions.toList()) {
+            for (position in getRemainingPositions(actualValues)) {
                 val values = possibleValues[position]
-                if (values.size == 1) addValueToActualValues(values, actualValues, position, remainingPositions, score)
+                if (values.size == 1) addValueToActualValues(values, actualValues, position, score)
                 else if(values.size == 0)  return null
             }
             return if (boardMeetsRules(actualValues)) score else {
                 null
             }
         }
- */
 
         // If the possible values didn't change: Brute force a value
         val bruteForceResult = bruteForceAValue(
@@ -459,20 +449,17 @@ class Hakyuu(
             .minBy { (_, values) -> values.size }
 
         for(chosenValue in minPossibleValues.toList()) {
-            if (position==4){
-                val pito = 0
-            }
-
             val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
                 val ls = mutableListOf<Int>()
                 ls.addAll(possibleValues[it])
                 ls
             }
-
             possibleValues[position].removeAt(0)
             newPossibleValues[position].clear()
+
             val newActualValues = actualValues.clone()
             newActualValues[position] = chosenValue
+
             val newFoundSPT = foundSPT.toMutableList()
 
             val result = populatePositions(
@@ -482,7 +469,7 @@ class Hakyuu(
             )
 
             if (result != null) {
-                //newPossibleValues/newActualValues are invalid now!
+                // newPossibleValues/newActualValues are invalid now!
                 Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
                 Utils.replaceArray(thisArray = actualValues, with = newActualValues)
                 foundSPT.clear()
@@ -522,7 +509,7 @@ class Hakyuu(
 
         val res = mutableListOf<Int>()
         filteredRegions.forEachIndexed { index, position1 ->
-            // Substract possible values: {coord2 values} - {position1 values}
+            // Subtract possible values: {coord2 values} - {position1 values}
             val union = filteredRegions.drop(index + 1).map { position2 ->
                 Pair(position2, possibleValues[position2].union(possibleValues[position1]))
             }
