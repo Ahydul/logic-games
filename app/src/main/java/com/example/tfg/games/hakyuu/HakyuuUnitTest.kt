@@ -302,11 +302,11 @@ class HakyuuUnitTest {
         val boardSize = 6
         val board = 41
 
-        val boardRegions = loadJankoRegions(boardSize)
-        val startBoards = loadJankoBoards(boardSize)
+        val boardRegions = loadJankoRegions(boardSize)[board]
+        val startBoard = loadJankoBoards(boardSize)[board]
 
         val getGameType = {
-            Hakyuu.solveBoard(seed = seed, boardToSolve = startBoards[board], boardRegions = boardRegions[board])
+            Hakyuu.solveBoard(seed = seed, boardToSolve = startBoard, boardRegions = boardRegions)
         }
 
         testHakyuuBoard(getGameType)
