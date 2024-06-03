@@ -268,7 +268,7 @@ class HakyuuUnitTest {
         print(gameType.printStartBoardHTML())
         print(gameType.printCompletedBoardHTML())
 
-        assert(gameType.boardMeetsRules()) { "Failed: ${gameType.seed} " }
+        assert(gameType.boardMeetsRules()) { "Failed with seed: ${gameType.seed} " }
 
         println("Test with sizes ${gameType.numRows}x${gameType.numColumns}")
         println("Time: ${endTime - startTime} ms")
@@ -300,7 +300,7 @@ class HakyuuUnitTest {
     fun testOkJankoBoard() {
         val seed = 5598423764L
         val boardSize = 6
-        val board = 0
+        val board = 41
 
         val boardRegions = loadJankoRegions(boardSize)
         val startBoards = loadJankoBoards(boardSize)
