@@ -135,18 +135,14 @@ abstract class GameType(
         return boardRegions.count { id -> id == regionId }
     }
 
-    private fun boardIsCompleted(board: IntArray): Boolean {
-        return !board.any { it == 0 }
-    }
-
     fun boardMeetsRules(): Boolean {
-        return boardMeetsRules(completedBoard) && boardIsCompleted(completedBoard)
+        return boardMeetsRules(completedBoard) && boardPopulated(completedBoard)
     }
 
     protected abstract fun boardMeetsRules(board: IntArray): Boolean
 
-    protected fun boardPopulated(actualValues: IntArray): Boolean {
-        return actualValues.all { it != 0 }
+    protected fun boardPopulated(board: IntArray): Boolean {
+        return !board.any { it == 0 }
     }
 
     abstract fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int>
