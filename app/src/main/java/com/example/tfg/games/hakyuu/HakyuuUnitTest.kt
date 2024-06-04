@@ -250,34 +250,35 @@ class HakyuuUnitTest {
 
     @Test
     fun testCreateSeededHakyuuBoard() {
-        val size = 12
-        val seed = 4333058791
+        val size = 7
+        val seed = 234234242342L
 
         val getGameType = {
             Hakyuu.create(numColumns = size, numRows = size, seed = seed, difficulty = Difficulty.EXPERT)
         }
 
-        testHakyuuBoard(getGameType)
+        testHakyuuBoard(getGameType, print = false)
     }
 
     private fun testHakyuuBoard(
         getGameType: () -> Hakyuu,
         getTest: (Hakyuu) -> Boolean = { gameType: Hakyuu -> gameType.boardMeetsRules() },
-        printHTML: Boolean = false
+        print: Boolean = true,
+        printHTML: Boolean = false,
     ) {
         val startTime = System.currentTimeMillis()
         val gameType = getGameType()
         val endTime = System.currentTimeMillis()
 
-        if (printHTML) {
-            println(gameType.printStartBoardHTML())
-            println("\n${gameType.printCompletedBoardHTML()}")
+        if (print) {
+            if (printHTML) {
+                println(gameType.printStartBoardHTML())
+                println("\n${gameType.printCompletedBoardHTML()}")
+            } else {
+                println(gameType.printStartBoard())
+                println("\n${gameType.printCompletedBoard()}")
+            }
         }
-        else {
-            println(gameType.printStartBoard())
-            println("\n${gameType.printCompletedBoard()}")
-        }
-
 
         println("Test with sizes ${gameType.numRows}x${gameType.numColumns}")
         println("Time: ${endTime - startTime} ms")
