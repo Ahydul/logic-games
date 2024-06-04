@@ -457,7 +457,7 @@ class Hakyuu(
         }
 
         // If the possible values didn't change: Brute force a value
-        val bruteForceResult = bruteForceAValue(
+        val bruteForceResult = bruteForce(
             possibleValues = possibleValues,
             actualValues = actualValues,
             foundSPT = foundSPT,
@@ -472,7 +472,7 @@ class Hakyuu(
     }
 
     //TODO: brute force must return null if it tries all possiblevalues and 2 returns true => null if not unique board
-    private fun bruteForceAValue(
+    private fun bruteForce(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
         foundSPT: MutableList<Int>,
@@ -484,41 +484,58 @@ class Hakyuu(
             .map { it to possibleValues[it] }
             .minBy { (_, values) -> values.size }
 
+        val results = mutableListOf<BruteForceResult>()
         for(chosenValue in minPossibleValues.toList()) {
-            val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
-                val ls = mutableListOf<Int>()
-                ls.addAll(possibleValues[it])
-                ls
-            }
-            possibleValues[position].removeAt(0)
-            newPossibleValues[position].clear()
-
-            val newActualValues = actualValues.clone()
-            newActualValues[position] = chosenValue
-
-            val newFoundSPT = foundSPT.toMutableList()
-
-            val result = populatePositions(
-                possibleValues = newPossibleValues,
-                actualValues = newActualValues,
-                foundSPT = newFoundSPT,
-                ammountOfBruteForces = ammountOfBruteForces + 1
-            )
-
-            if (result != null) {
-                // newPossibleValues/newActualValues are invalid now!
-                Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
-                Utils.replaceArray(thisArray = actualValues, with = newActualValues)
-                foundSPT.clear()
-                foundSPT.addAll(newFoundSPT)
-
-                result.addScoreBruteForce()
-
-                return result
-            }
+            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues, foundSPT,ammountOfBruteForces)
+            if (result!= null) results.add(result)
         }
-        // If brute force didn't solve the board this is an invalid state
+
+        if (results.size == 1) {
+            val (newPossibleValues, newActualValues, newFoundSPT, score) = results.first()
+            Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
+            Utils.replaceArray(thisArray = actualValues, with = newActualValues)
+            foundSPT.clear()
+            foundSPT.addAll(newFoundSPT)
+
+            score.addScoreBruteForce()
+            return score
+        }
+        //if (results.size > 1) println("Not a unique board")
+
+        //If results > 2 -> Not a unique board
+        //If results == 0 -> Brute force didn't solve the board
         return null
+    }
+
+    private fun bruteForceAValue(
+        chosenValue: Int,
+        position: Int,
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        foundSPT: MutableList<Int>,
+        ammountOfBruteForces: Int
+    ): BruteForceResult? {
+        val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
+            val ls = mutableListOf<Int>()
+            ls.addAll(possibleValues[it])
+            ls
+        }
+        possibleValues[position].removeAt(0)
+        newPossibleValues[position].clear()
+
+        val newActualValues = actualValues.clone()
+        newActualValues[position] = chosenValue
+
+        val newFoundSPT = foundSPT.toMutableList()
+
+        val result = populatePositions(
+            possibleValues = newPossibleValues,
+            actualValues = newActualValues,
+            foundSPT = newFoundSPT,
+            ammountOfBruteForces = ammountOfBruteForces + 1
+        )
+        return if (result == null) null
+            else BruteForceResult(newPossibleValues, newActualValues, newFoundSPT, result)
     }
 
     internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
