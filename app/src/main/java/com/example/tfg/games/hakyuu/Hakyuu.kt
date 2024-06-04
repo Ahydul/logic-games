@@ -52,32 +52,30 @@ class Hakyuu(
         }
 
         // Create startBoard
-
+        val remainingPositions = mutableSetOf<Int>()
         startBoard.indices.forEach {
-            //if (getRegionSize(getRegionId(it)) > 1) {
             startBoard[it] = completedBoard[it]
-            helperRemainingPositions.add(it) // Helper variable
-            //}
+            remainingPositions.add(it) // Helper variable
         }
 
         var actualScore = 0
 
-        while (!helperRemainingPositions.isEmpty()) {
+        while (!remainingPositions.isEmpty()) {
             // Remove random value from startBoard
-            val randomPosition = getRandomPosition()
-            helperRemainingPositions.remove(randomPosition)
+            val randomPosition = remainingPositions.random(random)
+            remainingPositions.remove(randomPosition)
             startBoard[randomPosition] = 0
 
             val tmpBoard = startBoard.clone()
             val res = solveBoard(tmpBoard)
 
-            if (res == null) {
+            if (res == null || res.get() > difficulty.maxScore) {
                 // Add the value back
                 startBoard[randomPosition] = completedBoard[randomPosition]
             }
             else {
                 actualScore = res.get()
-                if (actualScore in difficulty.minScore..difficulty.maxScore) break
+                if (actualScore > difficulty.minScore) break
             }
         }
         score.add(actualScore)
@@ -356,7 +354,6 @@ class Hakyuu(
             if (regions.containsKey(regionID)) regions[regionID]!!.remove(position)
         }
 
-
         val filteredRegions = mutableMapOf<Int, MutableList<Int>>()
         val remainingRegions = mutableMapOf<Int, MutableList<Int>>()
         getPositions().forEach { position ->
@@ -400,31 +397,27 @@ class Hakyuu(
         for (region in remainingRegions.values) {
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
 
+            //TODO: Decide how to implement the score here
+            //Everytime a SPT is found the score is properly changed.
+            //Maybe change it only when the found SPT caused the possible values to change
             val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
-            foundSPT.addAll(singles)
             score.addScoreHiddenSingle(singles.size)
 
             var pairs = cleanHiddenPairs(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
-            foundSPT.addAll(pairs)
             score.addScoreHiddenPairs(pairs.size/2)
 
             var triples = cleanHiddenTriples(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
-            foundSPT.addAll(triples)
             score.addScoreHiddenTriples(triples.size/3)
 
-            region.removeAll(foundSPT)
-
-            pairs = cleanObviousPairs(region = region, possibleValues = possibleValues)
-            foundSPT.addAll(pairs)
+            pairs = cleanObviousPairs(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
             score.addScoreObviousSingle(pairs.size/2)
-            region.removeAll(pairs)
 
-            triples = cleanObviousTriples(region = region, possibleValues = possibleValues)
-            foundSPT.addAll(triples)
+            triples = cleanObviousTriples(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
             score.addScoreObviousPairs(triples.size/3)
         }
 
-        // Possible values changed
+        // Possible values MAY HAVE changed
+        // TODO: maybe do this above in every loop
         if (score.get() > 0) {
             for (position in getRemainingPositions(actualValues)) {
                 val values = possibleValues[position]
@@ -446,6 +439,7 @@ class Hakyuu(
         return bruteForceResult?.let {
             // Brute force was successful
             score.addScoreBruteForce()
+            iterations++
             score
         }
     }
@@ -456,7 +450,6 @@ class Hakyuu(
         actualValues: IntArray,
         foundSPT: MutableList<Int>
     ): HakyuuScore? {
-        iterations++
         val (position, minPossibleValues) = getRemainingPositions(actualValues)
             .map { it to possibleValues[it] }
             .minBy { (_, values) -> values.size }
@@ -495,57 +488,55 @@ class Hakyuu(
         return null
     }
 
-    internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
-        val filteredRegions = region.filter { position -> possibleValues[position].size == 2 }
+    internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
+        val filteredRegions = region.filter { position -> possibleValues[position].size == 2 && !foundSPT.contains(position) }
 
         val res = mutableListOf<Int>()
         filteredRegions.forEachIndexed { index, position1 ->
-            val position2 = filteredRegions.drop(index + 1).find { position2 -> possibleValues[position2] == possibleValues[position1] }
+            val position2 = filteredRegions.drop(index + 1)
+                .find { position2 -> possibleValues[position2] == possibleValues[position1] }
             if (position2 != null) {
                 res.add(position1)
                 res.add(position2)
+                val values = possibleValues[position1]
                 region.filter { position -> position!=position1 && position!=position2 }
-                    .forEach { coordinate ->
-                        possibleValues[coordinate].remove(position1)
-                        possibleValues[coordinate].remove(position2)
-                    }
+                    .forEach { position -> possibleValues[position].removeAll(values) }
             }
         }
+        foundSPT.addAll(res)
         return res
     }
 
-    internal fun cleanObviousTriples(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
+    internal fun cleanObviousTriples(region: List<Int>, possibleValues: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
         // Obvious triples can only have size 2 or 3
-        val filteredRegions = region.filter { coordinate ->
-            (possibleValues[coordinate].size == 2 || possibleValues[coordinate].size == 3)
+        val filteredRegions = region.filter { position ->
+            ((possibleValues[position].size == 2 || possibleValues[position].size == 3) && !foundSPT.contains(position))
         }
 
         val res = mutableListOf<Int>()
         filteredRegions.forEachIndexed { index, position1 ->
-            // Subtract possible values: {coord2 values} - {position1 values}
+            val position1PossibleValues = possibleValues[position1]
+            // Get pairs (position2, possible values of position2 and position1)
             val union = filteredRegions.drop(index + 1).map { position2 ->
-                Pair(position2, possibleValues[position2].union(possibleValues[position1]))
+                Pair(position2, possibleValues[position2].union(position1PossibleValues))
             }
-            // Find two coordinates whose substracted possible values are the same
             val otherTriples = union.filter { other ->
+                // Different position, same content and sizes 3 or 2 means its a triple
                 union.any { it.first != other.first && it.second == other.second && (it.second.size == 3 || it.second.size == 2) }
             }
-            // If it was found add it
+
             if (otherTriples.size == 2) {
                 val position2 = otherTriples[0].first
                 val position3 = otherTriples[1].first
                 res.add(position1)
                 res.add(position2)
                 res.add(position3)
-
+                val values = possibleValues[position1].union(possibleValues[position2]).union(possibleValues[position3])
                 region.filter { position -> position!=position1 && position!=position2 && position!=position3 }
-                    .forEach { coordinate ->
-                        possibleValues[coordinate].remove(position1)
-                        possibleValues[coordinate].remove(position2)
-                        possibleValues[coordinate].remove(position3)
-                    }
+                    .forEach { position -> possibleValues[position].removeAll(values) }
             }
         }
+        foundSPT.addAll(res)
         return res
     }
 
@@ -571,6 +562,7 @@ class Hakyuu(
 
                 res.add(position)
             }
+        foundSPT.addAll(res)
         return res
     }
 
@@ -596,6 +588,7 @@ class Hakyuu(
                 }
             }
         }
+        foundSPT.addAll(res)
         return res
     }
 
@@ -626,6 +619,7 @@ class Hakyuu(
                 }
             }
         }
+        foundSPT.addAll(res)
         return res
     }
 
