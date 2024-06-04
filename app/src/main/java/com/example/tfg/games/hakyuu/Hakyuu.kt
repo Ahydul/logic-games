@@ -9,6 +9,9 @@ import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import com.example.tfg.games.Score
 
+const val TIMEOUT_SOLVER = 500L
+const val TIMEOUT = 500L
+
 class Hakyuu(
     numColumns: Int,
     numRows: Int,
@@ -31,6 +34,8 @@ class Hakyuu(
     // Helper variables
     private val helperRemainingPositions: MutableSet<Int> = initRemainingPositionsHelper()
     private var currentID = 0
+    private var maxAmmountOfBruteForces = 20
+    private var startTime = 0L
 
     private fun initRemainingPositionsHelper():  MutableSet<Int> {
         return getPositions().toMutableSet()
@@ -45,19 +50,32 @@ class Hakyuu(
     }
 
     override fun createGame(difficulty: Difficulty) {
+        do {
+            val noTimedout = createGame2(difficulty)
+        } while (!noTimedout)
+    }
+
+    fun createGame2(difficulty: Difficulty): Boolean {
         // Create completedBoard
 
         while (!boardCreated()) {
+            startTime = System.currentTimeMillis()
             propagateRandomRegion()
+            if (System.currentTimeMillis() - startTime > TIMEOUT) {
+                println("TIMEOUT creating regions")
+                return false
+            }
         }
 
         // Create startBoard
+
         val remainingPositions = mutableSetOf<Int>()
         startBoard.indices.forEach {
             startBoard[it] = completedBoard[it]
             remainingPositions.add(it) // Helper variable
         }
 
+        maxAmmountOfBruteForces = HakyuuScore.getMaxBruteForceValue(difficulty)
         var actualScore: Score? = null
 
         while (!remainingPositions.isEmpty()) {
@@ -67,8 +85,11 @@ class Hakyuu(
             startBoard[randomPosition] = 0
 
             val tmpBoard = startBoard.clone()
+
             val res = solveBoard(tmpBoard)
+
             if (res == null || res.isTooHighForDifficulty(difficulty)) {
+                if (System.currentTimeMillis() - startTime > TIMEOUT_SOLVER) println("TIMEOUT solving board")
                 // Add the value back
                 startBoard[randomPosition] = completedBoard[randomPosition]
             }
@@ -79,9 +100,13 @@ class Hakyuu(
         }
 
         score.add(actualScore)
+
+        return true
     }
 
     override fun solveBoard(board: IntArray): Score? {
+        startTime = System.currentTimeMillis()
+
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
         val score = HakyuuScore()
         for (position in (0..<numPositions())) {
@@ -304,16 +329,20 @@ class Hakyuu(
     private fun populatePositions(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        foundSPT: MutableList<Int> = mutableListOf()
+        foundSPT: MutableList<Int> = mutableListOf(),
+        ammountOfBruteForces: Int = 0
     ): HakyuuScore? {
         val score = HakyuuScore()
 
         while (getRemainingPositions(actualValues).isNotEmpty())
         {
+            if (System.currentTimeMillis() - startTime > TIMEOUT_SOLVER)   return null
+
             val res = populateValues(
                 possibleValues = possibleValues,
                 actualValues = actualValues,
                 foundSPT = foundSPT,
+                ammountOfBruteForces = ammountOfBruteForces
             ) ?: return null // Found contradiction -> can't populate
 
             score.add(res)
@@ -341,7 +370,8 @@ class Hakyuu(
     private fun populateValues(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        foundSPT: MutableList<Int>
+        foundSPT: MutableList<Int>,
+        ammountOfBruteForces: Int
     ): HakyuuScore? {
         val score = HakyuuScore()
 
@@ -430,12 +460,13 @@ class Hakyuu(
         val bruteForceResult = bruteForceAValue(
             possibleValues = possibleValues,
             actualValues = actualValues,
-            foundSPT = foundSPT
+            foundSPT = foundSPT,
+            ammountOfBruteForces = ammountOfBruteForces
         )
 
         return bruteForceResult?.let {
             // Brute force was successful
-            score.addScoreBruteForce()
+            score.add(bruteForceResult)
             score
         }
     }
@@ -444,8 +475,11 @@ class Hakyuu(
     private fun bruteForceAValue(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        foundSPT: MutableList<Int>
+        foundSPT: MutableList<Int>,
+        ammountOfBruteForces: Int
     ): HakyuuScore? {
+        if (ammountOfBruteForces > maxAmmountOfBruteForces) return null
+
         val (position, minPossibleValues) = getRemainingPositions(actualValues)
             .map { it to possibleValues[it] }
             .minBy { (_, values) -> values.size }
@@ -468,6 +502,7 @@ class Hakyuu(
                 possibleValues = newPossibleValues,
                 actualValues = newActualValues,
                 foundSPT = newFoundSPT,
+                ammountOfBruteForces = ammountOfBruteForces + 1
             )
 
             if (result != null) {
@@ -476,6 +511,8 @@ class Hakyuu(
                 Utils.replaceArray(thisArray = actualValues, with = newActualValues)
                 foundSPT.clear()
                 foundSPT.addAll(newFoundSPT)
+
+                result.addScoreBruteForce()
 
                 return result
             }

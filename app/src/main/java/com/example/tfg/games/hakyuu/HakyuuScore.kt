@@ -151,5 +151,13 @@ class HakyuuScore(
         const val MIN_MASTER = 1900
         const val MAX_MASTER = 10000
         const val MAX_MASTER_BRUTE_FORCES = 3
+
+        fun getMaxBruteForceValue(difficulty: Difficulty): Int {
+            return when(difficulty) {
+                Difficulty.EXPERT -> MAX_EXPERT_BRUTE_FORCES
+                Difficulty.MASTER -> MAX_MASTER_BRUTE_FORCES
+                else -> 0
+            }
+        }
     }
 }
