@@ -397,9 +397,7 @@ class Hakyuu(
         for (region in remainingRegions.values) {
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
 
-            //TODO: Decide how to implement the score here
-            //Everytime a SPT is found the score is properly changed.
-            //Maybe change it only when the found SPT caused the possible values to change
+            //Everytime a SPT is found AND the possible values change the score is properly changed.
             val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
             score.addScoreHiddenSingle(singles.size)
 
@@ -416,8 +414,7 @@ class Hakyuu(
             score.addScoreObviousPairs(triples.size/3)
         }
 
-        // Possible values MAY HAVE changed
-        // TODO: maybe do this above in every loop
+        // Possible values changed
         if (score.get() > 0) {
             for (position in getRemainingPositions(actualValues)) {
                 val values = possibleValues[position]
@@ -496,14 +493,22 @@ class Hakyuu(
             val position2 = filteredRegions.drop(index + 1)
                 .find { position2 -> possibleValues[position2] == possibleValues[position1] }
             if (position2 != null) {
-                res.add(position1)
-                res.add(position2)
+                foundSPT.add(position1)
+                foundSPT.add(position2)
+
+                var possibleValuesChanged = false
                 val values = possibleValues[position1]
                 region.filter { position -> position!=position1 && position!=position2 }
-                    .forEach { position -> possibleValues[position].removeAll(values) }
+                    .forEach { position ->
+                        possibleValuesChanged = possibleValuesChanged || possibleValues[position].removeAll(values)
+                    }
+
+                if (possibleValuesChanged){
+                    res.add(position1)
+                    res.add(position2)
+                }
             }
         }
-        foundSPT.addAll(res)
         return res
     }
 
@@ -528,15 +533,25 @@ class Hakyuu(
             if (otherTriples.size == 2) {
                 val position2 = otherTriples[0].first
                 val position3 = otherTriples[1].first
-                res.add(position1)
-                res.add(position2)
-                res.add(position3)
+
+                foundSPT.add(position1)
+                foundSPT.add(position2)
+                foundSPT.add(position3)
+
+                var possibleValuesChanged = false
                 val values = possibleValues[position1].union(possibleValues[position2]).union(possibleValues[position3])
                 region.filter { position -> position!=position1 && position!=position2 && position!=position3 }
-                    .forEach { position -> possibleValues[position].removeAll(values) }
+                    .forEach { position ->
+                        possibleValuesChanged = possibleValuesChanged || possibleValues[position].removeAll(values)
+                    }
+
+                if (possibleValuesChanged){
+                    res.add(position1)
+                    res.add(position2)
+                    res.add(position3)
+                }
             }
         }
-        foundSPT.addAll(res)
         return res
     }
 
@@ -556,13 +571,10 @@ class Hakyuu(
             .forEach { (value, positions) ->
                 // Remove all the possible values but the hidden single
                 val position = positions.first()
-                val positionPossibleValues = possibleValues[position]
-                positionPossibleValues.clear()
-                positionPossibleValues.add(value + 1)
-
-                res.add(position)
+                val possibleValuesChanged = possibleValues[position].removeIf { it != value + 1 }
+                if (possibleValuesChanged) res.add(position)
+                foundSPT.add(position)
             }
-        foundSPT.addAll(res)
         return res
     }
 
@@ -581,14 +593,15 @@ class Hakyuu(
 
             if (otherPair != null) { //index1, index2 are pairs
                 val index2 = otherPair.index
-                // Remove from each coordinate the possible values that are not the hidden pairs
-                value.forEach {coordinate ->
-                    possibleValues[coordinate].removeIf { it != index1+1 && it != index2+1 }
-                    res.add(coordinate)
+                // Remove from each position the possible values that are not the hidden pairs
+                value.forEach {position ->
+                    val possibleValuesChanged = possibleValues[position]
+                        .removeIf { it != index1+1 && it != index2+1 }
+                    if (possibleValuesChanged) res.add(position)
+                    foundSPT.add(position)
                 }
             }
         }
-        foundSPT.addAll(res)
         return res
     }
 
@@ -612,14 +625,15 @@ class Hakyuu(
             if (otherTriples.size == 2) { //index1, index2 and index3 are triples
                 val index2 = otherTriples[0].index
                 val index3 = otherTriples[1].index
-                // Remove from each coordinate the possible values that are not the hidden triples
-                otherTriples[0].value.forEach { coordinate ->
-                    possibleValues[coordinate].removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
-                    res.add(coordinate)
+                // Remove from each position the possible values that are not the hidden triples
+                otherTriples[0].value.forEach { position ->
+                    val possibleValuesChanged = possibleValues[position]
+                        .removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
+                    if (possibleValuesChanged) res.add(position)
+                    foundSPT.add(position)
                 }
             }
         }
-        foundSPT.addAll(res)
         return res
     }
 
