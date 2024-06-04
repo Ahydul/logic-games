@@ -31,7 +31,7 @@ class GameFactory(private val gameDao: GameDao) {
 
         return create(
             gameType = gameType,
-            difficulty = difficulty,
+            difficulty = gameType.score.getDifficulty(),
             numColumns = numColumns,
             numRows = numRows
         )
