@@ -58,7 +58,7 @@ class Hakyuu(
             remainingPositions.add(it) // Helper variable
         }
 
-        var actualScore = 0
+        var actualScore: Score? = null
 
         while (!remainingPositions.isEmpty()) {
             // Remove random value from startBoard
@@ -68,16 +68,16 @@ class Hakyuu(
 
             val tmpBoard = startBoard.clone()
             val res = solveBoard(tmpBoard)
-
-            if (res == null || res.get() > difficulty.maxScore) {
+            if (res == null || res.isTooHighForDifficulty(difficulty)) {
                 // Add the value back
                 startBoard[randomPosition] = completedBoard[randomPosition]
             }
-            else {
-                actualScore = res.get()
-                if (actualScore > difficulty.minScore) break
+            else if (!res.isTooHighForDifficulty(difficulty)){
+                actualScore = res
+                if (res.isTooLowForDifficulty(difficulty)) continue
             }
         }
+
         score.add(actualScore)
     }
 
@@ -86,7 +86,7 @@ class Hakyuu(
         val score = HakyuuScore()
         for (position in (0..<numPositions())) {
             val size = getRegionSize(getRegionId(position))
-            if (size == 1) {
+            if (size == 1 && board[position] == 0) {
                 board[position] = 1
                 score.addScoreNewValue()
             }
@@ -408,10 +408,10 @@ class Hakyuu(
             score.addScoreHiddenTriples(triples.size/3)
 
             pairs = cleanObviousPairs(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
-            score.addScoreObviousSingle(pairs.size/2)
+            score.addScoreObviousPairs(pairs.size/2)
 
             triples = cleanObviousTriples(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
-            score.addScoreObviousPairs(triples.size/3)
+            score.addScoreObviousTriples(triples.size/3)
         }
 
         // Possible values changed
@@ -436,7 +436,6 @@ class Hakyuu(
         return bruteForceResult?.let {
             // Brute force was successful
             score.addScoreBruteForce()
-            iterations++
             score
         }
     }
@@ -688,7 +687,7 @@ class Hakyuu(
             )
 
             val score = hakyuu.solveBoard(hakyuu.completedBoard)
-            hakyuu.score.add(score?.get()?:0)
+            hakyuu.score.add(score)
 
             return hakyuu
         }

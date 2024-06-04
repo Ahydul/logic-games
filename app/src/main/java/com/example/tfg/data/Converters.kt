@@ -5,9 +5,12 @@ import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.GameType
 import com.example.tfg.games.GameTypeDeserializer
 import com.example.tfg.games.Score
+import com.example.tfg.games.ScoreDeserializer
+import com.example.tfg.games.ScoreSerializer
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -81,17 +84,24 @@ object Converters {
 
 
     // Score converters
+/*
+    @TypeConverter
+    fun fromScore(score: Score): String {
+        return score.serialize()
+    }
+ */
 
     @TypeConverter
-    fun fromScore(score: Score?): Int? {
-        return score?.get()
+    fun toScore(value: JsonElement): Score {
+        return value.let {
+            toScoreGson().fromJson(it, Score::class.java)
+        }
     }
 
-    @TypeConverter
-    fun toScore(score: Int?): Score? {
-        return score?.let {
-            Score(it)
-        }
+    private fun toScoreGson(): Gson {
+        return GsonBuilder()
+            .registerTypeAdapter(Score::class.java, ScoreDeserializer())
+            .create()
     }
 
 
@@ -99,16 +109,22 @@ object Converters {
 
     @TypeConverter
     fun fromGameType(gameType: GameType): String {
-        return Gson().toJson(gameType)
+        return fromGameTypeGson().toJson(gameType)
+    }
+
+    private fun fromGameTypeGson(): Gson {
+        return GsonBuilder()
+            .registerTypeAdapter(Score::class.java, ScoreSerializer())
+            .create()
     }
 
     @TypeConverter
     fun toGameType(value: String): GameType {
         val type = object : TypeToken<GameType>() {}.type
-        return customGson().fromJson(value, type)
+        return toGameTypeGson().fromJson(value, type)
     }
 
-    private fun customGson(): Gson {
+    private fun toGameTypeGson(): Gson {
         return GsonBuilder()
             .registerTypeAdapter(GameType::class.java, GameTypeDeserializer())
             .create()
