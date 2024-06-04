@@ -136,20 +136,20 @@ class HakyuuScore(
         const val MAX_BEGINNER = 100
 
         const val MIN_EASY = 100
-        const val MAX_EASY = 250
+        const val MAX_EASY = 300
 
-        const val MIN_MEDIUM = 250
+        const val MIN_MEDIUM = 300
         const val MAX_MEDIUM = 600
 
         const val MIN_HARD = 600
-        const val MAX_HARD = 1200
+        const val MAX_HARD = 1400
 
         const val MIN_EXPERT = 1100
         const val MAX_EXPERT = 3000
         const val MAX_EXPERT_BRUTE_FORCES = 1
 
         const val MIN_MASTER = 1900
-        const val MAX_MASTER = 10000
+        const val MAX_MASTER = 5000
         const val MAX_MASTER_BRUTE_FORCES = 3
 
         fun getMaxBruteForceValue(difficulty: Difficulty): Int {
