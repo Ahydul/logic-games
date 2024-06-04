@@ -1,22 +1,14 @@
 package com.example.tfg.games
 
-open class Score(
-    protected var score: Int = 0
-) {
+import com.example.tfg.common.Difficulty
+import com.google.gson.JsonElement
 
-    fun get(): Int {
-        return this.score
-    }
-
-    fun reset() {
-        score = 0
-    }
-
-    fun add(num: Int) {
-        score += num
-    }
-
-    fun add(s: Score) {
-        score += s.get()
-    }
+abstract class Score {
+    abstract fun get(): Int
+    abstract fun reset()
+    abstract fun add(s: Score?)
+    abstract fun isTooLowForDifficulty(difficulty: Difficulty): Boolean
+    abstract fun isTooHighForDifficulty(difficulty: Difficulty): Boolean
+    abstract fun getDifficulty(): Difficulty
+    abstract fun serialize(): JsonElement
 }

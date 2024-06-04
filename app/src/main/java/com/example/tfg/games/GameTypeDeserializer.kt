@@ -1,5 +1,6 @@
 package com.example.tfg.games
 
+import com.example.tfg.data.Converters
 import com.example.tfg.games.hakyuu.Hakyuu
 import com.example.tfg.games.hakyuu.HakyuuScore
 import com.google.gson.JsonDeserializationContext
@@ -18,7 +19,7 @@ class GameTypeDeserializer : JsonDeserializer<GameType> {
         val numColumns = jsonObject.get("numColumns").asInt
         val numRows = jsonObject.get("numRows").asInt
         val seed = jsonObject.get("seed").asLong
-        val score = jsonObject.get("score").asJsonObject["score"].asInt
+        val score = Converters.toScore(jsonObject.get("score"))
         val startBoard = jsonObject.get("startBoard").asJsonArray.map { it.asInt }.toIntArray()
         val completedBoard = jsonObject.get("completedBoard").asJsonArray.map { it.asInt }.toIntArray()
         val boardRegions = jsonObject.get("boardRegions").asJsonArray.map { it.asInt }.toIntArray()
@@ -29,7 +30,7 @@ class GameTypeDeserializer : JsonDeserializer<GameType> {
                     numColumns = numColumns,
                     numRows = numRows,
                     seed = seed,
-                    score = HakyuuScore(score),
+                    score = score as HakyuuScore,
                     startBoard = startBoard,
                     completedBoard = completedBoard,
                     regions = boardRegions

@@ -3,13 +3,13 @@ package com.example.tfg.common
 import android.content.Context
 import com.example.tfg.R
 
-enum class Difficulty(val minScore: Int, val maxScore: Int) { //TODO: Decide if to ditch maxScore or not
-    BEGINNER(16, 32),
-    EASY(32, 70),
-    MEDIUM(64, 256),
-    HARD(256, 512),
-    EXPERT(512, 2048),
-    MASTER(2048, 10000);
+enum class Difficulty { //TODO: Decide if to ditch maxScore or not
+    BEGINNER,
+    EASY,
+    MEDIUM,
+    HARD,
+    EXPERT,
+    MASTER;
 
     fun toString(context: Context): String {
         return when(this){
