@@ -310,8 +310,8 @@ class HakyuuUnitTest {
     @Test
     fun testOkJankoBoard() {
         val seed = 5598423764L
-        val boardSize = 7
-        val boardNumber = 42
+        val boardSize = 6
+        val boardNumber = 44
 
         val boardRegions = loadJankoRegions(boardSize)[boardNumber - 1]
         val startBoard = loadJankoBoards(boardSize)[boardNumber - 1]
@@ -325,10 +325,10 @@ class HakyuuUnitTest {
             val board = gameType.printCompletedBoard()
             val correctBoard = board == solution
             val numBruteForces = (gameType.score as HakyuuScore).getBruteForceValue()
-            val oneBruteForce = numBruteForces == 1
+            val zeroBruteForce = numBruteForces == 0
 
             if (!correctBoard) println("Incorrect board:\n$board")
-            if (!oneBruteForce) println("Took more than one brute force: $numBruteForces")
+            if (!zeroBruteForce) println("Took one or more brute forces: $numBruteForces")
 
             correctBoard //&& oneIteration
         }
@@ -357,10 +357,10 @@ class HakyuuUnitTest {
             val board = gameType.printCompletedBoard()
             val correctBoard = board == solutions[iteration]
             val numBruteForces = (gameType.score as HakyuuScore).getBruteForceValue()
-            val oneBruteForce = numBruteForces == 1
+            val zeroBruteForce = numBruteForces == 0
 
             if (!correctBoard) println("Incorrect board:\n$board")
-            if (!oneBruteForce) println("Took more than one brute force: $numBruteForces")
+            if (!zeroBruteForce) println("Took one or more brute forces: $numBruteForces")
 
             correctBoard //&& oneIteration
         }

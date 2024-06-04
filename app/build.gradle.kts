@@ -90,6 +90,7 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("com.google.guava:guava:33.0.0-jre")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // Use the latest version available
 
     // Java to Json converters
     implementation("com.google.code.gson:gson:2.8.8")
