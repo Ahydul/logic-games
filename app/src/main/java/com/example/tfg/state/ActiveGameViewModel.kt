@@ -315,8 +315,10 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
     fun timerPaused() = timer.paused.value
 
     fun pauseGame() {
-        timer.pauseTimer()
-        updateTimer()
+        if (!timerPaused()) {
+            timer.pauseTimer()
+            updateTimer()
+        }
     }
 
     fun resumeGame() {
