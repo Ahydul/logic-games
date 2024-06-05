@@ -471,7 +471,6 @@ class Hakyuu(
         }
     }
 
-    //TODO: brute force must return null if it tries all possiblevalues and 2 returns true => null if not unique board
     private fun bruteForce(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
