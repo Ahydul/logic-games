@@ -145,6 +145,13 @@ fun TopActionRow(
             modifier = actionModifier
         )
          */
+        CustomIconButton( //States
+            onClick = {  },
+            imageVector = ImageVector.vectorResource(id = R.drawable.notebook),
+            contentDescription = stringResource(id = R.string.change_gamestate),
+            modifier = actionModifier,
+            enabled = !viewModel.timerPaused()
+        )
         CustomIconButton( //Paint
             onClick = { viewModel.setIsPaint() },
             imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),

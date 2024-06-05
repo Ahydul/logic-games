@@ -2,6 +2,7 @@
     <string name="app_name">TFG</string>
     <string name="title_activity_active_game_view">ActiveGameView</string>
     <string name="brush_action">Paint cells</string>
+    <string name="change_gamestate">Change game state</string>
     <string name="erase_action">Erase</string>
     <string name="edit_action">Edit</string>
     <string name="undo_action">Undo</string>
@@ -30,6 +31,9 @@
     <string name="errors">Errors</string>
     <string name="clues">Clues</string>
     <string name="time">Time</string>
+    <string name="pause_game">Pause game</string>
+    <string name="go_back">Go back</string>
+
     <string name="title_activity_test">Test</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

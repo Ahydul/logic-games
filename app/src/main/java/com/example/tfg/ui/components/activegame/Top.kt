@@ -32,7 +32,7 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
             CustomIconButton(
                 onClick = { Utils.startHomeActivity(context)},
                 imageVector = ImageVector.vectorResource(id = R.drawable.back_arrow),
-                contentDescription = "Go back"
+                contentDescription = stringResource(id = R.string.go_back)
             )
         }
 
@@ -56,7 +56,7 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
             CustomIconButton(
                 onClick = { viewModel.pauseGame() },
                 imageVector = ImageVector.vectorResource(R.drawable.pause),
-                contentDescription = "Pause game",
+                contentDescription = stringResource(id = R.string.pause_game),
                 enabled = !viewModel.timerPaused()
             )
         }
