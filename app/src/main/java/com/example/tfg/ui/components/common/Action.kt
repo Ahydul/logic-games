@@ -51,10 +51,12 @@ fun CustomIconButton(
     onClick: () -> Unit,
     imageVector: ImageVector,
     contentDescription: String?,
-    iconColor: Color = colorResource(id = R.color.primary_color)
+    iconColor: Color = colorResource(id = R.color.primary_color),
+    enabled: Boolean = true
 ) {
     IconButton(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
     ) {
         Icon(

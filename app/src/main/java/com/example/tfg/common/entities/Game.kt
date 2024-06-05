@@ -15,7 +15,8 @@ data class Game(
     val startDate: LocalDateTime = LocalDateTime.now(),
     val endDate: LocalDateTime? = null,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
-    var numClues: Int = 0
+    var numClues: Int = 0,
+    var timer: Int = 0
 ) {
 
     companion object {

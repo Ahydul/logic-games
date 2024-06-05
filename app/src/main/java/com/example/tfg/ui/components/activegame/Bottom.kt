@@ -85,7 +85,8 @@ fun BottomActionRow(
                     imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
                     iconColor = Color(color),
                     contentDescription = "Color $index",
-                    modifier = modifierValueButtons
+                    modifier = modifierValueButtons,
+                    enabled = !viewModel.timerPaused()
                 )
             }
         }
@@ -101,7 +102,8 @@ fun BottomActionRow(
                     imageVector = icon,
                     iconColor = iconColor,
                     contentDescription = null,
-                    modifier = modifierValueButtons
+                    modifier = modifierValueButtons,
+                    enabled = !viewModel.timerPaused()
                 )
             }
         }
@@ -147,31 +149,36 @@ fun TopActionRow(
             onClick = { viewModel.setIsPaint() },
             imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),
             contentDescription = stringResource(id = R.string.brush_action),
-            modifier = actionModifier
+            modifier = actionModifier,
+            enabled = !viewModel.timerPaused()
         )
         CustomIconButton( //Erase
             onClick = { viewModel.eraseAction() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
             contentDescription = stringResource(id = R.string.erase_action),
-            modifier = actionModifier
+            modifier = actionModifier,
+            enabled = !viewModel.timerPaused()
         )
         CustomIconButton( //Note
             onClick = { viewModel.setIsNote() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
-            modifier = actionModifier
+            modifier = actionModifier,
+            enabled = !viewModel.timerPaused()
         )
         CustomIconButton( //Undo
             onClick = { viewModel.undoMove() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
-            modifier = actionModifier
+            modifier = actionModifier,
+            enabled = !viewModel.timerPaused()
         )
         CustomIconButton( //Redo
             onClick = { viewModel.redoMove() },
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
-            modifier = actionModifier
+            modifier = actionModifier,
+            enabled = !viewModel.timerPaused()
         )
     }
 }

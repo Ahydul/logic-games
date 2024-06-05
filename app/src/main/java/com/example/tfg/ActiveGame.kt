@@ -28,6 +28,7 @@ import com.example.tfg.ui.theme.TFGTheme
 import kotlinx.coroutines.runBlocking
 
 class ActiveGameView : ComponentActivity() {
+    private var viewModel: ActiveGameViewModel? = null
 
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +51,8 @@ class ActiveGameView : ComponentActivity() {
         }
 
         val gameInstance = GameInstance.create(gameId, dao)
-        val viewModel: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao) }
+        val vm: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao) }
+        viewModel = vm
 
         setContent {
             TFGTheme {
@@ -61,7 +63,7 @@ class ActiveGameView : ComponentActivity() {
                 ) {
                     TFGTheme {
                         ActiveGameScreen(
-                            viewModel = viewModel,
+                            viewModel = vm,
                             modifier = Modifier
                                 .background(colorResource(id = R.color.primary_background))
                                 .fillMaxWidth()
@@ -70,6 +72,16 @@ class ActiveGameView : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (!hasFocus) viewModel?.pauseGame()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel?.pauseGame()
     }
 }
 

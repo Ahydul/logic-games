@@ -6,12 +6,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tfg.common.GameInstance
+import com.example.tfg.common.utils.Timer
 import com.example.tfg.common.entities.Action
 import com.example.tfg.common.entities.Board
 import com.example.tfg.common.entities.Cell
@@ -30,12 +29,12 @@ import java.util.SortedMap
 private const val ERRORCELLBACKGROUNDCOLOR = -65536
 
 class ActiveGameViewModel(private val gameInstance: GameInstance, private val gameDao: GameDao) : ViewModel() {
-
     private var actualGameStatePointer = 0
     private val numErrors: MutableState<Int>
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
+    private val timer = Timer.create(getGame().timer, viewModelScope)
 
     init {
         numErrors = mutableStateOf(getGame().errors.size)
@@ -45,6 +44,11 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         return getGameStateIds()[actualGameStatePointer]
     }
 
+    public override fun onCleared() {
+        super.onCleared()
+        // Stops the timer job and save game to DB
+        pauseGame()
+    }
 
 //  GameDao functionality
 
@@ -250,10 +254,31 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         }
         removeSelections()
     }
-
 /*
-    Cell fuctions
+    Timer
  */
+    fun getTime() = Timer.formatTime(timer.passedSeconds.value)
+
+    fun timerPaused() = timer.paused.value
+
+    fun pauseGame() {
+        timer.pauseTimer()
+        updateTimer()
+    }
+
+    fun resumeGame() {
+        timer.startTimer(viewModelScope)
+    }
+
+    private fun updateTimer() {
+        gameInstance.game.timer = timer.passedSeconds.value
+        updateGameToDb()
+    }
+
+
+    /*
+        Cell fuctions
+     */
 
     // Getters
     private fun getCell(index: Int): Cell = getCells()[index].value

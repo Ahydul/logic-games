@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
@@ -30,9 +29,6 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
         val context = LocalContext.current
 
         Row {
-            Text(
-                text = ""
-            )
             CustomIconButton(
                 onClick = { Utils.startHomeActivity(context)},
                 imageVector = ImageVector.vectorResource(id = R.drawable.back_arrow),
@@ -55,7 +51,14 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
             CustomText(mainText = cluesText, secondaryText = "${viewModel.getNumClues()}", textColor = colorResource(R.color.primary_color))
 
             val timeText = stringResource(id = R.string.time)
-            CustomText(mainText = timeText, secondaryText = "00:42", textColor = colorResource(R.color.primary_color))
+            CustomText(mainText = timeText, secondaryText = viewModel.getTime(), textColor = colorResource(R.color.primary_color))
+
+            CustomIconButton(
+                onClick = { viewModel.pauseGame() },
+                imageVector = ImageVector.vectorResource(R.drawable.pause),
+                contentDescription = "Pause game",
+                enabled = !viewModel.timerPaused()
+            )
         }
     }
 
