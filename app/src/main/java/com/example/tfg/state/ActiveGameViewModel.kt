@@ -27,12 +27,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.SortedMap
+private const val ERRORCELLBACKGROUNDCOLOR = -65536
 
 class ActiveGameViewModel(private val gameInstance: GameInstance, private val gameDao: GameDao) : ViewModel() {
 
     private var actualGameStatePointer = 0
     private val numErrors: MutableState<Int>
-    private val ERRORCELLBACKGROUNDCOLOR = Color.Red.toArgb()
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
@@ -490,8 +490,11 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         removeSelections()
         moveWithActions.actions.forEach {
             val newCell = it.newCell
+            val previousCell = it.previousCell
             val coordinate = Coordinate.fromIndex(it.cellIndex, getNumRows(), getNumColumns())
-            addSelection(coordinate)
+            //We select unless its a color error and its not the cell actively changed
+            if (newCell.value != previousCell.value || newCell.backgroundColor != ERRORCELLBACKGROUNDCOLOR)
+                addSelection(coordinate)
             setCell(coordinate = coordinate, newCell = newCell)
         }
     }
@@ -499,9 +502,13 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
     private fun unapplyMove(moveWithActions: MoveWithActions) {
         removeSelections()
         moveWithActions.actions.forEach {
+            val newCell = it.newCell
             val previousCell = it.previousCell
             val coordinate = Coordinate.fromIndex(it.cellIndex, getNumRows(), getNumColumns())
-            addSelection(coordinate)
+            //We select unless its a color error and its not the cell actively changed
+            if (previousCell.value != newCell.value || newCell.backgroundColor != ERRORCELLBACKGROUNDCOLOR) {
+                addSelection(coordinate)
+            }
             setCell(coordinate = coordinate, newCell = previousCell)
         }
     }
