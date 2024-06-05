@@ -2,8 +2,14 @@ package com.example.tfg.common.utils
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.example.tfg.ActiveGameView
 import com.example.tfg.MainActivity
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+
 
 abstract class Utils {
     companion object {
@@ -94,5 +100,34 @@ abstract class Utils {
             return ls.map { filterIndices(it, indices) }
         }
 
+        fun saveBitmapToFile(
+            filesDir: File,
+            bitmap: Bitmap,
+            fileName: String,
+            directory: String
+        ): String? {
+            val directory = File(filesDir, "snapshots/$directory")
+            if (!directory.exists()) directory.mkdirs()
+
+            val file = File(directory, fileName)
+            try {
+                FileOutputStream(file).use { fos ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                    return file.absolutePath
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+                return null
+            }
+        }
+
+        fun getBitmapFromFile(filePath: String?): Bitmap? {
+            return BitmapFactory.decodeFile(filePath)
+        }
+
+        fun deleteFile(filePath: String?): Boolean {
+            val file = filePath?.let { File(it) }
+            return file?.delete() ?: false
+        }
     }
 }

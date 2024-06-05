@@ -14,6 +14,7 @@ import com.example.tfg.common.entities.Game
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.Move
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
+import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
 
 @Dao
@@ -38,6 +39,10 @@ interface GameDao {
     suspend fun insertGameState(gameState: GameState)
     @Update
     suspend fun updateGameState(gameState: GameState)
+    @Delete
+    suspend fun deleteGameState(gameState: GameState)
+    @Query("DELETE FROM GameState WHERE gameStateId = :gameStateId")
+    suspend fun deleteGameStateById(gameStateId: Long)
     @Query("SELECT * FROM GameState WHERE gameStateId = :gameStateId")
     suspend fun getGameStateById(gameStateId: Long): GameState
     @Query("SELECT gameStateId FROM GameState WHERE gameId = :gameId")
@@ -87,4 +92,12 @@ interface GameDao {
         or name = 'Board'
     """)
     suspend fun deletePrimaryKeys()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGameStateSnapshot(snapshot: GameStateSnapshot)
+    @Query("SELECT * FROM GameStateSnapshot WHERE gameStateId = :gameStateId")
+    suspend fun getGameStateSnapshotByGameStateId(gameStateId: Long): GameStateSnapshot?
+    @Query("SELECT * FROM GameStateSnapshot")
+    suspend fun getGameStateSnapshots(): List<GameStateSnapshot>
+
 }

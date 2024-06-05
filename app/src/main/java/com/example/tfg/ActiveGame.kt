@@ -52,6 +52,7 @@ class ActiveGameView : ComponentActivity() {
 
         val gameInstance = GameInstance.create(gameId, dao)
         val vm: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao) }
+        vm.setFilesDirectory(applicationContext.filesDir)
         viewModel = vm
 
         setContent {
@@ -76,7 +77,10 @@ class ActiveGameView : ComponentActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (!hasFocus) viewModel?.pauseGame()
+        if (!hasFocus) {
+            viewModel?.takeSnapshot()
+            viewModel?.pauseGame()
+        }
     }
 
     override fun onPause() {

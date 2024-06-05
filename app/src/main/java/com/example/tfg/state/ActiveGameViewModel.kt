@@ -1,11 +1,13 @@
 package com.example.tfg.state
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,13 +20,17 @@ import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.Move
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
+import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.common.utils.Quadruple
+import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.GameDao
 import com.example.tfg.games.GameValue
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.io.File
 import java.util.SortedMap
 private const val ERRORCELLBACKGROUNDCOLOR = -65536
 
@@ -35,6 +41,35 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
     private val timer = Timer.create(getGame().timer, viewModelScope)
+
+    private var snapshot: (() -> Bitmap)? = null
+    private var filesDirectory: File? = null
+
+    fun setSnapshot(snapshot: (() -> Bitmap)?) {
+        this.snapshot = snapshot
+    }
+
+    fun setFilesDirectory(filesDirectory: File) {
+        this.filesDirectory = filesDirectory
+    }
+
+    fun takeSnapshot() {
+        if (snapshot != null && filesDirectory != null) {
+            Log.d("snapshot", "Taking snapshot")
+            MainScope().launch {
+                val bitmapFilePath = Utils.saveBitmapToFile(
+                    bitmap = snapshot!!.invoke(),
+                    filesDir = filesDirectory!!,
+                    fileName = "gameStateId-${getActualGameStateId()}",
+                    directory = getGameEnum().name.lowercase()
+                )
+                if (bitmapFilePath != null) {
+                    val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
+                    insertGameStateSnapshotToDB(gameStateSnapshot)
+                }
+            }
+        }
+    }
 
     init {
         numErrors = mutableStateOf(getGame().errors.size)
@@ -52,6 +87,25 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
 
 //  GameDao functionality
 
+    private fun insertGameStateSnapshotToDB(snapshot: GameStateSnapshot) {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameDao.insertGameStateSnapshot(snapshot)
+        }
+    }
+
+    fun getGameStateBitmapFromDB(): Map<Long, Bitmap> {
+        return getGameStateSnapshotFromDB().mapNotNull {
+            Utils.getBitmapFromFile(it.snapshotFilePath)
+                ?.let { f -> it.gameStateId to f }
+        }.toMap()
+    }
+
+    private fun getGameStateSnapshotFromDB(): List<GameStateSnapshot> {
+        return runBlocking {
+            gameDao.getGameStateSnapshots()
+        }
+    }
+
     private fun updateGameToDb() {
         viewModelScope.launch(Dispatchers.IO) {
             gameDao.updateGame(getGame())
@@ -59,7 +113,7 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
     }
 
     private fun getActualGameStateFromDb(): GameState {
-        return  getGameStateByIdFromDb(getActualGameStateId())
+        return getGameStateByIdFromDb(getActualGameStateId())
     }
 
     private fun getGameStateByIdFromDb(gameStateId: Long): GameState {
@@ -89,20 +143,19 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         gameDao.deleteActionsByMovesPosition(movesId)
     }
 
-    private fun insertActionsToDB(actions: List<Action>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            gameDao.insertActions(actions)
-        }
+    private suspend fun insertActionsToDB(actions: List<Action>) {
+        gameDao.insertActions(actions)
     }
 
     private suspend fun insertMoveToDB(move: Move) {
         gameDao.insertMove(move)
     }
 
-    private fun addMoveDB(move: Move, toRemove: List<Long>) {
+    private fun addMoveDB(move: Move, toRemove: List<Long>, actions: List<Action>) {
         viewModelScope.launch(Dispatchers.IO) {
             deleteMovesFromDb(toRemove)
             insertMoveToDB(move)
+            insertActionsToDB(actions)
         }
     }
 
@@ -504,8 +557,7 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
             toRemove.add(getMoves().removeLast().move.moveId)
         }
 
-        addMoveDB(move = move, toRemove = toRemove)
-        insertActionsToDB(actions)
+        addMoveDB(move = move, toRemove = toRemove, actions = actions)
 
         getMoves().add(MoveWithActions(move, actions))
         movePointerRight()

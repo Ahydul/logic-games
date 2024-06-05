@@ -30,7 +30,10 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
 
         Row {
             CustomIconButton(
-                onClick = { Utils.startHomeActivity(context)},
+                onClick = {
+                    viewModel.setSnapshot(null) // To avoid snapshot
+                    Utils.startHomeActivity(context)
+                },
                 imageVector = ImageVector.vectorResource(id = R.drawable.back_arrow),
                 contentDescription = stringResource(id = R.string.go_back)
             )

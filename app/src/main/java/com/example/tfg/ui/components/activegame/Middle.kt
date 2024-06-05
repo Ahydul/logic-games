@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.ui.components.common.CaptureBitmap
 import com.example.tfg.ui.components.common.LabeledIconButton
 
 @Composable
@@ -24,7 +25,12 @@ fun MiddleSection(
         modifier = modifier
     ){
         if (viewModel.timerPaused()) ResumeGame(viewModel)
-        else Board(viewModel=viewModel, modifier = Modifier)
+        else {
+            val snapshot = CaptureBitmap {
+                Board(viewModel = viewModel, modifier = Modifier)
+            }
+            viewModel.setSnapshot(snapshot)
+        }
     }
 }
 
