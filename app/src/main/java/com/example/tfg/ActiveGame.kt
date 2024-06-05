@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tfg.common.GameFactory
 import com.example.tfg.common.GameInstance
 import com.example.tfg.common.IdGenerator
 import com.example.tfg.data.GameDatabase
@@ -25,7 +24,6 @@ import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
 import com.example.tfg.ui.components.activegame.ActiveGameScreen
 import com.example.tfg.ui.theme.TFGTheme
-import kotlinx.coroutines.runBlocking
 
 class ActiveGameView : ComponentActivity() {
     private var viewModel: ActiveGameViewModel? = null
@@ -34,15 +32,9 @@ class ActiveGameView : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        var gameId = intent.getLongExtra("gameId", -1)
+        val gameId = intent.getLongExtra("gameId", -1)
         val database = GameDatabase.getDatabase(this)
         val dao = database.gameDao()
-
-        if (gameId == -1L) {
-            database.clearAllTables() //TMP TO TEST
-            runBlocking { dao.deletePrimaryKeys() } //TMP TO TEST
-            gameId = runBlocking { GameFactory(dao).exampleHakyuuToDB() }
-        }
 
         val sharedPref = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
         with (sharedPref.edit()) {
