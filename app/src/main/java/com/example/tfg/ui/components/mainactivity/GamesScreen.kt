@@ -13,10 +13,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -56,10 +58,12 @@ import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomFilledButton
 import com.example.tfg.ui.components.common.CustomIconButton
+import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.CustomTextField
 import com.example.tfg.ui.components.common.InTransitionDuration
 import com.example.tfg.ui.components.common.LabeledIconButton
 import com.example.tfg.ui.components.common.OutTransitionDuration
+import com.example.tfg.ui.components.common.animateBlur
 
 @Composable
 private fun ChooseGameButton(
@@ -237,67 +241,23 @@ fun TextFields(
 @Composable
 fun ChosenGame(
     expandedStates: MutableTransitionState<Boolean>,
-    onDismissRequest: (() -> Unit),
     chosenGame: Games,
     viewModel: MainViewModel
 ) {
-    val transition = updateTransition(expandedStates, "DropDownMenu")
-    val scale by transition.animateFloat(
-        transitionSpec = {
-            if (false isTransitioningTo true) {
-                tween(
-                    durationMillis = InTransitionDuration,
-                    easing = LinearOutSlowInEasing
-                )
-            } else {
-                tween(
-                    durationMillis = 1,
-                    delayMillis = OutTransitionDuration
-                )
-            }
-        }
-    ) { if (it) 1f else 0.8f }
-
-    Popup(
-        alignment = Alignment.Center,
-        onDismissRequest = onDismissRequest,
-        properties = PopupProperties(focusable = true),
-        offset = IntOffset(0,-140)
-    ) {
-        val bgColor = colorResource(id = R.color.board_grid)
-        val color = colorResource(id = R.color.pearl_white)
-
-        Box(
-            modifier = Modifier
-                .graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                }
-                .clip(RoundedCornerShape(8.dp))
-                .fillMaxWidth(0.8f)
-                .background(bgColor)
-                .padding(3.dp)
+    val color = colorResource(id = R.color.pearl_white)
+    CustomPopup(expandedStates = expandedStates ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.padding(25.dp)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(bgColor)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceAround,
-                    modifier = Modifier.padding(25.dp)
-                ) {
-                    val modifier = Modifier.padding(top = 15.dp)
-                    Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color)
-                    TextFields(textColor = color, modifier = modifier, chosenGame = chosenGame, viewModel = viewModel)
-                }
-            }
-            CustomIconButton(
-                onClick = { expandedStates.targetState = false },
-                imageVector = ImageVector.vectorResource(id = R.drawable.outline_close_24),
-                contentDescription = "",
+            val modifier = Modifier.padding(top = 15.dp)
+            Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color)
+            TextFields(
+                textColor = color,
+                modifier = modifier,
+                chosenGame = chosenGame,
+                viewModel = viewModel
             )
         }
     }
@@ -308,21 +268,7 @@ fun ChosenGame(
 fun GamesScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
     val chosenGame = remember { mutableStateOf(Games.HAKYUU) }
     val expandedStates = remember { MutableTransitionState(false) }
-
-    val animatedBlur by animateDpAsState(
-        targetValue = if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState) 2.5.dp else 0.dp,
-        animationSpec =
-        if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState)
-            tween(
-                durationMillis = InTransitionDuration,
-                easing = LinearOutSlowInEasing
-            )
-        else
-            tween(
-                durationMillis = OutTransitionDuration,
-                easing = LinearOutSlowInEasing
-            ), label = "AnimateBlur"
-    )
+    val animatedBlur by animateBlur(expandedStates)
 
     Column(
         modifier = modifier
@@ -337,14 +283,9 @@ fun GamesScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 
     }
 
-    val onDismissRequest = { expandedStates.targetState = false }
-
-    if (expandedStates.targetState || expandedStates.currentState) {
-        ChosenGame(
-            expandedStates = expandedStates,
-            onDismissRequest = onDismissRequest,
-            chosenGame = chosenGame.value,
-            viewModel = viewModel
-        )
-    }
+    ChosenGame(
+        expandedStates = expandedStates,
+        chosenGame = chosenGame.value,
+        viewModel = viewModel
+    )
 }
