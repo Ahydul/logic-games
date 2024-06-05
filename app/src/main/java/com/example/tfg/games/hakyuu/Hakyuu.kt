@@ -147,13 +147,16 @@ class Hakyuu(
 
     override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
         val res = mutableSetOf<Int>()
+
+        if (value == 0) return res
+
         val positions = getRegionPositions(regionId = getRegionId(position = position))
 
         //Check rule 1
         if (value > positions.size) res.add(position)
 
         //Check rule 2
-        positions.filter { pos -> pos != position && actualValues[pos] == value}
+        positions.filter { pos -> pos != position && actualValues[pos] == value }
             .forEach { res.add(it) }
 
         //Check rule 3

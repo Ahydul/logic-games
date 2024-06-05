@@ -539,7 +539,6 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
             val index = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
 
             // Paint positions that causes the error
-            // TODO: fix when putting 1 on index 0 and then putting x (delete) it paints red some cells
             val errors = checkValue(position = index, value = value).map { Coordinate.fromIndex(it, getNumRows(),getNumColumns()) }
             previousCells.addAll(getCells(errors))
             setCellsBackgroundColor(color = ERRORCELLBACKGROUNDCOLOR, coordinates = errors)
