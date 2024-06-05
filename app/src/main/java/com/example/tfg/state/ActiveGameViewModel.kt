@@ -47,10 +47,14 @@ class ActiveGameViewModel(
     private val selectedTiles = mutableStateListOf<Coordinate>()
     private val timer = Timer.create(getGame().timer, viewModelScope)
 
-    private var snapshot: (() -> Bitmap)? = null
+    private var snapshot: (() -> Bitmap?)? = null
     private var filesDirectory: File? = null
 
     fun setSnapshot(snapshot: (() -> Bitmap)?) {
+        this.snapshot = snapshot
+    }
+
+    fun setSnapshot2(snapshot: (() -> Bitmap?)) {
         this.snapshot = snapshot
     }
 
@@ -59,19 +63,27 @@ class ActiveGameViewModel(
     }
 
     fun takeSnapshot() {
-        if (snapshot != null && filesDirectory != null) {
-            Log.d("snapshot", "Taking snapshot")
-            MainScope().launch {
-                val bitmapFilePath = Utils.saveBitmapToFile(
-                    bitmap = snapshot!!.invoke(),
-                    filesDir = filesDirectory!!,
-                    fileName = "gameStateId-${getActualGameStateId()}",
-                    directory = getGameEnum().name.lowercase()
-                )
-                if (bitmapFilePath != null) {
-                    val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
-                    insertGameStateSnapshotToDB(gameStateSnapshot)
-                }
+        if (timerPaused() || snapshot == null || filesDirectory == null) return
+
+        Log.d("snapshot", "Taking snapshot")
+        val bitmap = snapshot!!.invoke()
+
+        if (bitmap == null) {
+            Log.d("snapshot", "Failed")
+            return
+        }
+
+        MainScope().launch {
+            val bitmapFilePath = Utils.saveBitmapToFile(
+                bitmap = bitmap,
+                filesDir = filesDirectory!!,
+                fileName = "gameStateId-${getActualGameStateId()}",
+                directory = getGameEnum().name.lowercase()
+            )
+            if (bitmapFilePath != null) {
+                val gameStateSnapshot =
+                    GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
+                insertGameStateSnapshotToDB(gameStateSnapshot)
             }
         }
     }
@@ -80,8 +92,12 @@ class ActiveGameViewModel(
         numErrors = mutableStateOf(getGame().errors.size)
     }
 
-    private fun getActualGameStateId(): Long {
-        return getGameStateIds()[actualGameStatePointer]
+    fun getActualGameStatePosition(): Int {
+        return actualGameStatePointer
+    }
+
+    fun getActualGameStateId(): Long {
+        return getGameStateIds()[getActualGameStatePosition()]
     }
 
     public override fun onCleared() {
@@ -98,16 +114,15 @@ class ActiveGameViewModel(
         }
     }
 
-    fun getGameStateBitmapFromDB(): Map<Long, Bitmap> {
+    fun getGameStateBitmapFromDB(): Map<Int, Bitmap?> {
         return getGameStateSnapshotFromDB().mapNotNull {
-            Utils.getBitmapFromFile(it.snapshotFilePath)
-                ?.let { f -> it.gameStateId to f }
-        }.toMap()
+            getGameStateIds().indexOf(it.gameStateId) to Utils.getBitmapFromFile(it.snapshotFilePath)
+        }.sortedBy { it.first }.toMap()
     }
 
     private fun getGameStateSnapshotFromDB(): List<GameStateSnapshot> {
         return runBlocking {
-            gameDao.getGameStateSnapshots()
+            gameDao.getGameStateSnapshotsByGameStateIds(getGameStateIds())
         }
     }
 
@@ -306,7 +321,7 @@ class ActiveGameViewModel(
 
     fun setActualState(pointer: Int) {
         Log.d("state", "Actual state: ${getActualState()}")
-        if (pointer < getGameStateIds().size && pointer != actualGameStatePointer){
+        if (pointer < getGameStateIds().size && pointer != getActualGameStatePosition()){
             loadGameState(pointer)
             Log.d("state", "Changed to state: ${getActualState()}")
         }

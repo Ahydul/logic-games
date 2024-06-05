@@ -97,7 +97,7 @@ interface GameDao {
     suspend fun insertGameStateSnapshot(snapshot: GameStateSnapshot)
     @Query("SELECT * FROM GameStateSnapshot WHERE gameStateId = :gameStateId")
     suspend fun getGameStateSnapshotByGameStateId(gameStateId: Long): GameStateSnapshot?
-    @Query("SELECT * FROM GameStateSnapshot")
-    suspend fun getGameStateSnapshots(): List<GameStateSnapshot>
+    @Query("SELECT * FROM GameStateSnapshot WHERE gameStateId IN (:gameStateIds)")
+    suspend fun getGameStateSnapshotsByGameStateIds(gameStateIds: List<Long>): List<GameStateSnapshot>
 
 }

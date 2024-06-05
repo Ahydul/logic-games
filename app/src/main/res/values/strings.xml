@@ -19,6 +19,8 @@
     <string name="seed">Seed</string>
     <string name="custom_board">Custom board</string>
     <string name="create">Create</string>
+    <string name="select">Select</string>
+    <string name="clone">Clone</string>
     <string name="rules">Rules</string>
     <string name="in_progress2">In progress</string>
     <string name="stats">Statistics</string>

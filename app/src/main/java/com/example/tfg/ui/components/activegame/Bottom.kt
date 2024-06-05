@@ -25,6 +25,7 @@ import com.example.tfg.ui.components.common.HorizontalGrid
 @Composable
 fun BottomSection(
     viewModel: ActiveGameViewModel,
+    onStateClick: () -> Unit,
     modifier: Modifier = Modifier)
 {
     Log.d("recomposition", "BOTTOM recomposition")
@@ -36,6 +37,7 @@ fun BottomSection(
         // Actions
         TopActionRow(
             viewModel = viewModel,
+            onStateClick = onStateClick,
             modifier = Modifier
                 .weight(2f)
                 .padding(2.dp)
@@ -115,6 +117,7 @@ fun BottomActionRow(
 @Composable
 fun TopActionRow(
     viewModel: ActiveGameViewModel,
+    onStateClick: () -> Unit,
     modifier: Modifier
 ){
     val actionModifier = Modifier
@@ -124,33 +127,11 @@ fun TopActionRow(
         componentsScale = 0.5f,
         modifier = modifier
     ) {
-        /*
-        //TODO: IMPLEMENT STATE BUTTONS. AND DO EXTENDED TESTS //Note
-        CustomIconButton(
-            onClick = { viewModel.newGameState() },
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
-            contentDescription = stringResource(id = R.string.edit_action),
-            modifier = actionModifier
-        )
-        CustomIconButton(
-            onClick = { viewModel.setActualState(0) },
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
-            contentDescription = stringResource(id = R.string.undo_action),
-            modifier = actionModifier
-        )
-        CustomIconButton(
-            onClick = { viewModel.setActualState(1) },
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
-            contentDescription = stringResource(id = R.string.redo_action),
-            modifier = actionModifier
-        )
-         */
         CustomIconButton( //States
-            onClick = {  },
+            onClick = onStateClick,
             imageVector = ImageVector.vectorResource(id = R.drawable.notebook),
             contentDescription = stringResource(id = R.string.change_gamestate),
-            modifier = actionModifier,
-            enabled = !viewModel.timerPaused()
+            modifier = actionModifier
         )
         CustomIconButton( //Paint
             onClick = { viewModel.setIsPaint() },

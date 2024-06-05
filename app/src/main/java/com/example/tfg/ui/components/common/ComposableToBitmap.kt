@@ -13,7 +13,7 @@ import androidx.core.view.drawToBitmap
 @Composable
 fun CaptureBitmap(
     content: @Composable () -> Unit,
-): () -> Bitmap {
+): () -> Bitmap? {
 
     val context = LocalContext.current
 
@@ -26,8 +26,12 @@ fun CaptureBitmap(
     /**
      * Callback function which could get latest image bitmap
      **/
-    fun captureBitmap(): Bitmap {
-        return composeView.drawToBitmap()
+    fun captureBitmap(): Bitmap? {
+        return try {
+            composeView.drawToBitmap()
+        } catch (error: IllegalStateException) {
+            null
+        }
     }
 
     /** Use Native View inside Composable **/

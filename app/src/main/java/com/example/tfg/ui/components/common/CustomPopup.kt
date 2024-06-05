@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
@@ -54,6 +55,7 @@ fun animateBlur(
 fun CustomPopup(
     expandedStates: MutableTransitionState<Boolean>,
     onDismissRequest: (() -> Unit) = { expandedStates.targetState = false },
+    backgroundColor: Color = colorResource(id = R.color.board_grid),
     content: @Composable BoxScope.() -> Unit
 ) {
     if (expandedStates.targetState || expandedStates.currentState) {
@@ -81,7 +83,6 @@ fun CustomPopup(
             properties = PopupProperties(focusable = true),
             offset = IntOffset(0,-140)
         ) {
-            val bgColor = colorResource(id = R.color.board_grid)
             Box(
                 modifier = Modifier
                     .graphicsLayer {
@@ -90,14 +91,14 @@ fun CustomPopup(
                     }
                     .clip(RoundedCornerShape(8.dp))
                     .fillMaxWidth(0.8f)
-                    .background(bgColor)
+                    .background(backgroundColor)
                     .padding(3.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(bgColor)
+                        .background(backgroundColor)
                 ) {
                     content()
                 }

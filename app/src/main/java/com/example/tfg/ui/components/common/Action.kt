@@ -193,6 +193,7 @@ fun CustomButton(
     paddingValues: PaddingValues = PaddingValues(0.dp),
     shape: Shape = RectangleShape,
     borderStroke: BorderStroke? = null,
+    enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
@@ -201,6 +202,7 @@ fun CustomButton(
         colors = ButtonDefaults.buttonColors(colorResource(id = R.color.board_grid)),
         contentPadding = paddingValues,
         border = borderStroke,
+        enabled = enabled,
         modifier = modifier.height(intrinsicSize = IntrinsicSize.Min),
         content = content
     )

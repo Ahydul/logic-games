@@ -28,7 +28,7 @@ fun MiddleSection(
         else {
             if (viewModel.snapshotsAllowed) {
                 val snapshot = CaptureBitmap { Board(viewModel = viewModel, modifier = Modifier) }
-                viewModel.setSnapshot(snapshot)
+                viewModel.setSnapshot2(snapshot)
             }
             else Board(viewModel = viewModel, modifier = Modifier)
         }
