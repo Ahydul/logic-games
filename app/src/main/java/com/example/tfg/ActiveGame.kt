@@ -41,9 +41,10 @@ class ActiveGameView : ComponentActivity() {
             putLong("lastPlayedGame", gameId)
             apply() //asynchronous
         }
+        val snapshotsAllowed = sharedPref.getBoolean("snapshot", false)
 
         val gameInstance = GameInstance.create(gameId, dao)
-        val vm: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao) }
+        val vm: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao, snapshotsAllowed) }
         vm.setFilesDirectory(applicationContext.filesDir)
         viewModel = vm
 

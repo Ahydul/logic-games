@@ -26,10 +26,11 @@ fun MiddleSection(
     ){
         if (viewModel.timerPaused()) ResumeGame(viewModel)
         else {
-            val snapshot = CaptureBitmap {
-                Board(viewModel = viewModel, modifier = Modifier)
+            if (viewModel.snapshotsAllowed) {
+                val snapshot = CaptureBitmap { Board(viewModel = viewModel, modifier = Modifier) }
+                viewModel.setSnapshot(snapshot)
             }
-            viewModel.setSnapshot(snapshot)
+            else Board(viewModel = viewModel, modifier = Modifier)
         }
     }
 }

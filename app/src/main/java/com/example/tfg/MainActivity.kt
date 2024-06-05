@@ -29,6 +29,11 @@ class MainActivity : ComponentActivity() {
 
         val dao = GameDatabase.getDatabase(this).gameDao()
         val sharedPref = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
+        // Initialize
+        with (sharedPref.edit()) {
+            putBoolean("snapshot", true)
+            apply() //asynchronous
+        }
 
         val viewModel: MainViewModel by viewModels{ CustomMainViewModelFactory(dao, sharedPref) }
 

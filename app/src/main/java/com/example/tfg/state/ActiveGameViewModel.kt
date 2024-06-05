@@ -34,7 +34,12 @@ import java.io.File
 import java.util.SortedMap
 private const val ERRORCELLBACKGROUNDCOLOR = -65536
 
-class ActiveGameViewModel(private val gameInstance: GameInstance, private val gameDao: GameDao) : ViewModel() {
+class ActiveGameViewModel(
+    private val gameInstance: GameInstance,
+    private val gameDao: GameDao,
+    val snapshotsAllowed: Boolean
+) : ViewModel() {
+
     private var actualGameStatePointer = 0
     private val numErrors: MutableState<Int>
     private val isNote = mutableStateOf(false)
