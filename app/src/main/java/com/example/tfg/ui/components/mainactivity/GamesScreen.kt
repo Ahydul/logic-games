@@ -69,14 +69,10 @@ import com.example.tfg.ui.components.common.animateBlur
 private fun ChooseGameButton(
     modifier: Modifier = Modifier,
     game: Games,
-    expandedStates: MutableTransitionState<Boolean>,
-    changeChosenGame: (Games) -> Unit
+    onChooseGame: () -> Unit,
 ) {
     CustomButton(
-        onClick = {
-            expandedStates.targetState = true
-            changeChosenGame(game)
-        },
+        onClick = onChooseGame,
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
         shape = RoundedCornerShape(8.dp),
         borderStroke = BorderStroke(0.5.dp, color = colorResource(id = R.color.board_grid2)),
@@ -276,9 +272,15 @@ fun GamesScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
             .verticalScroll(rememberScrollState())
             .blur(animatedBlur)
     ) {
-        ChooseGameButton(game = Games.HAKYUU, expandedStates = expandedStates, changeChosenGame = { newGame: Games ->
-            chosenGame.value = newGame
-        })
+        val gameHakyuu = Games.HAKYUU
+        ChooseGameButton(
+            game = gameHakyuu,
+            onChooseGame = {
+                expandedStates.targetState = true
+                chosenGame.value = gameHakyuu
+            }
+        )
+
         Spacer(modifier = Modifier.height(10.dp))
 
     }
