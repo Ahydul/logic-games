@@ -1,6 +1,7 @@
 package com.example.tfg.common.entities
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.example.tfg.common.IdGenerator
 
@@ -8,7 +9,16 @@ import com.example.tfg.common.IdGenerator
 /*
 * Manages the indexes of the different cells
 * */
-@Entity
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = GameState::class,
+            parentColumns = ["gameStateId"],
+            childColumns = ["gameStateId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 data class Board(
     @PrimaryKey
     val boardId: Long = generateId(),

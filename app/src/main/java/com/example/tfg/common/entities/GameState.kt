@@ -1,10 +1,20 @@
 package com.example.tfg.common.entities
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.example.tfg.common.IdGenerator
 
-@Entity
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = Game::class,
+            parentColumns = ["gameId"],
+            childColumns = ["gameId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 data class GameState(
     @PrimaryKey
     val gameStateId: Long = generateId(),
