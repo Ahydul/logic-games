@@ -96,8 +96,8 @@ class GameFactory(private val gameDao: GameDao) {
         }
 
         fun exampleHakyuuGame() = Game.create(exampleHakyuu(), Difficulty.EASY)
-        fun exampleGameState(gameId: Long) = GameState(gameId = gameId, position = 0)
-        fun exampleBoard(gameStateId: Long) = Board(numRows = 8, numColumns = 8, gameStateId = gameStateId)
+        fun exampleGameState(gameId: Long) = GameState(gameStateId = 0, gameId = gameId, position = 0)
+        fun exampleBoard(gameStateId: Long) = Board(boardId = 0, numRows = 8, numColumns = 8, gameStateId = gameStateId)
         fun exampleCells(cellArray: IntArray) = cellArray.map { Cell.create(it) }.toTypedArray()
 
         private const val COMPLETED_STR =

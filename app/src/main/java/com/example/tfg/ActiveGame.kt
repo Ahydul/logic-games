@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.GameInstance
+import com.example.tfg.common.IdGenerator
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
@@ -76,6 +77,7 @@ class ActiveGameView : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun ActiveGameScreenPreview() {
+    IdGenerator.initialize(LocalContext.current)
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
     val gameInstance = GameInstance.example()
     val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
