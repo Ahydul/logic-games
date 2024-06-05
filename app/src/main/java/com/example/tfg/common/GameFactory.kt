@@ -44,21 +44,21 @@ class GameFactory(private val gameDao: GameDao) {
 
         // Create GameState
         val gameState = GameState(gameId = gameId, position = 0)
-        val gameStateId = gameDao.insertGameState(gameState)
+        gameDao.insertGameState(gameState)
 
         // Create board
         val board = Board(
             numRows = numRows,
             numColumns = numColumns,
-            gameStateId = gameStateId
+            gameStateId = gameState.gameStateId
         )
-        val boardId = gameDao.insertBoard(board)
+       gameDao.insertBoard(board)
 
         // Initialize cells
         val cells = gameType.startBoard.map { Cell.create(it) }.toTypedArray()
         cells.forEachIndexed { index, cell ->
             val cellId = gameDao.insertCell(cell)
-            val crossRef = BoardCellCrossRef(boardId = boardId, cellId = cellId, cellPosition = index)
+            val crossRef = BoardCellCrossRef(boardId = board.boardId, cellId = cellId, cellPosition = index)
             gameDao.insertBoardCellCrossRef(crossRef)
         }
 

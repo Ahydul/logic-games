@@ -35,7 +35,7 @@ interface GameDao {
     suspend fun existsAGame(): Boolean
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertGameState(gameState: GameState): Long
+    suspend fun insertGameState(gameState: GameState)
     @Update
     suspend fun updateGameState(gameState: GameState)
     @Query("SELECT * FROM GameState WHERE gameStateId = :gameStateId")
@@ -44,18 +44,20 @@ interface GameDao {
     suspend fun getGameStateIdsByGameId(gameId: Long): MutableList<Long>
 
     @Transaction
-    @Query("SELECT * FROM Move WHERE gameStateId = :gameStateId ORDER BY position DESC")
+    @Query("SELECT * FROM Move WHERE gameStateId = :gameStateId ORDER BY position ASC")
     suspend fun getMovesByGameStateId(gameStateId: Long): MutableList<MoveWithActions>
 
     @Query("DELETE FROM Move WHERE moveId IN (:movesId)")
     suspend fun deleteMoves(movesId: List<Long>)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertMove(move: Move): Long
+    suspend fun insertMove(move: Move)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertActions(actions: List<Action>)
+    @Query("DELETE FROM `Action` WHERE moveId IN (:movesId)")
+    suspend fun deleteActionsByMovesPosition(movesId: List<Long>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertBoard(board: Board): Long
+    suspend fun insertBoard(board: Board)
     @Query("SELECT * FROM Board WHERE gameStateId = :gameStateId")
     suspend fun getBoardByGameStateId(gameStateId: Long): Board
 

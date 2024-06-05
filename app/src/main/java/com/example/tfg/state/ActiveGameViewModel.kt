@@ -80,21 +80,28 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         }
     }
 
-    private suspend fun deleteMovesFromDb(movesPosition: List<Long>) {
-        gameDao.deleteMoves(movesPosition)
+    private suspend fun deleteMovesFromDb(movesId: List<Long>) {
+        gameDao.deleteMoves(movesId)
+        gameDao.deleteActionsByMovesPosition(movesId)
     }
 
-    private suspend fun addMoveToDb(moveWithActions: MoveWithActions) {
-        gameDao.insertMove(moveWithActions.move)
-        gameDao.insertActions(moveWithActions.actions)
-    }
-
-    private fun addMoveDB(moveWithActions: MoveWithActions, toRemove: List<Long>) {
+    private fun insertActionsToDB(actions: List<Action>) {
         viewModelScope.launch(Dispatchers.IO) {
-            deleteMovesFromDb(toRemove)
-            addMoveToDb(moveWithActions)
+            gameDao.insertActions(actions)
         }
     }
+
+    private suspend fun insertMoveToDB(move: Move) {
+        gameDao.insertMove(move)
+    }
+
+    private fun addMoveDB(move: Move, toRemove: List<Long>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteMovesFromDb(toRemove)
+            insertMoveToDB(move)
+        }
+    }
+
 
     private fun updateGameStateInDb() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -102,14 +109,14 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         }
     }
 
-    private fun insertNewGameStateToDb(newGameState: GameState): Long {
-        return runBlocking {
+    private fun insertGameStateToDB(newGameState: GameState) {
+        viewModelScope.launch(Dispatchers.IO) {
             gameDao.insertGameState(newGameState)
         }
     }
 
-    private fun insertNewBoardToDb(newBoard: Board): Long {
-        return runBlocking {
+    private fun insertBoardToDB(newBoard: Board) {
+        viewModelScope.launch(Dispatchers.IO) {
             gameDao.insertBoard(newBoard)
         }
     }
@@ -187,20 +194,9 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
      */
 //TODO: STATE
 
-    private fun loadNewGameState(newGameStateId: Long) {
-        getGameStateIds().add(newGameStateId)
-        loadGameState(gameStatePointer = getGameStateIds().size - 1)
-    }
-
-    private fun loadGameState(gameStatePointer: Int) {
-        actualGameStatePointer = gameStatePointer
-        gameInstance.actualGameState = getActualGameStateFromDb()
-
-        gameInstance.moves = getMovesFromDb(getActualState().gameStateId)
-        gameInstance.board = getBoardFromDb(getActualState().gameStateId)
-
+    private fun loadCells(boardId: Long) {
         // All of this is to force recomposition only in new cells
-        val newCells = getCellsFromDb(getBoard().boardId)
+        val newCells = getCellsFromDb(boardId)
         val tmpCell = Cell.create(-1)
         newCells.forEachIndexed { index, cell ->
             if (getCells()[index].value != cell) {
@@ -212,15 +208,36 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         }
     }
 
+    private fun loadGameState(gameStatePointer: Int) {
+        actualGameStatePointer = gameStatePointer
+        gameInstance.actualGameState = getActualGameStateFromDb()
+        gameInstance.board = getBoardFromDb(getActualState().gameStateId)
+        gameInstance.moves = getMovesFromDb(getActualState().gameStateId)
+        loadCells(getBoard().boardId)
+    }
+
+    private fun loadNewGameState(newGameState: GameState, newBoard: Board) {
+        getGameStateIds().add(newGameState.gameStateId)
+        actualGameStatePointer = getGameStateIds().size - 1
+        gameInstance.actualGameState = newGameState
+        gameInstance.board = newBoard
+        gameInstance.moves = mutableListOf()
+        loadCells(newBoard.boardId)
+    }
+
     fun newGameState() {
         Log.d("state", "Actual state: ${getActualState()}")
 
-        val newGameStateId = insertNewGameStateToDb(getActualState().copy(position = getGameStateIds().size))
-        val boardId = insertNewBoardToDb(getBoard().copy(boardId = 0, gameStateId = newGameStateId))
+        val newGameState = GameState.create(from = getActualState(), position = getGameStateIds().size)
+        val newBoard = Board.create(from = getBoard(), gameStateId = newGameState.gameStateId)
+
+        insertGameStateToDB(newGameState)
+        insertBoardToDB(newBoard)
         getCells().forEachIndexed { position, cell ->
-            insertNewCellToDb(cell.value.copy(cellId = 0), boardId = boardId, cellPosition = position)
+            insertNewCellToDb(cell.value.copy(cellId = 0), boardId = newBoard.boardId, cellPosition = position)
         }
-        loadNewGameState(newGameStateId)
+
+        loadNewGameState(newGameState, newBoard)
 
         Log.d("state", "New state: ${getActualState()}")
     }
@@ -435,6 +452,9 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
     }
 
     private fun addMove(coordinates: List<Coordinate>, newCells: List<Cell>, previousCells: List<Cell>) {
+        val gameStateId = getActualGameStateId()
+        val pointer = getActualMovesPointer()
+        val move = Move(position = pointer + 1, gameStateId = gameStateId)
         val actions = coordinates.mapIndexedNotNull { index, coordinate ->
             val newCell = newCells[index]
             val previousCell = previousCells[index]
@@ -446,7 +466,7 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
                     newCell = newCell,
                     previousCell = previousCell,
                     cellIndex = position,
-                    moveId = 0
+                    moveId = move.moveId
                 )
             }
         }.toList()
@@ -455,22 +475,18 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
 
         // Remove moves that won't be accessed anymore
         val toRemove = mutableListOf<Long>()
-        val pointer = getActualMovesPointer()
         while (pointer < getMoves().size - 1) {
             toRemove.add(getMoves().removeLast().move.moveId)
         }
 
-        val gameStateId = getActualGameStateId()
-        val move = Move(position = pointer + 1, gameStateId = gameStateId)
-        val moveWithAction = MoveWithActions(move, actions)
+        addMoveDB(move = move, toRemove = toRemove)
+        insertActionsToDB(actions)
 
-        getMoves().add(moveWithAction)
+        getMoves().add(MoveWithActions(move, actions))
         movePointerRight()
-
-        addMoveDB(moveWithActions = moveWithAction, toRemove = toRemove)
     }
 
-    fun applyMove(moveWithActions: MoveWithActions) {
+    private fun applyMove(moveWithActions: MoveWithActions) {
         removeSelections()
         moveWithActions.actions.forEach {
             val newCell = it.newCell
@@ -480,7 +496,7 @@ class ActiveGameViewModel(private val gameInstance: GameInstance, private val ga
         }
     }
 
-    fun unapplyMove(moveWithActions: MoveWithActions) {
+    private fun unapplyMove(moveWithActions: MoveWithActions) {
         removeSelections()
         moveWithActions.actions.forEach {
             val previousCell = it.previousCell

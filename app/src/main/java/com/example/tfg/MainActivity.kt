@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tfg.common.IdGenerator
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.state.CustomMainViewModelFactory
 import com.example.tfg.state.MainViewModel
@@ -24,6 +25,8 @@ import com.example.tfg.ui.theme.TFGTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        IdGenerator.initialize(this)
+
         val dao = GameDatabase.getDatabase(this).gameDao()
         val sharedPref = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
 
