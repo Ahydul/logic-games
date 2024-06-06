@@ -16,6 +16,7 @@ import com.example.tfg.common.entities.Move
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
+import com.example.tfg.games.Games
 import java.time.LocalDateTime
 
 @Dao
@@ -37,6 +38,8 @@ interface GameDao {
     suspend fun existsOnGoingGame(): Boolean
     @Query("SELECT EXISTS(SELECT 1 FROM Game WHERE gameId = :id and endDate IS NULL)")
     suspend fun existsOnGoingGameById(id: Long): Boolean
+    //@Query("SELECT * FROM Game WHERE endDate IS NULL and gameType.type = :type")
+    //suspend fun getOnGoingGameByType(type: Games): List<Game>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)
@@ -102,5 +105,12 @@ interface GameDao {
     suspend fun getGameStateSnapshotByGameStateId(gameStateId: Long): GameStateSnapshot?
     @Query("SELECT * FROM GameStateSnapshot WHERE gameStateId IN (:gameStateIds)")
     suspend fun getGameStateSnapshotsByGameStateIds(gameStateIds: List<Long>): List<GameStateSnapshot>
+
+    @Transaction
+    @Query("""
+        SELECT snapshotFilePath FROM GameStateSnapshot 
+        WHERE gameStateId = (SELECT gameStateId FROM gamestate WHERE gameId = :gameId AND position = 0)
+    """)
+    suspend fun getMainSnapshotFileByGameId(gameId: Long): String?
 
 }

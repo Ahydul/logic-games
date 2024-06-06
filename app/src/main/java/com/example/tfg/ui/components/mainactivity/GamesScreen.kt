@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,88 +66,104 @@ import com.example.tfg.ui.components.common.LabeledIconButton
 import com.example.tfg.ui.components.common.OutTransitionDuration
 import com.example.tfg.ui.components.common.animateBlur
 
+private enum class Action {
+    CREATE,
+    IN_PROGRESS
+}
+
 @Composable
-private fun ChooseGameButton(
+fun GamesScreen(
     modifier: Modifier = Modifier,
-    game: Games,
-    onChooseGame: () -> Unit,
+    viewModel: MainViewModel,
+    game: Games? = null
 ) {
-    CustomButton(
-        onClick = onChooseGame,
-        paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
-        shape = RoundedCornerShape(8.dp),
-        borderStroke = BorderStroke(0.5.dp, color = colorResource(id = R.color.board_grid2)),
+    var chosenGame =  Games.HAKYUU
+    var chosenGameAction = remember { mutableStateOf(Action.CREATE) }
+    val expandedStates = remember { MutableTransitionState(false) }
+    val animatedBlur by animateBlur(expandedStates)
+
+    if (game != null){
+        chosenGame = game
+        chosenGameAction.value = Action.IN_PROGRESS
+        expandedStates.targetState = true
+    }
+
+    Column(
         modifier = modifier
+            .padding(10.dp)
+            .verticalScroll(rememberScrollState())
+            .blur(animatedBlur)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.hakyuu_dark),
-            contentDescription = "",
-            modifier = Modifier.weight(3f)
+        val gameHakyuu = Games.HAKYUU
+        ChooseGameButton(
+            game = gameHakyuu,
+            onChooseGame = {
+                chosenGame = gameHakyuu
+                expandedStates.targetState = true
+            }
         )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+    }
+
+    ChosenGame(
+        expandedStates = expandedStates,
+        chosenGame = chosenGame,
+        chosenGameAction = chosenGameAction,
+        viewModel = viewModel
+    )
+}
+
+@Composable
+private fun ChosenGame(
+    expandedStates: MutableTransitionState<Boolean>,
+    chosenGame: Games,
+    chosenGameAction: MutableState<Action>,
+    viewModel: MainViewModel
+) {
+    val color = colorResource(id = R.color.pearl_white)
+    CustomPopup(
+        expandedStates = expandedStates,
+        onDismissRequest = {
+            chosenGameAction.value = Action.CREATE
+            expandedStates.targetState = false
+        }
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier
-                .weight(4f)
-                .fillMaxHeight()
+            modifier = Modifier.padding(25.dp)
         ) {
-            Text(text = "${game.title}", fontSize = 25.sp, color = colorResource(id = R.color.primary_color))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                val mod = Modifier
-                    .weight(1f)
-                    .aspectRatio(1f)
-                val shape = RoundedCornerShape(20.dp)
-                val fontSize = 11.sp
-                val iconPadding = 14.dp
+            val modifier = Modifier.padding(top = 15.dp)
+            Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color)
+            when(chosenGameAction.value){
+                Action.CREATE -> {
+                    TextFields(
+                        textColor = color,
+                        modifier = modifier,
+                        chosenGame = chosenGame,
+                        viewModel = viewModel
+                    )
+                }
+                Action.IN_PROGRESS -> {
+                    Column {
+                        /*
+                        viewModel.getOnGoingGamesByType(chosenGame).forEach { game ->
+                            val bitmap = viewModel.getMainSnapshotFileByGameId(game.gameId)
 
-                val rulesLabel = stringResource(id = R.string.rules)
-                LabeledIconButton(
-                    onClick = { Log.d("button", "REGLAS") },
-                    imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
-                    iconColor = colorResource(id = R.color.primary_color),
-                    label = rulesLabel,
-                    labelColor = colorResource(id = R.color.primary_color),
-                    fontSize = fontSize,
-                    shape = shape,
-                    iconPadding = iconPadding,
-                    modifier = mod
-                )
-
-                val inProgressLabel = stringResource(id = R.string.in_progress2)
-                LabeledIconButton(
-                    onClick = { Log.d("button", "EN CURSO") },
-                    imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
-                    iconColor = colorResource(id = R.color.primary_color),
-                    label = inProgressLabel,
-                    labelColor = colorResource(id = R.color.primary_color),
-                    fontSize = fontSize,
-                    shape = shape,
-                    iconPadding = iconPadding,
-                    modifier = mod
-                )
-
-                val statsLabel = stringResource(id = R.string.stats)
-                LabeledIconButton(
-                    onClick = { Log.d("button", "STATS") },
-                    imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
-                    iconColor = colorResource(id = R.color.primary_color),
-                    label = statsLabel,
-                    labelColor = colorResource(id = R.color.primary_color),
-                    fontSize = fontSize,
-                    shape = shape,
-                    iconPadding = iconPadding,
-                    modifier = mod
-                )
+                        }
+                        */
+                    }
+                }
             }
+
         }
     }
 }
 
 @Composable
-fun TextFields(
+private fun TextFields(
     modifier: Modifier = Modifier,
     textColor: Color,
     chosenGame: Games,
@@ -236,59 +253,81 @@ fun TextFields(
 }
 
 @Composable
-fun ChosenGame(
-    expandedStates: MutableTransitionState<Boolean>,
-    chosenGame: Games,
-    viewModel: MainViewModel
+private fun ChooseGameButton(
+    modifier: Modifier = Modifier,
+    game: Games,
+    onChooseGame: () -> Unit,
 ) {
-    val color = colorResource(id = R.color.pearl_white)
-    CustomPopup(expandedStates = expandedStates ) {
+    CustomButton(
+        onClick = onChooseGame,
+        paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
+        shape = RoundedCornerShape(8.dp),
+        borderStroke = BorderStroke(0.5.dp, color = colorResource(id = R.color.board_grid2)),
+        modifier = modifier
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.hakyuu_dark),
+            contentDescription = "",
+            modifier = Modifier.weight(3f)
+        )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.padding(25.dp)
+            modifier = Modifier
+                .weight(4f)
+                .fillMaxHeight()
         ) {
-            val modifier = Modifier.padding(top = 15.dp)
-            Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color)
-            TextFields(
-                textColor = color,
-                modifier = modifier,
-                chosenGame = chosenGame,
-                viewModel = viewModel
-            )
+            Text(text = "${game.title}", fontSize = 25.sp, color = colorResource(id = R.color.primary_color))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                val mod = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f)
+                val shape = RoundedCornerShape(20.dp)
+                val fontSize = 11.sp
+                val iconPadding = 14.dp
+
+                val rulesLabel = stringResource(id = R.string.rules)
+                LabeledIconButton(
+                    onClick = { Log.d("button", "REGLAS") },
+                    imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
+                    iconColor = colorResource(id = R.color.primary_color),
+                    label = rulesLabel,
+                    labelColor = colorResource(id = R.color.primary_color),
+                    fontSize = fontSize,
+                    shape = shape,
+                    iconPadding = iconPadding,
+                    modifier = mod
+                )
+
+                val inProgressLabel = stringResource(id = R.string.in_progress2)
+                LabeledIconButton(
+                    onClick = {  },
+                    imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
+                    iconColor = colorResource(id = R.color.primary_color),
+                    label = inProgressLabel,
+                    labelColor = colorResource(id = R.color.primary_color),
+                    fontSize = fontSize,
+                    shape = shape,
+                    iconPadding = iconPadding,
+                    modifier = mod
+                )
+
+                val statsLabel = stringResource(id = R.string.stats)
+                LabeledIconButton(
+                    onClick = { Log.d("button", "STATS") },
+                    imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
+                    iconColor = colorResource(id = R.color.primary_color),
+                    label = statsLabel,
+                    labelColor = colorResource(id = R.color.primary_color),
+                    fontSize = fontSize,
+                    shape = shape,
+                    iconPadding = iconPadding,
+                    modifier = mod
+                )
+            }
         }
     }
-}
-
-
-@Composable
-fun GamesScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
-    val chosenGame = remember { mutableStateOf(Games.HAKYUU) }
-    val expandedStates = remember { MutableTransitionState(false) }
-    val animatedBlur by animateBlur(expandedStates)
-
-    Column(
-        modifier = modifier
-            .padding(10.dp)
-            .verticalScroll(rememberScrollState())
-            .blur(animatedBlur)
-    ) {
-        val gameHakyuu = Games.HAKYUU
-        ChooseGameButton(
-            game = gameHakyuu,
-            onChooseGame = {
-                expandedStates.targetState = true
-                chosenGame.value = gameHakyuu
-            }
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-    }
-
-    ChosenGame(
-        expandedStates = expandedStates,
-        chosenGame = chosenGame.value,
-        viewModel = viewModel
-    )
 }
