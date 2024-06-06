@@ -45,7 +45,7 @@ class GameInstance(
             val actualGameState = GameFactory.exampleGameState(game.gameId)
             val moves = mutableListOf<MoveWithActions>()
             val board = GameFactory.exampleBoard(gameStateId = actualGameState.gameStateId)
-            val cells = GameFactory.exampleCells(game.gameType.startBoard).map { mutableStateOf(it) }.toTypedArray()
+            val cells = GameFactory.exampleCells(game.gameTypeEntity.startBoard).map { mutableStateOf(it) }.toTypedArray()
 
             return GameInstance(
                 game = game,

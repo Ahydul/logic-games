@@ -13,19 +13,18 @@ class ScoreDeserializer : JsonDeserializer<Score> {
         context: JsonDeserializationContext?
     ): Score {
         val jsonObject = json.asJsonObject
-        val type = Games.valueOf(jsonObject.get("game").asString.uppercase())
-        val newValue = jsonObject.get("newValue").asInt
-        val rule2 = jsonObject.get("rule2").asInt
-        val rule3 = jsonObject.get("rule3").asInt
-        val hiddenSingle = jsonObject.get("hiddenSingle").asInt
-        val hiddenPair = jsonObject.get("hiddenPair").asInt
-        val hiddenTriple = jsonObject.get("hiddenTriple").asInt
-        val obviousPair = jsonObject.get("obviousPair").asInt
-        val obviousTriple = jsonObject.get("obviousTriple").asInt
-        val bruteForce = jsonObject.get("bruteForce").asInt
+        return when (Games.valueOf(jsonObject.get("game").asString)) {
+            Games.HAKYUU -> {
+                val newValue = jsonObject.get("newValue").asInt
+                val rule2 = jsonObject.get("rule2").asInt
+                val rule3 = jsonObject.get("rule3").asInt
+                val hiddenSingle = jsonObject.get("hiddenSingle").asInt
+                val hiddenPair = jsonObject.get("hiddenPair").asInt
+                val hiddenTriple = jsonObject.get("hiddenTriple").asInt
+                val obviousPair = jsonObject.get("obviousPair").asInt
+                val obviousTriple = jsonObject.get("obviousTriple").asInt
+                val bruteForce = jsonObject.get("bruteForce").asInt
 
-        return when (type) {
-            Games.HAKYUU ->
                 HakyuuScore(
                     newValue = newValue,
                     rule2 = rule2,
@@ -33,10 +32,11 @@ class ScoreDeserializer : JsonDeserializer<Score> {
                     hiddenSingle = hiddenSingle,
                     hiddenPair = hiddenPair,
                     hiddenTriple = hiddenTriple,
-                    obviousPair= obviousPair,
+                    obviousPair = obviousPair,
                     obviousTriple = obviousTriple,
                     bruteForce = bruteForce
                 )
+            }
         }
     }
 }
