@@ -19,7 +19,7 @@ class GameTypeDeserializer : JsonDeserializer<GameType> {
         val numColumns = jsonObject.get("numColumns").asInt
         val numRows = jsonObject.get("numRows").asInt
         val seed = jsonObject.get("seed").asLong
-        val score = Converters.toScore(jsonObject.get("score"))
+        val score = Converters.toScore2(jsonObject.get("score"))
         val startBoard = jsonObject.get("startBoard").asJsonArray.map { it.asInt }.toIntArray()
         val completedBoard = jsonObject.get("completedBoard").asJsonArray.map { it.asInt }.toIntArray()
         val boardRegions = jsonObject.get("boardRegions").asJsonArray.map { it.asInt }.toIntArray()
