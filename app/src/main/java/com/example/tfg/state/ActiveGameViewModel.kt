@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -390,6 +389,8 @@ class ActiveGameViewModel(
 
     private fun getCellColor(index: Int) = getCell(index).backgroundColor
 
+    private fun getCellValue(index: Int) = getCell(index).value
+
     fun getCellColor(coordinate: Coordinate) = getCellColor(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
 
 
@@ -416,11 +417,17 @@ class ActiveGameViewModel(
         if (res) numErrors.intValue++
     }
 
+    private fun errorsDisabled(): Boolean {
+        return getGameStateIds().size > 1
+    }
+
     private fun setCellValue(index: Int, value: Int, isError: Boolean = false) {
         val previousCell = getCell(index)
         val newCell = previousCell.copy(
             value = if (previousCell.value == value) 0 else value,
-            isError = isError
+            // If more than one state errors are disabled: only solved errors are shown
+            isError = if (errorsDisabled() && !previousCell.isError) false
+                else isError
         )
         setCell(index = index, newCell = newCell)
 
@@ -454,7 +461,7 @@ class ActiveGameViewModel(
         setCell(index = index, newCell = newCell)
     }
 
-    private fun setCellColor(index: Int, color: Int) {
+    private fun setCellBackgroundColor(index: Int, color: Int) {
         val previousCell = getCell(index)
         val newCell = previousCell.copy(
             backgroundColor = if (previousCell.backgroundColor == color) 0 else color
@@ -484,7 +491,7 @@ class ActiveGameViewModel(
     private fun setCellsBackgroundColor(color: Int, coordinates: List<Coordinate>) {
         coordinates.forEach { coordinate ->
             val index = coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
-            setCellColor(color = color, index = index)
+            setCellBackgroundColor(color = color, index = index)
         }
     }
 
@@ -574,6 +581,7 @@ class ActiveGameViewModel(
     }
 
     private fun addMove(coordinates: List<Coordinate>, newCells: List<Cell>, previousCells: List<Cell>) {
+        require(coordinates.size == newCells.size && coordinates.size == previousCells.size) { "Wrong sizes provided" }
         val gameStateId = getActualGameStateId()
         val pointer = getActualMovesPointer()
         val move = Move(position = pointer + 1, gameStateId = gameStateId)
@@ -656,16 +664,17 @@ class ActiveGameViewModel(
      */
 
     private fun checkValue(position: Int, value: Int): Set<Int> {
-        return getGameType().checkValue(
-            position = position,
-            value = value,
-            actualValues = getCells().map { if (it.value.isError) 0 else it.value.value }.toIntArray()
-        )
+        return if (isError(position, value))
+            getGameType().checkValue(
+                position = position,
+                value = value,
+                actualValues = getCells().map { if (it.value.isError) 0 else it.value.value }.toIntArray()
+            )
+        else emptySet()
     }
 
     private fun isError(position: Int, value: Int): Boolean {
-        return if (getGameStateIds().size > 1) false
-            else getGameType().isError(
+        return getGameType().isError(
                 position = position,
                 value = value
             )
@@ -681,16 +690,37 @@ class ActiveGameViewModel(
             setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
         }
         else if (coordinates.size == 1) {
-            val index = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+            val position = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+            val oldErrors = checkValue(position = position, value = getCellValue(position))
 
-            // Paint positions that causes the error
-            val errors = checkValue(position = index, value = value).map { Coordinate.fromIndex(it, getNumRows(),getNumColumns()) }
-            previousCells.addAll(getCells(errors))
-            setCellsBackgroundColor(color = ERRORCELLBACKGROUNDCOLOR, coordinates = errors)
-            coordinates.addAll(errors)
+            val isError = isError(position = position, value = value)
+            setCellValue(value = value, index = position, isError = isError)
 
-            val isError = isError(position = index, value = value)
-            setCellValue(value = value, index = index, isError = isError)
+            // Paint positions that causes errors
+            val errors = mutableSetOf<Int>()
+            getCells().forEachIndexed { pos, ms ->
+                val cell = ms.value
+                if (cell.isError) errors.addAll(checkValue(position = pos, value = cell.value))
+            }
+            errors.forEach { pos ->
+                val cell = getCell(pos)
+                if (cell.backgroundColor != ERRORCELLBACKGROUNDCOLOR){
+                    if (pos != position) {
+                        previousCells.add(cell)
+                        coordinates.add(Coordinate.fromIndex(pos, numColumns = getNumColumns(), numRows = getNumRows()))
+                    }
+                    setCellBackgroundColor(pos, ERRORCELLBACKGROUNDCOLOR)
+                }
+            }
+
+            oldErrors.filter { !errors.contains(it) }.forEach { pos ->
+                val cell = getCell(pos)
+                if (pos != position) {
+                    previousCells.add(cell)
+                    coordinates.add(Coordinate.fromIndex(pos, numColumns = getNumColumns(), numRows = getNumRows()))
+                }
+                setCellBackgroundColor(pos, 0) // This gets rid of the error color
+            }
 
             removeSelections()
         }

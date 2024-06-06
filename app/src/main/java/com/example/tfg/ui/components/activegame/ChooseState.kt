@@ -68,7 +68,9 @@ fun ChooseState(
                 }
             }
             Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
-                val buttonModifier = modifier.weight(1f).padding(2.5.dp)
+                val buttonModifier = modifier
+                    .weight(1f)
+                    .padding(2.5.dp)
                 val selectedIsActual = selectedGameState.intValue == actualGameStateID
                 ChooseStateButton(
                     onClick = {
@@ -150,7 +152,8 @@ fun StateBoard(
         val isActualGameState = actualGameStateID == gameStatePosition
         val isSelected = selectedGameState.intValue == gameStatePosition
         Text(
-            text = "${if (isActualGameState)"Actual board" else "Board"} ${gameStatePosition+1}",
+            text = "${if (isActualGameState) stringResource(id = R.string.main_board) 
+                else stringResource(id = R.string.board)} ${gameStatePosition+1}",
             color = textColor
         )
         CustomButton(

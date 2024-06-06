@@ -22,6 +22,8 @@
     <string name="select">Select</string>
     <string name="clone">Clone</string>
     <string name="delete">Delete</string>
+    <string name="main_board">Main board</string>
+    <string name="board">Board</string>
     <string name="rules">Rules</string>
     <string name="in_progress2">In progress</string>
     <string name="stats">Statistics</string>

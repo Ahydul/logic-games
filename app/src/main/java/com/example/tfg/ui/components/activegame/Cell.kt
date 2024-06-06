@@ -39,8 +39,9 @@ fun Cell(
 
     val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.cell_background)
                             else Color(cell.backgroundColor).copy(alpha = 0.4f)
-    val iconColor = if (cell.isError) colorResource(id = R.color.cell_value_error)
-                        else colorResource(id = R.color.cell_value)
+    val iconColor = if (cell.readOnly) colorResource(id = R.color.cell_read_only)
+        else if (cell.isError) colorResource(id = R.color.cell_value_error)
+        else colorResource(id = R.color.cell_value)
 
     val value = cell.value
 
