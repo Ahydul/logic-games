@@ -47,10 +47,10 @@ fun BottomSection(
             viewModel = viewModel,
             modifier = Modifier
                 .padding(4.dp)
-                .weight(5f)
+                .weight(6f)
 
         )
-        Spacer(modifier = Modifier.weight(2f))
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 
@@ -64,9 +64,9 @@ fun BottomActionRow(
 
     val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
     val defaultCellBackground = colorResource(id = R.color.cell_background)
-
+    val numValues = viewModel.getMaxValue()
     HorizontalGrid(
-        numRows = 2,
+        numRows = if (numValues > 10) 3 else if (numValues > 4) 2 else 1,
         verticalSpreadFactor = 0.5f,
         horizontalSpreadFactor = 0.7f,
         componentsScale = 0.85f,
@@ -93,7 +93,7 @@ fun BottomActionRow(
             }
         }
         else {
-            for(v in 0..< viewModel.getMaxValue()) {
+            for(v in 0..< numValues) {
                 val value = viewModel.getValue(v)
                 val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
                                 else colorResource(id = R.color.primary_color)
