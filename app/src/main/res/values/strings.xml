@@ -38,9 +38,11 @@
     <string name="time">Time</string>
     <string name="pause_game">Pause game</string>
     <string name="go_back">Go back</string>
-
+    <string name="game_completed">Game completed!</string>
     <string name="title_activity_test">Test</string>
+
     <!-- Strings used for fragments for navigation -->
+
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>

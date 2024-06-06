@@ -16,6 +16,7 @@ import com.example.tfg.common.entities.Move
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
+import java.time.LocalDateTime
 
 @Dao
 interface GameDao {
@@ -32,8 +33,10 @@ interface GameDao {
     suspend fun getGameById(id: Long): Game
     @Query("SELECT * from Game ORDER BY startDate ASC")
     suspend fun getAllGames(): List<Game>
-    @Query("SELECT EXISTS(SELECT 1 FROM Game)")
-    suspend fun existsAGame(): Boolean
+    @Query("SELECT EXISTS(SELECT 1 FROM Game WHERE endDate IS NULL)")
+    suspend fun existsOnGoingGame(): Boolean
+    @Query("SELECT EXISTS(SELECT 1 FROM Game WHERE gameId = :id and endDate IS NULL)")
+    suspend fun existsOnGoingGameById(id: Long): Boolean
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)

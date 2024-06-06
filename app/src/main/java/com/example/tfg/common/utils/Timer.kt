@@ -24,6 +24,11 @@ class Timer private constructor(
         paused.targetState = false
     }
 
+    // When stopped this is class is no longer usable
+    fun stopTimer() {
+        timerJob?.cancel()
+    }
+
     fun pauseTimer() {
         timerJob?.cancel()
         paused.targetState = true

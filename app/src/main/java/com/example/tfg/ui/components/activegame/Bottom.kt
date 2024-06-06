@@ -64,7 +64,7 @@ fun BottomActionRow(
 
     val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
     val defaultCellBackground = colorResource(id = R.color.cell_background)
-    val numValues = viewModel.getMaxValue()
+    val numValues = viewModel.getMaxValue()+1
     HorizontalGrid(
         numRows = if (numValues > 10) 3 else if (numValues > 4) 2 else 1,
         verticalSpreadFactor = 0.5f,

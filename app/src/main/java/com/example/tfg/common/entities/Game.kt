@@ -13,7 +13,7 @@ data class Game(
     val gameType: GameType,
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
-    private var endDate: LocalDateTime? = null,
+    var endDate: LocalDateTime? = null,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
     var numClues: Int = 0,
     var timer: Int = 0

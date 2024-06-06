@@ -31,7 +31,6 @@ import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomFilledButton
-import com.example.tfg.ui.components.common.CustomPopup
 
 @Composable
 fun ChooseState(
@@ -39,80 +38,72 @@ fun ChooseState(
     viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    CustomPopup(
-        expandedStates = expandedStates,
-        onDismissRequest = {
-            expandedStates.targetState = false
-            viewModel.resumeGame()
-        },
-        backgroundColor = colorResource(id = R.color.board_grid2)
+    val textColor = colorResource(id = R.color.primary_color)
+    val actualGameStateID = viewModel.getActualGameStatePosition()
+    val selectedGameState = remember { mutableIntStateOf(actualGameStateID) }
+    val states = viewModel.getGameStatesBitmapFromDB()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(top = 45.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
     ) {
-        val textColor = colorResource(id = R.color.primary_color)
-        val actualGameStateID = viewModel.getActualGameStatePosition()
-        val selectedGameState = remember { mutableIntStateOf(actualGameStateID) }
-        val states = viewModel.getGameStatesBitmapFromDB()
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(top = 45.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
-        ) {
-            val scrollState = rememberScrollState()
-            Row (
-                modifier = modifier.horizontalScroll(scrollState)
-            ){
-                states.forEach { (gameStatePosition, bitmap) ->
-                    StateBoard(
-                        gameStatePosition = gameStatePosition,
-                        bitmap = bitmap,
-                        actualGameStateID = actualGameStateID,
-                        selectedGameState = selectedGameState,
-                        textColor = textColor,
-                        modifier = modifier
-                    )
-                }
-            }
-            Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
-                val buttonModifier = modifier
-                    .weight(1f)
-                    .padding(2.5.dp)
-                val selectedIsActual = selectedGameState.intValue == actualGameStateID
-                ChooseStateButton(
-                    onClick = {
-                        if (selectedIsActual) viewModel.setActualState(0)
-                        viewModel.deleteGameState(selectedGameState.intValue)
-                        selectedGameState.intValue = 0
-                        states.remove(selectedGameState.intValue)
-                    },
-                    color = colorResource(id = R.color.cell_value_error),
-                    text = stringResource(id = R.string.delete),
-                    modifier = buttonModifier,
-                    enabled = selectedGameState.intValue != 0
-                )
-
-                ChooseStateButton(
-                    onClick = {
-                        expandedStates.targetState = false
-                        viewModel.newGameState()
-                        viewModel.resumeGame()
-                    },
-                    text = stringResource(id = R.string.clone),
-                    modifier = buttonModifier
-                )
-                ChooseStateButton(
-                    onClick = {
-                        if (!selectedIsActual) {
-                            expandedStates.targetState = false
-                            viewModel.setActualState(selectedGameState.intValue)
-                            viewModel.resumeGame()
-                        }
-                    },
-                    text = stringResource(id = R.string.select),
-                    modifier = buttonModifier
+        val scrollState = rememberScrollState()
+        Row (
+            modifier = modifier.horizontalScroll(scrollState)
+        ){
+            states.forEach { (gameStatePosition, bitmap) ->
+                StateBoard(
+                    gameStatePosition = gameStatePosition,
+                    bitmap = bitmap,
+                    actualGameStateID = actualGameStateID,
+                    selectedGameState = selectedGameState,
+                    textColor = textColor,
+                    modifier = modifier
                 )
             }
         }
+        Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
+            val buttonModifier = modifier
+                .weight(1f)
+                .padding(2.5.dp)
+            val selectedIsActual = selectedGameState.intValue == actualGameStateID
+            ChooseStateButton(
+                onClick = {
+                    if (selectedIsActual) viewModel.setActualState(0)
+                    viewModel.deleteGameState(selectedGameState.intValue)
+                    selectedGameState.intValue = 0
+                    states.remove(selectedGameState.intValue)
+                },
+                color = colorResource(id = R.color.cell_value_error),
+                text = stringResource(id = R.string.delete),
+                modifier = buttonModifier,
+                enabled = selectedGameState.intValue != 0
+            )
+
+            ChooseStateButton(
+                onClick = {
+                    expandedStates.targetState = false
+                    viewModel.newGameState()
+                    viewModel.resumeGame()
+                },
+                text = stringResource(id = R.string.clone),
+                modifier = buttonModifier
+            )
+            ChooseStateButton(
+                onClick = {
+                    if (!selectedIsActual) {
+                        expandedStates.targetState = false
+                        viewModel.setActualState(selectedGameState.intValue)
+                        viewModel.resumeGame()
+                    }
+                },
+                text = stringResource(id = R.string.select),
+                modifier = buttonModifier
+            )
+        }
     }
 }
+
 @Composable
 fun ChooseStateButton(
     onClick: () -> Unit,

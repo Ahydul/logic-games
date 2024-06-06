@@ -75,6 +75,7 @@ fun animateScale(
 
 @Composable
 fun CustomPopup(
+    modifier: Modifier = Modifier,
     expandedStates: MutableTransitionState<Boolean>,
     onDismissRequest: (() -> Unit) = { expandedStates.targetState = false },
     backgroundColor: Color = colorResource(id = R.color.board_grid),
@@ -92,7 +93,7 @@ fun CustomPopup(
             offset = IntOffset(0,-140)
         ) {
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .graphicsLayer {
                         scaleX = scale
                         scaleY = scale
@@ -104,7 +105,7 @@ fun CustomPopup(
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
+                    modifier = modifier
                         .fillMaxWidth()
                         .background(backgroundColor)
                 ) {

@@ -52,22 +52,26 @@ class ActiveGameViewModel(
     private var snapshot: (() -> Bitmap?)? = null
     private var filesDirectory: File? = null
 
+    private var _gameCompleted = mutableStateOf(false)
+
 
     init {
         numErrors = mutableIntStateOf(getGame().errors.size)
     }
 
+    fun gameIsCompleted() = _gameCompleted.value
 
-    private fun gameCompleted(): Boolean {
+    private fun gameWasCompleted(): Boolean {
         return !errorsDisabled() && getCells().all { it.value.value != 0 && !it.value.isError }
     }
 
     private fun gameCompletedFun() {
+        stopGame()
         getGame().setEndTime()
         updateGameToDb()
-        getGameStateIds()
-            .filter { it != getActualGameStateId() }
+        getGameStateIds().filter { it != getActualGameStateId() }
             .forEach { deleteGameStateFromDb(it) }
+        _gameCompleted.value = true
     }
 
     public override fun onCleared() {
@@ -379,10 +383,14 @@ class ActiveGameViewModel(
     fun getTimerState() = timer.paused
 
     fun pauseGame() {
-        if (!timerPaused()) {
+        if (!timerPaused() && !gameIsCompleted()) {
             timer.pauseTimer()
             updateTimer()
         }
+    }
+
+    fun stopGame() {
+        timer.stopTimer()
     }
 
     fun resumeGame() {
@@ -456,7 +464,7 @@ class ActiveGameViewModel(
         setCell(index = index, newCell = newCell)
 
         if (isError) addError(index = index, value = value)
-        else return gameCompleted()
+        else return gameWasCompleted()
 
         return false
     }
@@ -793,7 +801,7 @@ class ActiveGameViewModel(
      */
 
     fun buttonShouldBeEnabled(): Boolean {
-        return !timerPaused()
+        return !timerPaused() && !_gameCompleted.value
     }
 
     private fun findRegionID(coordinate: Coordinate): Int? {

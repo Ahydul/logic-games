@@ -1,6 +1,7 @@
 package com.example.tfg
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,25 +18,55 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.common.IdGenerator
+import com.example.tfg.data.GameDao
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.state.CustomMainViewModelFactory
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.mainactivity.MainScreen
 import com.example.tfg.ui.theme.TFGTheme
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        IdGenerator.initialize(this)
 
-        val dao = GameDatabase.getDatabase(this).gameDao()
-        val sharedPref = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
-        // Initialize
-        with (sharedPref.edit()) {
+    var viewModel: MainViewModel? = null
+
+    private fun initializeConfiguration(configurationPrefs: SharedPreferences) {
+        with (configurationPrefs.edit()) {
             putBoolean("snapshot", true)
             apply() //asynchronous
         }
+    }
 
-        val viewModel: MainViewModel by viewModels{ CustomMainViewModelFactory(dao, sharedPref) }
+    private fun getLastPlayedGame(dao: GameDao, configurationPrefs: SharedPreferences): Long {
+        var lastPlayedGame = configurationPrefs.getLong("lastPlayedGame", -1L)
+        if (lastPlayedGame != -1L && runBlocking { !dao.existsOnGoingGameById(lastPlayedGame) }) {
+            //Game was completed or doesn't exist
+            lastPlayedGame = -1L
+            with(configurationPrefs.edit()) {
+                putLong("lastPlayedGame", -1)
+                apply()
+            }
+        }
+        return lastPlayedGame
+    }
+
+    override fun onRestart() {
+        val dao = GameDatabase.getDatabase(this).gameDao()
+        val configurationPrefs = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
+        val lastPlayedGame = getLastPlayedGame(dao, configurationPrefs)
+        viewModel?.setLastPlayedGame(lastPlayedGame)
+        super.onRestart()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        IdGenerator.initialize(this)
+        val configurationPrefs = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
+        initializeConfiguration(configurationPrefs)
+
+        val dao = GameDatabase.getDatabase(this).gameDao()
+        val lastPlayedGame = getLastPlayedGame(dao, configurationPrefs)
+        val vm: MainViewModel by viewModels{ CustomMainViewModelFactory(dao, lastPlayedGame) }
+        viewModel = vm
 
         super.onCreate(savedInstanceState)
         setContent {
@@ -47,7 +78,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     TFGTheme {
                         MainScreen(
-                            viewModel = viewModel,
+                            viewModel = vm,
                             modifier = Modifier
                                 .background(colorResource(id = R.color.primary_background))
                                 .fillMaxWidth()
@@ -64,8 +95,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreenPreview() {
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
-    val sharedPreferences = LocalContext.current.getSharedPreferences("Configuration", Context.MODE_PRIVATE)
-    val viewModel: MainViewModel = viewModel(factory = CustomMainViewModelFactory(database.gameDao(), sharedPreferences, true))
+    val viewModel: MainViewModel = viewModel(factory = CustomMainViewModelFactory(database.gameDao(), -1, true))
 
     TFGTheme {
         MainScreen(

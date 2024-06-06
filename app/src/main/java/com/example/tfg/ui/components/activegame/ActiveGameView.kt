@@ -13,8 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.example.tfg.R
+import com.example.tfg.common.utils.Utils
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.animateBlur
 
 
@@ -26,6 +31,10 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
 
     val expandedStates = remember { MutableTransitionState(false) }
     val animatedBlur by animateBlur(expandedStates)
+    val gameCompleted = viewModel.gameIsCompleted()
+
+    if (gameCompleted && !expandedStates.currentState && !expandedStates.targetState)
+        expandedStates.targetState = true
 
     Column(modifier = modifier.blur(animatedBlur)) {
         TopSection(
@@ -54,6 +63,23 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
                 .weight(3f)
         )
     }
+    val context = LocalContext.current
+    CustomPopup(
+        modifier = modifier,
+        expandedStates = expandedStates,
+        onDismissRequest = {
+            if (gameCompleted){
+                viewModel.setSnapshot(null) // To avoid snapshot
 
-    ChooseState(expandedStates = expandedStates, viewModel = viewModel)
+                Utils.startHomeActivity(context)
+            } else {
+                expandedStates.targetState = false
+                viewModel.resumeGame()
+            }
+        },
+        backgroundColor = colorResource(id = R.color.board_grid2)
+    ) {
+        if (gameCompleted) GameCompleted(expandedStates = expandedStates, modifier = modifier)
+        else ChooseState(expandedStates = expandedStates, viewModel = viewModel)
+    }
 }
