@@ -6,8 +6,9 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.runtime.toMutableStateMap
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -81,8 +82,7 @@ class ActiveGameViewModel(
                 directory = getGameEnum().name.lowercase()
             )
             if (bitmapFilePath != null) {
-                val gameStateSnapshot =
-                    GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
+                val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
                 insertGameStateSnapshotToDB(gameStateSnapshot)
             }
         }
@@ -114,15 +114,20 @@ class ActiveGameViewModel(
         }
     }
 
-    fun getGameStateBitmapFromDB(): Map<Int, Bitmap?> {
-        return getGameStateSnapshotFromDB().mapNotNull {
-            getGameStateIds().indexOf(it.gameStateId) to Utils.getBitmapFromFile(it.snapshotFilePath)
-        }.sortedBy { it.first }.toMap()
+    fun getGameStatesBitmapFromDB(): SnapshotStateMap<Int, Bitmap?> {
+        return getGameStateSnapshotsFromDB().sortedBy { it.first }.toMutableStateMap()
     }
 
-    private fun getGameStateSnapshotFromDB(): List<GameStateSnapshot> {
+    private fun getGameStateSnapshotsFromDB(): List<Pair<Int, Bitmap?>> {
+        val res = mutableListOf<Pair<Int, Bitmap?>>()
         return runBlocking {
-            gameDao.getGameStateSnapshotsByGameStateIds(getGameStateIds())
+            getGameStateIds().forEach { id ->
+                val snapshot = gameDao.getGameStateSnapshotByGameStateId(id)
+                val pair = getGameStateIds().indexOf(snapshot?.gameStateId ?: id) to
+                        Utils.getBitmapFromFile(snapshot?.snapshotFilePath)
+                res.add(pair)
+            }
+            res
         }
     }
 
@@ -183,6 +188,14 @@ class ActiveGameViewModel(
     private fun updateGameStateInDb() {
         viewModelScope.launch(Dispatchers.IO) {
             gameDao.updateGameState(getActualState())
+        }
+    }
+
+    private fun deleteGameStateFromDb(gameStateId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val file = gameDao.getGameStateSnapshotByGameStateId(gameStateId)?.snapshotFilePath
+            Utils.deleteFile(file)
+            gameDao.deleteGameStateById(gameStateId)
         }
     }
 
@@ -269,7 +282,6 @@ class ActiveGameViewModel(
     /*
         GameState functions
      */
-//TODO: STATE
 
     private fun loadCells(boardId: Long) {
         // All of this is to force recomposition only in new cells
@@ -327,6 +339,14 @@ class ActiveGameViewModel(
         }
         removeSelections()
     }
+
+    fun deleteGameState(pointer: Int) {
+        if (pointer < getGameStateIds().size && pointer != getActualGameStatePosition()){
+            deleteGameStateFromDb(getGameStateIds()[pointer])
+            Log.d("state", "Changed to state: ${getActualState()}")
+        }
+    }
+
 /*
     Timer
  */

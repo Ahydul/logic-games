@@ -126,11 +126,13 @@ fun CustomFilledButton(
     borderColor: Color = Color.Red,
     textColor: Color = Color.Black,
     fontSize: TextUnit = TextUnit.Unspecified,
+    enabled: Boolean = true,
     textModifier: Modifier = Modifier
 ) {
     FilledTonalButton(
         modifier = modifier.border(width = 0.5.dp, color = borderColor, shape = CircleShape),
         onClick = onClick,
+        enabled = enabled,
         colors = ButtonDefaults.filledTonalButtonColors(containerColor = color)
     ) {
         CustomText(

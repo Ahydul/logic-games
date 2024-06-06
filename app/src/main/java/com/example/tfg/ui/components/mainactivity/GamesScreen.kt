@@ -212,7 +212,8 @@ fun TextFields(
             borderColor = colorResource(id = R.color.board_grid2),
             textColor = textColor,
             mainText = customBoardText,
-            modifier = modifier.weight(1.5f)
+            modifier = modifier.weight(1.5f),
+            enabled = false
         )
 
         val createText = stringResource(id = R.string.create)
