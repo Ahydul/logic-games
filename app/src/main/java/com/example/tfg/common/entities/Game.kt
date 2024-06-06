@@ -13,11 +13,15 @@ data class Game(
     val gameType: GameType,
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
-    val endDate: LocalDateTime? = null,
+    private var endDate: LocalDateTime? = null,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
     var numClues: Int = 0,
     var timer: Int = 0
 ) {
+
+    fun setEndTime() {
+        endDate = LocalDateTime.now()
+    }
 
     companion object {
         fun create(gameType: GameType, difficulty: Difficulty): Game {

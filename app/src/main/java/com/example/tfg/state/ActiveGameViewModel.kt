@@ -52,53 +52,22 @@ class ActiveGameViewModel(
     private var snapshot: (() -> Bitmap?)? = null
     private var filesDirectory: File? = null
 
-    fun setSnapshot(snapshot: (() -> Bitmap)?) {
-        this.snapshot = snapshot
-    }
-
-    fun setSnapshot2(snapshot: (() -> Bitmap?)) {
-        this.snapshot = snapshot
-    }
-
-    fun setFilesDirectory(filesDirectory: File) {
-        this.filesDirectory = filesDirectory
-    }
-
-    fun takeSnapshot() {
-        if (timerPaused() || snapshot == null || filesDirectory == null) return
-
-        Log.d("snapshot", "Taking snapshot")
-        val bitmap = snapshot!!.invoke()
-
-        if (bitmap == null) {
-            Log.d("snapshot", "Failed")
-            return
-        }
-
-        MainScope().launch {
-            val bitmapFilePath = Utils.saveBitmapToFile(
-                bitmap = bitmap,
-                filesDir = filesDirectory!!,
-                fileName = "gameStateId-${getActualGameStateId()}",
-                directory = getGameEnum().name.lowercase()
-            )
-            if (bitmapFilePath != null) {
-                val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
-                insertGameStateSnapshotToDB(gameStateSnapshot)
-            }
-        }
-    }
 
     init {
         numErrors = mutableIntStateOf(getGame().errors.size)
     }
 
-    fun getActualGameStatePosition(): Int {
-        return actualGameStatePointer
+
+    private fun gameCompleted(): Boolean {
+        return !errorsDisabled() && getCells().all { it.value.value != 0 && !it.value.isError }
     }
 
-    fun getActualGameStateId(): Long {
-        return getGameStateIds()[getActualGameStatePosition()]
+    private fun gameCompletedFun() {
+        getGame().setEndTime()
+        updateGameToDb()
+        getGameStateIds()
+            .filter { it != getActualGameStateId() }
+            .forEach { deleteGameStateFromDb(it) }
     }
 
     public override fun onCleared() {
@@ -194,7 +163,6 @@ class ActiveGameViewModel(
         }
     }
 
-
     private fun updateGameStateInDb() {
         viewModelScope.launch(Dispatchers.IO) {
             gameDao.updateGameState(getActualState())
@@ -230,6 +198,46 @@ class ActiveGameViewModel(
     }
 
 
+//  Snapshot functionality
+
+    fun setSnapshot(snapshot: (() -> Bitmap)?) {
+        this.snapshot = snapshot
+    }
+
+    fun setSnapshot2(snapshot: (() -> Bitmap?)) {
+        this.snapshot = snapshot
+    }
+
+    fun setFilesDirectory(filesDirectory: File) {
+        this.filesDirectory = filesDirectory
+    }
+
+    fun takeSnapshot() {
+        if (timerPaused() || snapshot == null || filesDirectory == null) return
+
+        Log.d("snapshot", "Taking snapshot")
+        val bitmap = snapshot!!.invoke()
+
+        if (bitmap == null) {
+            Log.d("snapshot", "Failed")
+            return
+        }
+
+        MainScope().launch {
+            val bitmapFilePath = Utils.saveBitmapToFile(
+                bitmap = bitmap,
+                filesDir = filesDirectory!!,
+                fileName = "gameStateId-${getActualGameStateId()}",
+                directory = getGameEnum().name.lowercase()
+            )
+            if (bitmapFilePath != null) {
+                val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
+                insertGameStateSnapshotToDB(gameStateSnapshot)
+            }
+        }
+    }
+
+
 //  Main getters
 
     private fun getGame() = gameInstance.game
@@ -251,6 +259,10 @@ class ActiveGameViewModel(
     private fun getActualMovesPointer() = getActualState().pointer
 
     private fun getMove(pointer: Int) = getMoves()[pointer]
+
+    fun getActualGameStatePosition() = actualGameStatePointer
+
+    fun getActualGameStateId() = getGameStateIds()[getActualGameStatePosition()]
 
     fun getNumClues() = getGame().numClues
 
@@ -678,10 +690,6 @@ class ActiveGameViewModel(
     Game Actions
      */
 
-    private fun gameCompletedfun() {
-
-    }
-
     private fun checkValue(position: Int, value: Int): Set<Int> {
         return if (isError(position, value))
             getGameType().checkValue(
@@ -749,7 +757,7 @@ class ActiveGameViewModel(
         val newCells = getCells(coordinates)
         addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
 
-        if (gameCompleted) gameCompletedfun()
+        if (gameCompleted) gameCompletedFun()
     }
 
     fun paintAction(colorInt: Int) {
@@ -783,10 +791,6 @@ class ActiveGameViewModel(
     /*
     Other
      */
-
-    private fun gameCompleted(): Boolean {
-        return !errorsDisabled() && getCells().all { it.value.value != 0 && !it.value.isError }
-    }
 
     fun buttonShouldBeEnabled(): Boolean {
         return !timerPaused()
