@@ -12,14 +12,20 @@ import com.example.tfg.state.MainViewModel
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    goGamesScreen: () -> Unit
+    goGamesScreen: () -> Unit,
+    goOnGoingGames: () -> Unit
 ) {
     val mod = Modifier.fillMaxWidth()
     Column(modifier = modifier
         .fillMaxHeight()
     ) {
         Spacer(modifier = mod.weight(8f))
-        HomeButtons(modifier = mod.weight(5f), viewModel = viewModel, goGamesScreen = goGamesScreen)
+        HomeButtons(
+            modifier = mod.weight(5f),
+            viewModel = viewModel,
+            goGamesScreen = goGamesScreen,
+            goOnGoingGames = goOnGoingGames
+        )
         Spacer(modifier = mod.weight(4f))
     }
 }

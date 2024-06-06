@@ -10,7 +10,9 @@ import com.example.tfg.common.entities.relations.GameStateSnapshot
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.time.format.DateTimeFormatter
 
+val dateFormatter = DateTimeFormatter.ofPattern("dd MM yyyy HH:mm")
 
 abstract class Utils {
     companion object {

@@ -1,4 +1,4 @@
-package com.example.tfg.common.entities
+package com.example.tfg.common
 
 import com.example.tfg.games.GameType
 import com.example.tfg.games.Games

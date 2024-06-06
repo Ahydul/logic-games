@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.tfg.common.Difficulty
+import com.example.tfg.common.GameTypeEntity
 import com.example.tfg.games.GameType
 import java.time.LocalDateTime
 
