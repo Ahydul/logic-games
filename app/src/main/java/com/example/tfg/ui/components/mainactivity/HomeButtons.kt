@@ -1,6 +1,5 @@
 package com.example.tfg.ui.components.mainactivity
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,8 @@ import com.example.tfg.ui.components.common.CustomFilledButton
 fun HomeButtons(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    goGamesScreen: () -> Unit
+    goGamesScreen: () -> Unit,
+    goOnGoingGames: () -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -57,8 +57,8 @@ fun HomeButtons(
             }
 
             val otherGamesInProgressLabel = stringResource(id = R.string.other_games_in_progress)
-            HomeButton(//TODO
-                onClick = { Log.d("navigation", "OTHER GAMES") },
+            HomeButton(
+                onClick = goOnGoingGames,
                 mainText = otherGamesInProgressLabel
             )
         }

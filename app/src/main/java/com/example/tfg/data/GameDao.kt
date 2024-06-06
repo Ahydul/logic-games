@@ -7,6 +7,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.example.tfg.common.Difficulty
+import com.example.tfg.common.GameLowerInfo
+import com.example.tfg.common.GameTypeEntity
 import com.example.tfg.common.entities.Action
 import com.example.tfg.common.entities.Board
 import com.example.tfg.common.entities.Cell
@@ -38,8 +41,11 @@ interface GameDao {
     suspend fun existsOnGoingGame(): Boolean
     @Query("SELECT EXISTS(SELECT 1 FROM Game WHERE gameId = :id and endDate IS NULL)")
     suspend fun existsOnGoingGameById(id: Long): Boolean
-    //@Query("SELECT * FROM Game WHERE endDate IS NULL and gameType.type = :type")
-    //suspend fun getOnGoingGameByType(type: Games): List<Game>
+
+    @Query("SELECT gameId, type, difficulty, startDate, numClues, timer, errors  FROM Game WHERE endDate IS NULL and type = :type ORDER BY startDate DESC")
+    suspend fun getOnGoingGamesByType(type: Games): List<GameLowerInfo>
+    @Query("SELECT gameId, type, difficulty, startDate, numClues, timer, errors FROM Game WHERE endDate IS NULL ORDER BY startDate DESC")
+    suspend fun getOnGoingGames(): List<GameLowerInfo>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)

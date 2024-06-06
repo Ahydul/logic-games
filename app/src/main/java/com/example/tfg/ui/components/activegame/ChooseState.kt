@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,6 +30,7 @@ import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomFilledButton
+import com.example.tfg.ui.components.common.defaultBitmap
 
 @Composable
 fun ChooseState(
@@ -133,8 +133,7 @@ fun StateBoard(
     selectedGameState: MutableIntState,
     modifier: Modifier = Modifier
 ) {
-    val default = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888)
-    default.eraseColor(Color.Gray.toArgb())
+    val default = defaultBitmap()
     val imageModifier = modifier
         .size(120.dp)
         .border(color = Color.Black, width = 1.dp)

@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import com.example.tfg.common.Difficulty
 import com.example.tfg.common.GameFactory
+import com.example.tfg.common.GameLowerInfo
 import com.example.tfg.common.entities.Game
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.GameDao
@@ -26,19 +27,21 @@ class MainViewModel(
             )
         }
     }
-/*
-    fun getOnGoingGamesByType(type: Games): List<Game> {
-        return runBlocking { gameDao.getOnGoingGameByType(type) }
+
+    fun getOnGoingGamesByType(type: Games): List<GameLowerInfo> {
+        return runBlocking { gameDao.getOnGoingGamesByType(type) }
     }
 
- */
+    fun getOnGoingGames(): List<GameLowerInfo> {
+        return runBlocking { gameDao.getOnGoingGames() }
+    }
+
 
     fun getMainSnapshotFileByGameId(gameId: Long): Bitmap? {
         return runBlocking {
             Utils.getBitmapFromFile(gameDao.getMainSnapshotFileByGameId(gameId))
         }
     }
-
 
     fun noActiveGames(): Boolean {
         if (preview) return false

@@ -8,6 +8,7 @@
     <string name="undo_action">Undo</string>
     <string name="redo_action">Redo</string>
     <string name="difficulty">Difficulty</string>
+    <string name="type">Type</string>
     <string name="beginner">Beginner</string>
     <string name="easy">Easy</string>
     <string name="medium">Medium</string>
@@ -36,6 +37,7 @@
     <string name="errors">Errors</string>
     <string name="clues">Clues</string>
     <string name="time">Time</string>
+    <string name="timer">Timer</string>
     <string name="pause_game">Pause game</string>
     <string name="go_back">Go back</string>
     <string name="game_completed">Game completed!</string>
