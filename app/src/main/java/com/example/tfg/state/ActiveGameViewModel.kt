@@ -3,7 +3,9 @@ package com.example.tfg.state
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
@@ -42,7 +44,7 @@ class ActiveGameViewModel(
 ) : ViewModel() {
 
     private var actualGameStatePointer = 0
-    private val numErrors: MutableState<Int>
+    private val numErrors: MutableIntState
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
@@ -89,7 +91,7 @@ class ActiveGameViewModel(
     }
 
     init {
-        numErrors = mutableStateOf(getGame().errors.size)
+        numErrors = mutableIntStateOf(getGame().errors.size)
     }
 
     fun getActualGameStatePosition(): Int {
@@ -272,7 +274,7 @@ class ActiveGameViewModel(
 
     fun getNumCells() = getNumRows() * getNumColumns()
 
-    fun getNumErrors() = numErrors.value
+    fun getNumErrors() = numErrors.intValue
 
     fun isPaint() = isPaint.value
 
@@ -411,7 +413,7 @@ class ActiveGameViewModel(
         val error = Pair(index, value)
         val res = getGame().errors.add(error)
         updateGameToDb()
-        if (res) numErrors.value++
+        if (res) numErrors.intValue++
     }
 
     private fun setCellValue(index: Int, value: Int, isError: Boolean = false) {
@@ -662,10 +664,11 @@ class ActiveGameViewModel(
     }
 
     private fun isError(position: Int, value: Int): Boolean {
-        return getGameType().isError(
-            position = position,
-            value = value
-        )
+        return if (getGameStateIds().size > 1) false
+            else getGameType().isError(
+                position = position,
+                value = value
+            )
     }
 
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
@@ -728,6 +731,10 @@ class ActiveGameViewModel(
     /*
     Other
      */
+
+    fun buttonShouldBeEnabled(): Boolean {
+        return !timerPaused()
+    }
 
     private fun findRegionID(coordinate: Coordinate): Int? {
         for (entry in getRegions().entries)

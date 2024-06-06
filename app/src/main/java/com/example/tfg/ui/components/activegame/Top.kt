@@ -60,7 +60,7 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
                 onClick = { viewModel.pauseGame() },
                 imageVector = ImageVector.vectorResource(R.drawable.pause),
                 contentDescription = stringResource(id = R.string.pause_game),
-                enabled = !viewModel.timerPaused()
+                enabled = viewModel.buttonShouldBeEnabled()
             )
         }
     }
