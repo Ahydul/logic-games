@@ -55,10 +55,10 @@ fun HorizontalGrid(
             placeables.forEachIndexed { index, placeable ->
                 val row = if (placement == GridPlacement.HORIZONTAL) index / numChildrenPerRow
                             else index % numRows
-                val verticalSpace = initialVerticalSpace + if (row == 0) 0 else verticalSpaceBetween
+                val verticalSpace = if (row == 0) 0 else verticalSpaceBetween
                 placeable.placeRelative(
                     x = rowX[row],
-                    y = row * childrenSize + verticalSpace
+                    y = row * (childrenSize + verticalSpace) + initialVerticalSpace
                 )
                 rowX[row] += placeable.width + horizontalSpaceBetween
             }
