@@ -3,7 +3,7 @@ package com.example.tfg.games
 import com.example.tfg.common.Difficulty
 import com.google.gson.JsonElement
 
-abstract class Score {
+abstract class Score(private val game: Games) {
     abstract fun get(): Int
     abstract fun reset()
     abstract fun add(s: Score?)

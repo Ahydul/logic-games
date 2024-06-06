@@ -2,8 +2,6 @@ package com.example.tfg.data
 
 import androidx.room.TypeConverter
 import com.example.tfg.common.utils.Coordinate
-import com.example.tfg.games.GameType
-import com.example.tfg.games.GameTypeDeserializer
 import com.example.tfg.games.Score
 import com.example.tfg.games.ScoreDeserializer
 import com.example.tfg.games.ScoreSerializer
@@ -84,19 +82,31 @@ object Converters {
 
 
     // Score converters
-/*
-    @TypeConverter
-    fun fromScore(score: Score): String {
-        return score.serialize()
-    }
- */
 
     @TypeConverter
-    fun toScore(value: JsonElement): Score {
+    fun fromScore(score: Score): String {
+        return fromScoreGson().toJson(score)
+    }
+
+    private fun fromScoreGson(): Gson {
+        return GsonBuilder()
+            .registerTypeAdapter(Score::class.java, ScoreSerializer())
+            .create()
+    }
+
+    fun toScore2(value: JsonElement): Score {
         return value.let {
             toScoreGson().fromJson(it, Score::class.java)
         }
     }
+
+    @TypeConverter
+    fun toScore(value: String): Score {
+        return value.let {
+            toScoreGson().fromJson(it, Score::class.java)
+        }
+    }
+
 
     private fun toScoreGson(): Gson {
         return GsonBuilder()
@@ -107,6 +117,7 @@ object Converters {
 
     // GameType converters
 
+    /*
     @TypeConverter
     fun fromGameType(gameType: GameType): String {
         return fromGameTypeGson().toJson(gameType)
@@ -129,4 +140,5 @@ object Converters {
             .registerTypeAdapter(GameType::class.java, GameTypeDeserializer())
             .create()
     }
+     */
 }

@@ -246,7 +246,9 @@ class ActiveGameViewModel(
 
     private fun getGame() = gameInstance.game
 
-    private fun getGameType() = getGame().gameType
+    private fun getGameType() = getGame().gameTypeEntity
+
+    private fun getRealGameType() = getGameType().toGameType()
 
     private fun getMoves() = gameInstance.moves
 
@@ -274,11 +276,11 @@ class ActiveGameViewModel(
 
     fun getDifficulty(context: Context) = getGame().difficulty.toString(context)
 
-    fun getValue(value: Int): GameValue = getGameType().getValue(value)
+    fun getValue(value: Int): GameValue = getRealGameType().getValue(value)
 
-    fun getMaxValue() = getGameType().maxRegionSize()
+    fun getMaxValue() = getRealGameType().maxRegionSize()
 
-    private fun getRegions() = getGameType().getRegions()
+    private fun getRegions() = getRealGameType().getRegions()
 
     fun getRegionSize() = getRegions().size
 
@@ -700,7 +702,7 @@ class ActiveGameViewModel(
 
     private fun checkValue(position: Int, value: Int): Set<Int> {
         return if (isError(position, value))
-            getGameType().checkValue(
+            getRealGameType().checkValue(
                 position = position,
                 value = value,
                 actualValues = getCells().map { if (it.value.isError) 0 else it.value.value }.toIntArray()
@@ -709,7 +711,7 @@ class ActiveGameViewModel(
     }
 
     private fun isError(position: Int, value: Int): Boolean {
-        return getGameType().isError(
+        return getRealGameType().isError(
                 position = position,
                 value = value
             )

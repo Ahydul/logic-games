@@ -1,11 +1,13 @@
 package com.example.tfg.games.hakyuu
 
 import com.example.tfg.common.Difficulty
+import com.example.tfg.games.Games
 import com.example.tfg.games.Score
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 
 class HakyuuScore(
+    game: Games = Games.HAKYUU,
     private var newValue: Int = 0,
     private var rule2: Int = 0,
     private var rule3: Int = 0,
@@ -15,7 +17,7 @@ class HakyuuScore(
     private var obviousPair: Int = 0,
     private var obviousTriple: Int = 0,
     private var bruteForce: Int = 0
-) : Score() {
+) : Score(game) {
 
 
     override fun get(): Int {
@@ -75,9 +77,7 @@ class HakyuuScore(
     }
 
     override fun serialize(): JsonElement {
-        val res = Gson().toJsonTree(this).asJsonObject
-        res.addProperty("game", "Hakyuu")
-        return res
+        return Gson().toJsonTree(this).asJsonObject
     }
 
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {

@@ -1,5 +1,6 @@
 package com.example.tfg.common.entities
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.tfg.common.Difficulty
@@ -10,7 +11,8 @@ import java.time.LocalDateTime
 data class Game(
     @PrimaryKey(autoGenerate = true)
     val gameId: Long = 0,
-    val gameType: GameType,
+    @Embedded
+    val gameTypeEntity: GameTypeEntity,
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
     var endDate: LocalDateTime? = null,
@@ -26,10 +28,17 @@ data class Game(
     companion object {
         fun create(gameType: GameType, difficulty: Difficulty): Game {
             return Game(
-                gameType = gameType,
+                gameTypeEntity = GameTypeEntity.create(gameType),
                 difficulty = difficulty,
             )
         }
+        fun create(gameTypeEntity: GameTypeEntity, difficulty: Difficulty): Game {
+            return Game(
+                gameTypeEntity = gameTypeEntity,
+                difficulty = difficulty,
+            )
+        }
+
     }
 }
 

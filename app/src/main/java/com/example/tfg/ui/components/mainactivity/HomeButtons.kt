@@ -45,7 +45,7 @@ fun HomeButtons(
             if (game!= null) {
                 val context = LocalContext.current
                 val secondaryText =
-                    game.gameType.type.title + " - " +
+                    game.gameTypeEntity.type.title + " - " +
                     Timer.formatTime(game.timer) + " - " +
                     game.difficulty.toString(context = context)
 
