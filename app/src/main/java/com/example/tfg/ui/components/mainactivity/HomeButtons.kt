@@ -12,6 +12,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import com.example.tfg.R
+import com.example.tfg.common.utils.Timer
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomFilledButton
@@ -45,7 +46,7 @@ fun HomeButtons(
                 val context = LocalContext.current
                 val secondaryText =
                     game.gameType.type.title + " - " +
-                    "time" + " - " + //TODO: timer
+                    Timer.formatTime(game.timer) + " - " +
                     game.difficulty.toString(context = context)
 
                 HomeButton(
@@ -56,7 +57,7 @@ fun HomeButtons(
             }
 
             val otherGamesInProgressLabel = stringResource(id = R.string.other_games_in_progress)
-            HomeButton(
+            HomeButton(//TODO
                 onClick = { Log.d("navigation", "OTHER GAMES") },
                 mainText = otherGamesInProgressLabel
             )
