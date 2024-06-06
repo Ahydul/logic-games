@@ -1,8 +1,8 @@
 package com.example.tfg.common.utils
 
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class Timer private constructor(
     var passedSeconds: MutableState<Int> = mutableIntStateOf(0),
-    var paused: MutableState<Boolean> = mutableStateOf(false),
+    var paused: MutableTransitionState<Boolean> = MutableTransitionState(false),
     private var timerJob: Job? = null
 ) {
 
@@ -21,12 +21,12 @@ class Timer private constructor(
                 passedSeconds.value++
             }
         }
-        paused.value = false
+        paused.targetState = false
     }
 
     fun pauseTimer() {
         timerJob?.cancel()
-        paused.value = true
+        paused.targetState = true
     }
 
     companion object {

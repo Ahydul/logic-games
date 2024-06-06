@@ -2,6 +2,7 @@ package com.example.tfg.ui.components.common
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
@@ -49,7 +50,28 @@ fun animateBlur(
     )
 }
 
-
+@Composable
+fun animateScale(
+    transition: Transition<Boolean>,
+    whenFalse: Float = 0f,
+    whenTrue: Float = 1f
+): State<Float> {
+    return transition.animateFloat(
+        transitionSpec = {
+            if (false isTransitioningTo true) {
+                tween(
+                    durationMillis = InTransitionDuration,
+                    easing = LinearOutSlowInEasing
+                )
+            } else {
+                tween(
+                    durationMillis = 1,
+                    delayMillis = OutTransitionDuration
+                )
+            }
+        }, label = "popup scale"
+    ) { if (it) whenTrue else whenFalse }
+}
 
 @Composable
 fun CustomPopup(
@@ -61,21 +83,7 @@ fun CustomPopup(
     if (expandedStates.targetState || expandedStates.currentState) {
 
         val transition = updateTransition(expandedStates, "DropDownMenu")
-        val scale by transition.animateFloat(
-            transitionSpec = {
-                if (false isTransitioningTo true) {
-                    tween(
-                        durationMillis = InTransitionDuration,
-                        easing = LinearOutSlowInEasing
-                    )
-                } else {
-                    tween(
-                        durationMillis = 1,
-                        delayMillis = OutTransitionDuration
-                    )
-                }
-            }, label = "popup scale"
-        ) { if (it) 1f else 0.8f }
+        val scale by animateScale(transition, whenFalse = 0.8f)
 
         Popup(
             alignment = Alignment.Center,
@@ -103,7 +111,7 @@ fun CustomPopup(
                     content()
                 }
                 CustomIconButton(
-                    onClick = { expandedStates.targetState = false },
+                    onClick = onDismissRequest,
                     imageVector = ImageVector.vectorResource(id = R.drawable.outline_close_24),
                     contentDescription = "",
                 )

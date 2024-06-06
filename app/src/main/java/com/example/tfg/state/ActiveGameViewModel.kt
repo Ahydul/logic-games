@@ -119,13 +119,22 @@ class ActiveGameViewModel(
         return getGameStateSnapshotsFromDB().sortedBy { it.first }.toMutableStateMap()
     }
 
+    fun getGameStateBitmapFromDB(): Bitmap? {
+        return Utils.getBitmapFromFile(getGameStateSnapshotFromDB())
+    }
+
+    private fun getGameStateSnapshotFromDB(): GameStateSnapshot? {
+        return runBlocking {
+            gameDao.getGameStateSnapshotByGameStateId(getActualGameStateId())
+        }
+    }
     private fun getGameStateSnapshotsFromDB(): List<Pair<Int, Bitmap?>> {
         val res = mutableListOf<Pair<Int, Bitmap?>>()
         return runBlocking {
             getGameStateIds().forEach { id ->
                 val snapshot = gameDao.getGameStateSnapshotByGameStateId(id)
                 val pair = getGameStateIds().indexOf(snapshot?.gameStateId ?: id) to
-                        Utils.getBitmapFromFile(snapshot?.snapshotFilePath)
+                        Utils.getBitmapFromFile(snapshot)
                 res.add(pair)
             }
             res
@@ -353,7 +362,9 @@ class ActiveGameViewModel(
  */
     fun getTime() = Timer.formatTime(timer.passedSeconds.value)
 
-    fun timerPaused() = timer.paused.value
+    fun timerPaused() = timer.paused.currentState
+
+    fun getTimerState() = timer.paused
 
     fun pauseGame() {
         if (!timerPaused()) {
@@ -421,7 +432,8 @@ class ActiveGameViewModel(
         return getGameStateIds().size > 1
     }
 
-    private fun setCellValue(index: Int, value: Int, isError: Boolean = false) {
+    // Returns if setting this value completes the game
+    private fun setCellValue(index: Int, value: Int, isError: Boolean = false): Boolean {
         val previousCell = getCell(index)
         val newCell = previousCell.copy(
             value = if (previousCell.value == value) 0 else value,
@@ -432,6 +444,9 @@ class ActiveGameViewModel(
         setCell(index = index, newCell = newCell)
 
         if (isError) addError(index = index, value = value)
+        else return gameCompleted()
+
+        return false
     }
 
     private fun setCellNote(index: Int, noteIndex: Int, note: Int) {
@@ -663,6 +678,10 @@ class ActiveGameViewModel(
     Game Actions
      */
 
+    private fun gameCompletedfun() {
+
+    }
+
     private fun checkValue(position: Int, value: Int): Set<Int> {
         return if (isError(position, value))
             getGameType().checkValue(
@@ -681,6 +700,7 @@ class ActiveGameViewModel(
     }
 
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
+        var gameCompleted = false
         val coordinates = selectedTiles.filter { !isReadOnly(it) }.toMutableList()
         if (coordinates.isEmpty()) return
 
@@ -694,7 +714,7 @@ class ActiveGameViewModel(
             val oldErrors = checkValue(position = position, value = getCellValue(position))
 
             val isError = isError(position = position, value = value)
-            setCellValue(value = value, index = position, isError = isError)
+            gameCompleted = setCellValue(value = value, index = position, isError = isError)
 
             // Paint positions that causes errors
             val errors = mutableSetOf<Int>()
@@ -728,6 +748,8 @@ class ActiveGameViewModel(
 
         val newCells = getCells(coordinates)
         addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
+
+        if (gameCompleted) gameCompletedfun()
     }
 
     fun paintAction(colorInt: Int) {
@@ -761,6 +783,10 @@ class ActiveGameViewModel(
     /*
     Other
      */
+
+    private fun gameCompleted(): Boolean {
+        return !errorsDisabled() && getCells().all { it.value.value != 0 && !it.value.isError }
+    }
 
     fun buttonShouldBeEnabled(): Boolean {
         return !timerPaused()

@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.example.tfg.ActiveGameView
 import com.example.tfg.MainActivity
+import com.example.tfg.common.entities.relations.GameStateSnapshot
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -123,6 +124,10 @@ abstract class Utils {
 
         fun getBitmapFromFile(filePath: String?): Bitmap? {
             return BitmapFactory.decodeFile(filePath)
+        }
+
+        fun getBitmapFromFile(snapshot: GameStateSnapshot?): Bitmap? {
+            return getBitmapFromFile(snapshot?.snapshotFilePath)
         }
 
         fun deleteFile(filePath: String?): Boolean {

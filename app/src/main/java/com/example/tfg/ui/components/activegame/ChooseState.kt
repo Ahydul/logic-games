@@ -41,6 +41,10 @@ fun ChooseState(
 ) {
     CustomPopup(
         expandedStates = expandedStates,
+        onDismissRequest = {
+            expandedStates.targetState = false
+            viewModel.resumeGame()
+        },
         backgroundColor = colorResource(id = R.color.board_grid2)
     ) {
         val textColor = colorResource(id = R.color.primary_color)
