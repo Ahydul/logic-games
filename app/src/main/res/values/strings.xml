@@ -15,6 +15,11 @@
     <string name="hard">Hard</string>
     <string name="expert">Expert</string>
     <string name="master">Master</string>
+    <string name="today">Today</string>
+    <string name="this_week">This week</string>
+    <string name="this_month">This month</string>
+    <string name="this_year">This year</string>
+    <string name="always">Always</string>
     <string name="num_columns">Number of columns</string>
     <string name="num_rows">Number of rows</string>
     <string name="seed">Seed</string>
@@ -29,6 +34,7 @@
     <string name="in_progress2">In progress</string>
     <string name="stats">Statistics</string>
     <string name="home">Home</string>
+    <string name="all_games">All games</string>
     <string name="games">Games</string>
     <string name="_continue">Continue</string>
     <string name="other_games_in_progress">Other games in progress</string>

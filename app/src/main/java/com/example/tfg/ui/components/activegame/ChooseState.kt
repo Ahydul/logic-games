@@ -29,7 +29,8 @@ import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomButton
-import com.example.tfg.ui.components.common.CustomFilledButton
+import com.example.tfg.ui.components.common.CustomButton2
+import com.example.tfg.ui.components.common.CustomText
 import com.example.tfg.ui.components.common.defaultBitmap
 
 @Composable
@@ -55,7 +56,6 @@ fun ChooseState(
                 StateBoard(
                     gameStatePosition = gameStatePosition,
                     bitmap = bitmap,
-                    actualGameStateID = actualGameStateID,
                     selectedGameState = selectedGameState,
                     textColor = textColor,
                     modifier = modifier
@@ -112,24 +112,20 @@ fun ChooseStateButton(
     enabled: Boolean = true,
     modifier: Modifier
 ) {
-    val borderColor = colorResource(id = R.color.board_grid2)
-    val textColor = colorResource(id = R.color.primary_color)
-    CustomFilledButton(
+    CustomButton2(
         onClick = onClick,
         color = color,
-        borderColor = borderColor,
-        textColor = textColor,
-        mainText = text,
         enabled = enabled,
         modifier = modifier
-    )
+    ){
+        CustomText(mainText = text)
+    }
 }
 @Composable
 fun StateBoard(
     gameStatePosition: Int,
     bitmap: Bitmap?,
     textColor: Color,
-    actualGameStateID: Int,
     selectedGameState: MutableIntState,
     modifier: Modifier = Modifier
 ) {
@@ -143,10 +139,10 @@ fun StateBoard(
         modifier = modifier
             .padding(vertical = 15.dp, horizontal = 5.dp)
     ){
-        val isActualGameState = actualGameStateID == gameStatePosition
+        val isMainGameState = gameStatePosition == 0
         val isSelected = selectedGameState.intValue == gameStatePosition
         Text(
-            text = "${if (isActualGameState) stringResource(id = R.string.main_board) 
+            text = "${if (isMainGameState) stringResource(id = R.string.main_board) 
                 else stringResource(id = R.string.board)} ${gameStatePosition+1}",
             color = textColor
         )

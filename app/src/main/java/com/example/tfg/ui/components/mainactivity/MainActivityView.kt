@@ -1,6 +1,5 @@
 package com.example.tfg.ui.components.mainactivity
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
@@ -14,7 +13,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.tfg.state.MainViewModel
-import com.example.tfg.ui.components.common.MainHeader
 import com.example.tfg.ui.components.common.NavigationBar
 
 @Composable
@@ -27,22 +25,17 @@ fun MainScreen(
         .fillMaxHeight()
         .padding(top = 5.dp)
     ) {
-        MainHeader(modifier = modifier.weight(1.3f))
-
         NavHost(
             navController = navController,
-            startDestination = MainActivity.Home.name,
+            startDestination = MainActivity.Stats.name,
             modifier = modifier.weight(17f)
         ) {
             composable(route = MainActivity.Home.name) {
             HomeScreen(
                     modifier = modifier,
                     viewModel = viewModel,
-                    goGamesScreen = { navController.navigate(MainActivity.Games.name) },
-                    goOnGoingGames = {
-                        Log.d("as","asdasdasda")
-                        navController.navigate("${MainActivity.Games.name}/true")
-                    }
+                    goGamesScreen = { navController.navigate("${MainActivity.Games.name}/false") },
+                    goOnGoingGames = { navController.navigate("${MainActivity.Games.name}/true") }
                 )
             }
             composable(
@@ -57,7 +50,7 @@ fun MainScreen(
                 )
             }
             composable(route = MainActivity.Stats.name) {
-                StatsScreen(modifier = modifier)
+                StatsScreen(modifier = modifier, viewModel = viewModel)
             }
         }
 

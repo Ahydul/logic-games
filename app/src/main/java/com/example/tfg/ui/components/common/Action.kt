@@ -7,12 +7,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -95,7 +100,7 @@ fun CustomFilledIconButton(
 fun CustomText(
     modifier: Modifier = Modifier,
     mainText: String,
-    textColor: Color = Color.Black,
+    textColor: Color = colorResource(id = R.color.primary_color),
     mainFontSize: TextUnit = TextUnit.Unspecified,
     secondaryText: String? = null
 ) {
@@ -117,14 +122,41 @@ fun CustomText(
 }
 
 @Composable
+fun CustomButton2(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    color: Color = colorResource(id = R.color.board_grid),
+    enabled: Boolean = true,
+    horizontalArrangement: Arrangement.HorizontalOrVertical = Arrangement.Center,
+    content: @Composable RowScope.() -> Unit
+) {
+    val boardColor = colorResource(id = R.color.board_grid2)
+    val shape = RoundedCornerShape(10.dp)
+    Button(
+        onClick = onClick,
+        border = BorderStroke(1.dp, boardColor),
+        colors = ButtonDefaults.buttonColors(containerColor = color),
+        shape = shape,
+        modifier = modifier.width(IntrinsicSize.Min),
+        enabled = enabled
+    ) {
+        Row(
+            horizontalArrangement = horizontalArrangement,
+            modifier = modifier.fillMaxWidth(),
+            content = content
+        )
+    }
+}
+
+@Composable
 fun CustomFilledButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     mainText: String,
     secondaryText: String? = null,
-    color: Color = Color.Red,
-    borderColor: Color = Color.Red,
-    textColor: Color = Color.Black,
+    color: Color,
+    borderColor: Color = colorResource(id = R.color.board_grid2),
+    textColor: Color = colorResource(id = R.color.primary_color),
     fontSize: TextUnit = TextUnit.Unspecified,
     enabled: Boolean = true,
     textModifier: Modifier = Modifier
@@ -224,7 +256,9 @@ fun CustomTextField(
     val textStyle = TextStyle(color = color)
     val isRange = !range.isNullOrEmpty()
 
-    Box(modifier = Modifier.height(IntrinsicSize.Min)) {
+    Box(
+        modifier = Modifier.height(IntrinsicSize.Min)
+    ) {
         TextField(
             value = state.value,
             textStyle = textStyle,
@@ -242,7 +276,9 @@ fun CustomTextField(
 
             val pointer = remember { mutableIntStateOf(i) }
             Column(
-                modifier = modifier.fillMaxSize(),
+                modifier = modifier
+                    .fillMaxHeight()
+                    .align(Alignment.CenterEnd),
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
