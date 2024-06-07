@@ -45,7 +45,7 @@ fun HomeButtons(
             if (game!= null) {
                 val context = LocalContext.current
                 val secondaryText =
-                    game.gameTypeEntity.type.title + " - " +
+                    game.type.title + " - " +
                     Timer.formatTime(game.timer) + " - " +
                     game.difficulty.toString(context = context)
 
@@ -55,12 +55,23 @@ fun HomeButtons(
                     secondaryText = secondaryText
                 )
             }
+            else {
+                val newGameLabel = stringResource(id = R.string.new_game)
+                val secondaryText = stringResource(id = R.string.choose_new_game)
+                HomeButton(
+                    onClick = goGamesScreen,
+                    mainText = newGameLabel,
+                    secondaryText = secondaryText
+                )
+            }
 
-            val otherGamesInProgressLabel = stringResource(id = R.string.other_games_in_progress)
+            val otherGamesInProgressLabel =
+                stringResource(id = R.string.other_games_in_progress)
             HomeButton(
                 onClick = goOnGoingGames,
                 mainText = otherGamesInProgressLabel
             )
+
         }
     }
 }

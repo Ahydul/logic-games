@@ -11,15 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tfg.common.GameFactory
 import com.example.tfg.common.IdGenerator
-import com.example.tfg.data.GameDao
 import com.example.tfg.data.GameDatabase
+import com.example.tfg.data.LimitedGameDao
 import com.example.tfg.state.CustomMainViewModelFactory
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.mainactivity.MainScreen
@@ -37,7 +34,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun getLastPlayedGame(dao: GameDao, configurationPrefs: SharedPreferences): Long {
+    private fun getLastPlayedGame(dao: LimitedGameDao, configurationPrefs: SharedPreferences): Long {
         var lastPlayedGame = configurationPrefs.getLong("lastPlayedGame", -1L)
         if (lastPlayedGame != -1L && runBlocking { !dao.existsOnGoingGameById(lastPlayedGame) }) {
             //Game was completed or doesn't exist
@@ -51,7 +48,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onRestart() {
-        val dao = GameDatabase.getDatabase(this).gameDao()
+        val dao = GameDatabase.getDatabase(this).limitedGameDao()
         val configurationPrefs = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
         val lastPlayedGame = getLastPlayedGame(dao, configurationPrefs)
         viewModel?.setLastPlayedGame(lastPlayedGame)
@@ -63,9 +60,12 @@ class MainActivity : ComponentActivity() {
         val configurationPrefs = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
         initializeConfiguration(configurationPrefs)
 
-        val dao = GameDatabase.getDatabase(this).gameDao()
-        val lastPlayedGame = getLastPlayedGame(dao, configurationPrefs)
-        val vm: MainViewModel by viewModels{ CustomMainViewModelFactory(dao, lastPlayedGame) }
+        val database = GameDatabase.getDatabase(this)
+        val limitedGameDao = database.limitedGameDao()
+        val statsDao = database.statsDao()
+        val lastPlayedGame = getLastPlayedGame(limitedGameDao, configurationPrefs)
+        val gameFactory = GameFactory(database.gameDao())
+        val vm: MainViewModel by viewModels{ CustomMainViewModelFactory(limitedGameDao, statsDao, gameFactory, lastPlayedGame) }
         viewModel = vm
 
         super.onCreate(savedInstanceState)
@@ -90,12 +90,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
-    val viewModel: MainViewModel = viewModel(factory = CustomMainViewModelFactory(database.gameDao(), -1, true))
+    val viewModel: MainViewModel = viewModel(factory = CustomMainViewModelFactory(database.limitedGameDao(), -1, true))
 
     TFGTheme {
         MainScreen(
@@ -106,6 +106,7 @@ fun MainScreenPreview() {
         )
     }
 }
+ */
 
 
 

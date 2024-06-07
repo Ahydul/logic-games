@@ -11,14 +11,17 @@ import com.example.tfg.common.entities.Cell
 import com.example.tfg.common.entities.Game
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.Move
+import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 
-@Database(entities = [Game::class, GameState::class, Move::class, Action::class, Board::class, Cell::class, BoardCellCrossRef::class, GameStateSnapshot::class], version = 1, exportSchema = false)
+@Database(entities = [Game::class, GameState::class, Move::class, Action::class, Board::class, Cell::class, BoardCellCrossRef::class, GameStateSnapshot::class, WinningStreak::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class GameDatabase : RoomDatabase() {
 
     abstract fun gameDao(): GameDao
+    abstract fun limitedGameDao(): LimitedGameDao
+    abstract fun statsDao(): StatsDao
 
     companion object { //Singleton
         @Volatile
