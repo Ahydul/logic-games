@@ -79,11 +79,13 @@ fun CustomFilledIconButton(
     onClick: () -> Unit,
     imageVector: ImageVector,
     contentDescription: String?,
-    color: Color = Color.Red,
-    iconColor: Color = Color.Black
+    enabled: Boolean = true,
+    color: Color = colorResource(id = R.color.primary_background),
+    iconColor: Color = colorResource(id = R.color.primary_color)
 ) {
     FilledIconButton(
         onClick = onClick,
+        enabled = enabled,
         colors = IconButtonDefaults.filledIconButtonColors(containerColor = color),
         modifier = modifier
     ) {

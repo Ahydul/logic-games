@@ -108,4 +108,10 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="options">Options</string>
+    <string name="solve_board_confirmation_text">Are you sure? This will complete the board and it won\'t count towards won games.</string>
+    <string name="solve_board">Solve board</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="solve_the_board">Solve the board</string>
 </resources>

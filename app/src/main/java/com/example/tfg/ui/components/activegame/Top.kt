@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
@@ -22,13 +23,20 @@ import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.CustomText
 
 @Composable
-fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
+fun TopSection(
+    viewModel: ActiveGameViewModel,
+    onConfigurationClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Log.d("TAG", "TOP currentRecomposeScope $currentRecomposeScope")
 
     Column(modifier = modifier.padding(bottom = 8.dp)) {
         val context = LocalContext.current
 
-        Row {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = modifier
+        ) {
             CustomIconButton(
                 onClick = {
                     viewModel.setSnapshot(null) // To avoid snapshot
@@ -37,10 +45,16 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
                 imageVector = ImageVector.vectorResource(id = R.drawable.back_arrow),
                 contentDescription = stringResource(id = R.string.go_back)
             )
+            CustomIconButton(
+                onClick = onConfigurationClick,
+                imageVector = ImageVector.vectorResource(id = R.drawable.gear),
+                enabled = viewModel.buttonShouldBeEnabled(),
+                contentDescription = "Game configuration",
+            )
         }
 
         Row(
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = modifier
         ) {
@@ -53,15 +67,18 @@ fun TopSection(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
             val cluesText = stringResource(id = R.string.clues)
             CustomText(mainText = cluesText, secondaryText = "${viewModel.getNumClues()}", textColor = colorResource(R.color.primary_color))
 
-            val timeText = stringResource(id = R.string.time)
-            CustomText(mainText = timeText, secondaryText = viewModel.getTime(), textColor = colorResource(R.color.primary_color))
+            Row(verticalAlignment = Alignment.Bottom) {
+                val timeText = stringResource(id = R.string.time)
+                CustomText(mainText = timeText, secondaryText = viewModel.getTime(), textColor = colorResource(R.color.primary_color))
 
-            CustomIconButton(
-                onClick = { viewModel.pauseGame() },
-                imageVector = ImageVector.vectorResource(R.drawable.pause),
-                contentDescription = stringResource(id = R.string.pause_game),
-                enabled = viewModel.buttonShouldBeEnabled()
-            )
+                CustomIconButton(
+                    onClick = { viewModel.pauseGame() },
+                    imageVector = ImageVector.vectorResource(R.drawable.pause),
+                    contentDescription = stringResource(id = R.string.pause_game),
+                    enabled = viewModel.buttonShouldBeEnabled(),
+                    modifier = Modifier.size(40.dp)
+                )
+            }
         }
     }
 
