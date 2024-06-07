@@ -8,7 +8,7 @@ class GameLowerInfo(
     val type: Games,
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
-    var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
+    var numErrors: Int,
     var numClues: Int,
     var timer: Int
 )

@@ -2,19 +2,22 @@ package com.example.tfg.state
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.tfg.data.GameDao
+import com.example.tfg.common.GameFactory
+import com.example.tfg.data.LimitedGameDao
+import com.example.tfg.data.StatsDao
 
 
 @Suppress("UNCHECKED_CAST")
 class CustomMainViewModelFactory(
-    private val gameDao: GameDao,
-    private val lastPlayedGame: Long,
-    private val preview: Boolean = false
+    private val gameDao: LimitedGameDao,
+    private val statsDao: StatsDao,
+    private val gameFactory: GameFactory,
+    private val lastPlayedGame: Long
 ) : ViewModelProvider.Factory
 {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            return MainViewModel(gameDao, lastPlayedGame, preview) as T
+            return MainViewModel(gameDao, statsDao, gameFactory, lastPlayedGame) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

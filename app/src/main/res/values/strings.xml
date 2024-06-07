@@ -34,12 +34,14 @@
     <string name="in_progress2">In progress</string>
     <string name="stats">Statistics</string>
     <string name="home">Home</string>
+    <string name="all_difficulties">All Difficulties</string>
     <string name="all_games">All games</string>
     <string name="games">Games</string>
     <string name="_continue">Continue</string>
     <string name="other_games_in_progress">Other games in progress</string>
     <string name="no_active_games_found">No other active games found</string>
     <string name="new_game">New game</string>
+    <string name="choose_new_game">Choose a new game</string>
     <string name="errors">Errors</string>
     <string name="clues">Clues</string>
     <string name="time">Time</string>
@@ -48,6 +50,20 @@
     <string name="go_back">Go back</string>
     <string name="game_completed">Game completed!</string>
     <string name="title_activity_test">Test</string>
+    <string name="games_started">Games started</string>
+    <string name="games_won">Games won</string>
+    <string name="win_rate">Win rate</string>
+    <string name="end_rate">End rate</string>
+    <string name="mean_time">Mean time</string>
+    <string name="best_time">Best time</string>
+    <string name="total_time_games_won">Total time (games won)</string>
+    <string name="total_time_started">Total time (started)</string>
+    <string name="total_time_started_or_not">Total time (started or not)</string>
+    <string name="mean_error_count">Mean error count</string>
+    <string name="total_error_count">Total error count</string>
+    <string name="best_winning_streak">Best winning streak</string>
+    <string name="actual_winning_streak">Actual winning streak</string>
+    <string name="games_ended">Games ended</string>
 
     <!-- Strings used for fragments for navigation -->
 

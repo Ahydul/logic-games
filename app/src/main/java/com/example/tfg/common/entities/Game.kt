@@ -17,13 +17,23 @@ data class Game(
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
     var endDate: LocalDateTime? = null,
+    var playerWon: Boolean = false,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
+    var numErrors: Int = 0,
     var numClues: Int = 0,
     var timer: Int = 0
 ) {
 
-    fun setEndTime() {
+    fun endGame(playerWon: Boolean): LocalDateTime {
+        this.playerWon = playerWon
         endDate = LocalDateTime.now()
+        return endDate!!
+    }
+
+    fun addError(error: Pair<Int, Int>): Boolean {
+        val res = errors.add(error)
+        if (res) numErrors++
+        return res
     }
 
     companion object {

@@ -7,18 +7,17 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.tfg.common.Difficulty
-import com.example.tfg.common.GameLowerInfo
-import com.example.tfg.common.GameTypeEntity
 import com.example.tfg.common.entities.Action
 import com.example.tfg.common.entities.Board
 import com.example.tfg.common.entities.Cell
 import com.example.tfg.common.entities.Game
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.Move
+import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
+import com.example.tfg.games.GameType
 import com.example.tfg.games.Games
 import java.time.LocalDateTime
 
@@ -37,15 +36,6 @@ interface GameDao {
     suspend fun getGameById(id: Long): Game
     @Query("SELECT * from Game ORDER BY startDate ASC")
     suspend fun getAllGames(): List<Game>
-    @Query("SELECT EXISTS(SELECT 1 FROM Game WHERE endDate IS NULL)")
-    suspend fun existsOnGoingGame(): Boolean
-    @Query("SELECT EXISTS(SELECT 1 FROM Game WHERE gameId = :id and endDate IS NULL)")
-    suspend fun existsOnGoingGameById(id: Long): Boolean
-
-    @Query("SELECT gameId, type, difficulty, startDate, numClues, timer, errors  FROM Game WHERE endDate IS NULL and type = :type ORDER BY startDate DESC")
-    suspend fun getOnGoingGamesByType(type: Games): List<GameLowerInfo>
-    @Query("SELECT gameId, type, difficulty, startDate, numClues, timer, errors FROM Game WHERE endDate IS NULL ORDER BY startDate DESC")
-    suspend fun getOnGoingGames(): List<GameLowerInfo>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)
@@ -112,11 +102,16 @@ interface GameDao {
     @Query("SELECT * FROM GameStateSnapshot WHERE gameStateId IN (:gameStateIds)")
     suspend fun getGameStateSnapshotsByGameStateIds(gameStateIds: List<Long>): List<GameStateSnapshot>
 
-    @Transaction
-    @Query("""
-        SELECT snapshotFilePath FROM GameStateSnapshot 
-        WHERE gameStateId = (SELECT gameStateId FROM gamestate WHERE gameId = :gameId AND position = 0)
-    """)
-    suspend fun getMainSnapshotFileByGameId(gameId: Long): String?
+    @Insert
+    suspend fun insertWinningStreak(winningStreak: WinningStreak)
+    @Query("UPDATE winningstreak SET wins = wins + 1 WHERE endDate IS NULL AND gameEnum = :gameEnum")
+    suspend fun addOneToActualWinningStreak(gameEnum: Games?): Int
+    @Query("UPDATE winningstreak SET endDate = :endDate WHERE endDate IS NULL AND gameEnum = :gameEnum")
+    suspend fun endActualWinningStreak(endDate: LocalDateTime, gameEnum: Games)
+
+    @Query("UPDATE winningstreak SET wins = wins + 1 WHERE endDate IS NULL AND gameEnum IS NULL")
+    suspend fun addOneToActualGeneralWinningStreak(): Int
+    @Query("UPDATE winningstreak SET endDate = :endDate WHERE endDate IS NULL AND gameEnum IS NULL")
+    suspend fun endActualGeneralWinningStreak(endDate: LocalDateTime)
 
 }

@@ -21,6 +21,7 @@ import com.example.tfg.common.entities.Cell
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.Move
+import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
@@ -33,6 +34,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.time.LocalDateTime
 import java.util.SortedMap
 private const val ERRORCELLBACKGROUNDCOLOR = -65536
 
@@ -56,7 +58,7 @@ class ActiveGameViewModel(
 
 
     init {
-        numErrors = mutableIntStateOf(getGame().errors.size)
+        numErrors = mutableIntStateOf(getGame().numErrors)
     }
 
     fun gameIsCompleted() = _gameCompleted.value
@@ -65,12 +67,23 @@ class ActiveGameViewModel(
         return !errorsDisabled() && getCells().all { it.value.value != 0 && !it.value.isError }
     }
 
-    private fun gameCompletedFun() {
+    private fun gameCompletedFun(playerWon: Boolean) {
+        // Set end date and if player won
+        val endDate = getGame().endGame(playerWon = playerWon)
+
+        // Update game timer and update game to DB
+        updateTimer()
+
         stopGame()
-        getGame().setEndTime()
-        updateGameToDb()
+
+        // Delete the rest of game states
         getGameStateIds().filter { it != getActualGameStateId() }
             .forEach { deleteGameStateFromDb(it) }
+
+        // Update winning streak
+        if (playerWon) addOneToActualWinningStreak()
+        else endActualWinningStreak(endDate)
+
         _gameCompleted.value = true
     }
 
@@ -81,6 +94,24 @@ class ActiveGameViewModel(
     }
 
 //  GameDao functionality
+
+    private fun endActualWinningStreak(endDate: LocalDateTime) {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameDao.endActualWinningStreak(endDate = endDate, gameEnum = getGameEnum())
+            gameDao.endActualGeneralWinningStreak(endDate = endDate)
+        }
+    }
+
+    private fun addOneToActualWinningStreak() {
+        viewModelScope.launch(Dispatchers.IO) {
+            var rowsUpdated = gameDao.addOneToActualWinningStreak(getGameEnum())
+            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = getGameEnum()))
+
+            rowsUpdated = gameDao.addOneToActualGeneralWinningStreak()
+            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = null))
+
+        }
+    }
 
     private fun insertGameStateSnapshotToDB(snapshot: GameStateSnapshot) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -445,9 +476,11 @@ class ActiveGameViewModel(
 
     private fun addError(index: Int, value: Int) {
         val error = Pair(index, value)
-        val res = getGame().errors.add(error)
-        updateGameToDb()
-        if (res) numErrors.intValue++
+        val res = getGame().addError(error)
+        if (res) {
+            numErrors.intValue++
+            updateGameToDb()
+        }
     }
 
     private fun errorsDisabled(): Boolean {
@@ -767,7 +800,7 @@ class ActiveGameViewModel(
         val newCells = getCells(coordinates)
         addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
 
-        if (gameCompleted) gameCompletedFun()
+        if (gameCompleted) gameCompletedFun(playerWon = true)
     }
 
     fun paintAction(colorInt: Int) {

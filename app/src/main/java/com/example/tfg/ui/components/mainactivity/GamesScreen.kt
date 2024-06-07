@@ -240,7 +240,7 @@ private fun OnGoingBoard(
                     "${Timer.formatTime(game.timer)}")
             Text(color = textColor,
                 text = "${stringResource(id = R.string.errors)}: " +
-                    "${game.errors.size}")
+                    "${game.numErrors}")
             Text(color = textColor,
                 text = "${stringResource(id = R.string.clues)}: " +
                     "${game.numClues}")
