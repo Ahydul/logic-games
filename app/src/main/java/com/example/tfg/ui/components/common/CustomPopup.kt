@@ -63,6 +63,7 @@ fun animateBlur(
 @Composable
 fun animateScale(
     transition: Transition<Boolean>,
+    inDuration: Int = InTransitionDuration,
     whenFalse: Float = 0f,
     whenTrue: Float = 1f
 ): State<Float> {
@@ -70,7 +71,7 @@ fun animateScale(
         transitionSpec = {
             if (false isTransitioningTo true) {
                 tween(
-                    durationMillis = InTransitionDuration,
+                    durationMillis = inDuration,
                     easing = LinearOutSlowInEasing
                 )
             } else {
@@ -90,13 +91,14 @@ fun CustomPopup(
     onDismissRequest: (() -> Unit) = { expandedStates.targetState = false },
     backgroundColor: Color = colorResource(id = R.color.board_grid),
     offset: IntOffset = IntOffset(0,0),
+    startScale: Float = 0.8f,
     closable: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
     if (expandedStates.targetState || expandedStates.currentState) {
 
         val transition = updateTransition(expandedStates, "DropDownMenu")
-        val scale by animateScale(transition, whenFalse = 0.8f)
+        val scale by animateScale(transition, whenFalse = startScale)
         Popup(
             alignment = Alignment.Center,
             onDismissRequest = onDismissRequest,
@@ -106,7 +108,7 @@ fun CustomPopup(
             Box(
                 modifier = modifier
                     .graphicsLayer {
-                        scaleX = scale
+                        //scaleX = scale
                         scaleY = scale
                     }
                     .clip(RoundedCornerShape(8.dp))

@@ -11,10 +11,12 @@ import kotlinx.coroutines.launch
 class Timer private constructor(
     var passedSeconds: MutableState<Int> = mutableIntStateOf(0),
     var paused: MutableTransitionState<Boolean> = MutableTransitionState(false),
-    private var timerJob: Job? = null
+    private var timerJob: Job? = null,
+    private var timerStopped: Boolean = false
 ) {
 
     fun startTimer(viewModelScope: CoroutineScope) {
+        if (timerStopped) return
         timerJob = viewModelScope.launch {
             while (true) {
                 delay(1000)
@@ -27,6 +29,7 @@ class Timer private constructor(
     // When stopped this is class is no longer usable
     fun stopTimer() {
         timerJob?.cancel()
+        timerStopped = true
     }
 
     fun pauseTimer() {

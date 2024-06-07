@@ -61,10 +61,31 @@ class ActiveGameViewModel(
         numErrors = mutableIntStateOf(getGame().numErrors)
     }
 
+    var completedPopupWasShown = false
     fun gameIsCompleted() = _gameCompleted.value
+
+    fun gameIsNotCompleted() = !_gameCompleted.value
 
     private fun gameWasCompleted(): Boolean {
         return !errorsDisabled() && getCells().all { it.value.value != 0 && !it.value.isError }
+    }
+
+    fun completeTheBoard() {
+        getGameType().completedBoard.forEachIndexed { position, value ->
+            val cell = getCell(position)
+            if (cell.value != value) {
+                val newCell = cell.copy(
+                    value = value,
+                    notes = Cell.emptyNotes(),
+                    backgroundColor = 0,
+                    isError = false
+                )
+                setCell(position, newCell)
+                updateCellToDb(newCell)
+            }
+        }
+
+        gameCompletedFun(false)
     }
 
     private fun gameCompletedFun(playerWon: Boolean) {
@@ -247,8 +268,14 @@ class ActiveGameViewModel(
         this.filesDirectory = filesDirectory
     }
 
+    private var lastSnapshotTaken = getGame().timer
+    private fun snapshotTooEarly(): Boolean {
+        return timer.passedSeconds.value - lastSnapshotTaken < 10
+    }
+
     fun takeSnapshot() {
-        if (timerPaused() || snapshot == null || filesDirectory == null) return
+        if (gameIsNotCompleted() || snapshotTooEarly() || timerPaused() ||
+            snapshot == null || filesDirectory == null) return
 
         Log.d("snapshot", "Taking snapshot")
         val bitmap = snapshot!!.invoke()
@@ -270,6 +297,8 @@ class ActiveGameViewModel(
                 insertGameStateSnapshotToDB(gameStateSnapshot)
             }
         }
+
+        lastSnapshotTaken = timer.passedSeconds.value
     }
 
 
@@ -416,7 +445,7 @@ class ActiveGameViewModel(
     fun getTimerState() = timer.paused
 
     fun pauseGame() {
-        if (!timerPaused() && !gameIsCompleted()) {
+        if (!timerPaused() && gameIsNotCompleted()) {
             timer.pauseTimer()
             updateTimer()
         }
@@ -492,6 +521,7 @@ class ActiveGameViewModel(
         val previousCell = getCell(index)
         val newCell = previousCell.copy(
             value = if (previousCell.value == value) 0 else value,
+            notes = Cell.emptyNotes(),
             // If more than one state errors are disabled: only solved errors are shown
             isError = if (errorsDisabled() && !previousCell.isError) false
                 else isError
@@ -566,10 +596,12 @@ class ActiveGameViewModel(
     }
 
     fun setIsPaint() {
+        if (isNote()) setIsNote()
         isPaint.value = !isPaint()
     }
 
     fun setIsNote() {
+        if (isPaint()) setIsPaint()
         isNote.value = !isNote()
     }
 
@@ -836,7 +868,7 @@ class ActiveGameViewModel(
      */
 
     fun buttonShouldBeEnabled(): Boolean {
-        return !timerPaused() && !_gameCompleted.value
+        return !timerPaused() && gameIsNotCompleted()
     }
 
     private fun findRegionID(coordinate: Coordinate): Int? {

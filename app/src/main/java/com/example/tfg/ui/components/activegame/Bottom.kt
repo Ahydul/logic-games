@@ -19,6 +19,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
+import com.example.tfg.ui.components.common.CustomFilledIconButton
 import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.HorizontalGrid
 
@@ -67,7 +68,7 @@ fun BottomActionRow(
     val numValues = viewModel.getMaxValue()+1
     HorizontalGrid(
         numRows = if (numValues > 10) 3 else if (numValues > 4) 2 else 1,
-        verticalSpreadFactor = 0.5f,
+        verticalSpreadFactor = 0.3f,
         horizontalSpreadFactor = 0.7f,
         componentsScale = 0.85f,
         modifier = modifier
@@ -127,14 +128,21 @@ fun TopActionRow(
         componentsScale = 0.5f,
         modifier = modifier
     ) {
+        val iconColor = colorResource(id = R.color.primary_color)
+        val backgroundColor = colorResource(id = R.color.primary_background)
+        val selectedColor = colorResource(id = R.color.cell_value)
         CustomIconButton( //States
             onClick = onStateClick,
+            iconColor = iconColor,
             imageVector = ImageVector.vectorResource(id = R.drawable.notebook),
             contentDescription = stringResource(id = R.string.change_gamestate),
-            modifier = actionModifier
+            modifier = actionModifier,
+            enabled = viewModel.buttonShouldBeEnabled()
         )
-        CustomIconButton( //Paint
+        CustomFilledIconButton( //Paint
             onClick = { viewModel.setIsPaint() },
+            iconColor = if (viewModel.isPaint()) Color.Black else iconColor,
+            color = if (viewModel.isPaint()) selectedColor else backgroundColor,
             imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),
             contentDescription = stringResource(id = R.string.brush_action),
             modifier = actionModifier,
@@ -142,13 +150,16 @@ fun TopActionRow(
         )
         CustomIconButton( //Erase
             onClick = { viewModel.eraseAction() },
+            iconColor = iconColor,
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
             contentDescription = stringResource(id = R.string.erase_action),
             modifier = actionModifier,
             enabled = viewModel.buttonShouldBeEnabled()
         )
-        CustomIconButton( //Note
+        CustomFilledIconButton( //Note
             onClick = { viewModel.setIsNote() },
+            iconColor = if (viewModel.isNote()) Color.Black else iconColor,
+            color = if (viewModel.isNote()) selectedColor else backgroundColor,
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier,
@@ -156,6 +167,7 @@ fun TopActionRow(
         )
         CustomIconButton( //Undo
             onClick = { viewModel.undoMove() },
+            iconColor = iconColor,
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier,
@@ -163,6 +175,7 @@ fun TopActionRow(
         )
         CustomIconButton( //Redo
             onClick = { viewModel.redoMove() },
+            iconColor = iconColor,
             imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
             modifier = actionModifier,
