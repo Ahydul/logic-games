@@ -23,11 +23,13 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -67,9 +69,10 @@ import com.example.tfg.common.utils.dateFormatter
 import com.example.tfg.games.Games
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
-import com.example.tfg.ui.components.common.CustomFilledButton
+import com.example.tfg.ui.components.common.CustomButton2
 import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.CustomPopup
+import com.example.tfg.ui.components.common.CustomText
 import com.example.tfg.ui.components.common.CustomTextField
 import com.example.tfg.ui.components.common.InTransitionDuration
 import com.example.tfg.ui.components.common.LabeledIconButton
@@ -147,6 +150,7 @@ private fun ChosenGame(
     val color = colorResource(id = R.color.pearl_white)
     CustomPopup(
         expandedStates = expandedStates,
+        offset = IntOffset(0,-100),
         modifier = modifier.fillMaxWidth(0.9f)
     ) {
         Column(
@@ -159,7 +163,7 @@ private fun ChosenGame(
                 Action.CREATE -> {
                     TextFields(
                         textColor = color,
-                        modifier = modifier.padding(top = 15.dp),
+                        modifier = modifier.padding(vertical = 8.dp),
                         chosenGame = chosenGame,
                         viewModel = viewModel
                     )
@@ -305,7 +309,11 @@ private fun TextFields(
         modifier = textFieldModifier
     )
 
-    Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier.padding(horizontal = 15.dp)
+    ) {
+/*
         val customBoardText = stringResource(id = R.string.custom_board)
         CustomFilledButton(
             onClick = { /*TODO: Custom board*/ },
@@ -316,9 +324,11 @@ private fun TextFields(
             modifier = modifier.weight(1.5f),
             enabled = false
         )
+ */
 
+        Spacer(modifier = modifier.weight(2f))
         val createText = stringResource(id = R.string.create)
-        CustomFilledButton(
+        CustomButton2(
             onClick = {
                 val rows = numRows.value.toInt()
                 val cols = numColumns.value.toInt()
@@ -327,12 +337,10 @@ private fun TextFields(
 
                 Utils.startActiveGameActivity(context, gameId)
             },
-            color = colorResource(id = R.color.board_grid),
-            borderColor = colorResource(id = R.color.board_grid2),
-            textColor = textColor,
-            mainText = createText,
-            modifier = modifier.weight(1f)
-        )
+            modifier = modifier
+        ){
+            CustomText(mainText = createText, textColor = textColor, modifier = modifier)
+        }
     }
 }
 

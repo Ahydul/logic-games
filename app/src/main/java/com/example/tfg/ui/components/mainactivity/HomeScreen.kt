@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.tfg.state.MainViewModel
+import com.example.tfg.ui.components.common.MainHeader
 
 @Composable
 fun HomeScreen(
@@ -19,6 +20,7 @@ fun HomeScreen(
     Column(modifier = modifier
         .fillMaxHeight()
     ) {
+        MainHeader(modifier = modifier.weight(1.3f))
         Spacer(modifier = mod.weight(8f))
         HomeButtons(
             modifier = mod.weight(5f),

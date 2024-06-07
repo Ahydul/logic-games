@@ -4,6 +4,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -15,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.common.utils.Utils
@@ -65,8 +67,10 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
     }
     val context = LocalContext.current
     CustomPopup(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(0.8f),
         expandedStates = expandedStates,
+        backgroundColor = colorResource(id = R.color.board_grid2),
+        offset = IntOffset(0,-140),
         onDismissRequest = {
             if (gameCompleted){
                 viewModel.setSnapshot(null) // To avoid snapshot
@@ -76,8 +80,7 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
                 expandedStates.targetState = false
                 viewModel.resumeGame()
             }
-        },
-        backgroundColor = colorResource(id = R.color.board_grid2)
+        }
     ) {
         if (gameCompleted) GameCompleted(expandedStates = expandedStates, modifier = modifier)
         else ChooseState(expandedStates = expandedStates, viewModel = viewModel)

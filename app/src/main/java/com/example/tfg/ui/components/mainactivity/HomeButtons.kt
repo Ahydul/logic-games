@@ -7,14 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import com.example.tfg.R
 import com.example.tfg.common.utils.Timer
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.state.MainViewModel
-import com.example.tfg.ui.components.common.CustomFilledButton
+import com.example.tfg.ui.components.common.CustomButton2
+import com.example.tfg.ui.components.common.CustomText
 
 @Composable
 fun HomeButtons(
@@ -68,16 +68,16 @@ fun HomeButtons(
 @Composable
 fun HomeButton(onClick: () -> Unit, mainText: String, secondaryText: String? = null) {
     val buttonModifier = Modifier.fillMaxWidth(0.8f)
-    val textModifier = Modifier.fillMaxWidth(0.7f)
-    CustomFilledButton(
-        onClick = onClick,
-        color = colorResource(id = R.color.board_grid),
-        borderColor = colorResource(id = R.color.board_grid2),
-        textColor = colorResource(id = R.color.primary_color),
-        mainText = mainText,
-        secondaryText = secondaryText,
-        fontSize = 22.sp,
+    val textModifier = Modifier.fillMaxWidth()
+    CustomButton2(
         modifier = buttonModifier,
-        textModifier = textModifier
-    )
+        onClick = onClick
+    ) {
+        CustomText(
+            mainText = mainText,
+            secondaryText = secondaryText,
+            mainFontSize = 22.sp,
+            modifier = textModifier
+        )
+    }
 }
