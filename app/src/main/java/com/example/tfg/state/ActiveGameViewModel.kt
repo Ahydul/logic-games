@@ -436,7 +436,10 @@ class ActiveGameViewModel(
 
     fun deleteGameState(pointer: Int) {
         if (pointer < getGameStateIds().size && pointer != getActualGameStatePosition()){
+
             deleteGameStateFromDb(getGameStateIds()[pointer])
+            getGameStateIds().removeAt(pointer)
+
             Log.d("state", "Changed to state: ${getActualState()}")
         }
     }
