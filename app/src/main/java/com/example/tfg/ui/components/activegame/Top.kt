@@ -102,7 +102,7 @@ fun TopSection(
                     imageVector = ImageVector.vectorResource(R.drawable.pause),
                     contentDescription = stringResource(id = R.string.pause_game),
                     enabled = viewModel.buttonShouldBeEnabled(),
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(30.dp)
                 )
             }
         }
