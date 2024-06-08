@@ -2,6 +2,7 @@ package com.example.tfg.common.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.tfg.common.IdGenerator
 
@@ -13,7 +14,8 @@ import com.example.tfg.common.IdGenerator
             childColumns = ["gameId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["gameId"])]
 )
 data class GameState(
     @PrimaryKey

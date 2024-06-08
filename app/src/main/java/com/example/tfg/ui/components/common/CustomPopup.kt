@@ -45,9 +45,9 @@ fun animateBlur(
     expandedStates: MutableTransitionState<Boolean>
 ): State<Dp> {
     return androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState) 2.5.dp else 0.dp,
+        targetValue = if (expandedStates.currentState && expandedStates.targetState) 2.5.dp else 0.dp,
         animationSpec =
-        if (expandedStates.currentState || !expandedStates.currentState && expandedStates.targetState)
+        if (expandedStates.currentState && expandedStates.targetState)
             tween(
                 durationMillis = InTransitionDuration,
                 easing = LinearOutSlowInEasing
@@ -77,7 +77,7 @@ fun animateScale(
             } else {
                 tween(
                     durationMillis = 1,
-                    delayMillis = OutTransitionDuration
+                    delayMillis = OutTransitionDuration - 1
                 )
             }
         }, label = "popup scale"

@@ -1,8 +1,8 @@
 package com.example.tfg.common.utils
 
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class Timer private constructor(
     var passedSeconds: MutableState<Int> = mutableIntStateOf(0),
-    var paused: MutableTransitionState<Boolean> = MutableTransitionState(false),
+    var paused: MutableState<Boolean> = mutableStateOf(false),
     private var timerJob: Job? = null,
     private var timerStopped: Boolean = false
 ) {
@@ -23,7 +23,7 @@ class Timer private constructor(
                 passedSeconds.value++
             }
         }
-        paused.targetState = false
+        paused.value = false
     }
 
     // When stopped this is class is no longer usable
@@ -34,7 +34,7 @@ class Timer private constructor(
 
     fun pauseTimer() {
         timerJob?.cancel()
-        paused.targetState = true
+        paused.value = true
     }
 
     companion object {
@@ -52,14 +52,5 @@ class Timer private constructor(
             return if (hours == 0) String.format("%02d:%02d", displayMins, displaySecs)
                 else String.format("%02d:%02d:%02d", hours % 24, displayMins, displaySecs)
         }
-
-        /*
-                fun formatTime(time: Long): String {
-                    val hours = time / 3600
-                    val minutes = (time % 3600) / 60
-                    val seconds = time % 60
-                    return if (hours.toInt() == 0) String.format("%02d:%02d", minutes, seconds)
-                        else String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                } */
     }
 }

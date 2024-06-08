@@ -16,6 +16,7 @@ import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomButton2
 import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.CustomText
+import com.example.tfg.ui.components.common.OutTransitionDuration
 
 @Composable
 fun StateAndGameCompletedPopup(
@@ -35,7 +36,10 @@ fun StateAndGameCompletedPopup(
                 viewModel.setSnapshot(null) // To avoid snapshot
             } else {
                 expandedStates.targetState = false
-                viewModel.resumeGame()
+                Utils.runFunctionWithDelay((OutTransitionDuration).toLong()) {
+                    viewModel.resumeGame()
+                }
+
             }
         }
     ) {
