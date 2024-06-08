@@ -2,9 +2,9 @@ package com.example.tfg.data
 
 import androidx.room.TypeConverter
 import com.example.tfg.common.utils.Coordinate
-import com.example.tfg.games.Score
-import com.example.tfg.games.ScoreDeserializer
-import com.example.tfg.games.ScoreSerializer
+import com.example.tfg.games.common.Score
+import com.example.tfg.games.common.ScoreDeserializer
+import com.example.tfg.games.common.ScoreSerializer
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

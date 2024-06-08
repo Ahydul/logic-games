@@ -17,8 +17,7 @@ import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
-import com.example.tfg.games.GameType
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Games
 import java.time.LocalDateTime
 
 @Dao

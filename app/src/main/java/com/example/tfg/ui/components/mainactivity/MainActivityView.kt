@@ -12,8 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.tfg.common.Games2
-import com.example.tfg.games.Games
+import com.example.tfg.common.enums.Games2
+import com.example.tfg.games.common.Games
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.NavigationBar
 

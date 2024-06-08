@@ -1,8 +1,8 @@
 package com.example.tfg.games.hakyuu
 
-import com.example.tfg.common.Difficulty
-import com.example.tfg.games.Games
-import com.example.tfg.games.Score
+import com.example.tfg.games.common.Difficulty
+import com.example.tfg.games.common.Games
+import com.example.tfg.games.common.Score
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 

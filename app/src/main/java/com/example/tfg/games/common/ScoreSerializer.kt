@@ -1,4 +1,4 @@
-package com.example.tfg.games
+package com.example.tfg.games.common
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext

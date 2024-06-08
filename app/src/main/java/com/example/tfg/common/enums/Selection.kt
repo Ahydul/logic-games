@@ -1,4 +1,4 @@
-package com.example.tfg.common
+package com.example.tfg.common.enums
 
 import android.content.Context
 

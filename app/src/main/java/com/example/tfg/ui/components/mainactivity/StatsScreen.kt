@@ -25,10 +25,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tfg.R
-import com.example.tfg.common.Difficulty2
-import com.example.tfg.common.Games2
-import com.example.tfg.common.Selection
-import com.example.tfg.common.Times
+import com.example.tfg.common.enums.Difficulty2
+import com.example.tfg.common.enums.Games2
+import com.example.tfg.common.enums.Selection
+import com.example.tfg.common.enums.Times
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2

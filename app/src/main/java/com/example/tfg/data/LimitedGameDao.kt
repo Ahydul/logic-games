@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.tfg.common.GameLowerInfo
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Games
 
 @Dao
 interface LimitedGameDao {

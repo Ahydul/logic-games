@@ -1,4 +1,4 @@
-package com.example.tfg.games
+package com.example.tfg.games.common
 
 import com.example.tfg.games.hakyuu.HakyuuScore
 import com.google.gson.JsonDeserializationContext

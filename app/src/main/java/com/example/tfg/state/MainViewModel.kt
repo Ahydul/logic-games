@@ -2,13 +2,13 @@ package com.example.tfg.state
 
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
-import com.example.tfg.common.Difficulty
+import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.GameLowerInfo
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.LimitedGameDao
 import com.example.tfg.data.StatsDao
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Games
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 
