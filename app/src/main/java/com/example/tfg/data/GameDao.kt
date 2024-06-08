@@ -35,6 +35,11 @@ interface GameDao {
     suspend fun getGameById(id: Long): Game
     @Query("SELECT * from Game ORDER BY startDate ASC")
     suspend fun getAllGames(): List<Game>
+    @Query("UPDATE Game SET timer = :timer WHERE gameId = :gameId")
+    suspend fun updateGameTimer(timer: Int, gameId: Long)
+    @Query("UPDATE Game SET numClues = numClues + 1 WHERE gameId = :gameId")
+    suspend fun addClueToGame(gameId: Long)
+
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)

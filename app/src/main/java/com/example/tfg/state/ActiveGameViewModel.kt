@@ -168,6 +168,19 @@ class ActiveGameViewModel(
         }
     }
 
+    private fun updateGameTimerToDB(timer: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameDao.updateGameTimer(timer = timer, gameId = getGame().gameId)
+        }
+    }
+
+    private fun addClueToGameDB() {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameDao.addClueToGame(getGame().gameId)
+        }
+    }
+
+
     private fun getActualGameStateFromDb(): GameState {
         return getGameStateByIdFromDb(getActualGameStateId())
     }
@@ -461,7 +474,7 @@ class ActiveGameViewModel(
 
     private fun updateTimer() {
         gameInstance.game.timer = timer.passedSeconds.value
-        updateGameToDb()
+        updateGameTimerToDB(gameInstance.game.timer)
     }
 
 
@@ -519,7 +532,7 @@ class ActiveGameViewModel(
     private fun addClue() {
         getGame().addClue()
         numClues.intValue++
-        updateGameToDb()
+        addClueToGameDB()
     }
 
 
