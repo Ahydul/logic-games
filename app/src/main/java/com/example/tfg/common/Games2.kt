@@ -22,4 +22,14 @@ enum class Games2: Selection {
         }
     }
 
+    companion object {
+        fun fromString(str: String?): Games2? {
+            return when (str) {
+                Games2.HAKYUU.name -> Games2.HAKYUU
+                Games2.ALL_GAMES.name -> Games2.ALL_GAMES
+                else -> null
+            }
+        }
+    }
+
 }

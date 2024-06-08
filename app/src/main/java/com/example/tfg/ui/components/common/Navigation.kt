@@ -57,7 +57,7 @@ fun NavigationBar(
 
         val statsLabel = stringResource(id = R.string.stats)
         LabeledIconButton(
-            onClick = { navController.navigate(MainActivity.Stats.name) },
+            onClick = { navController.navigate("${MainActivity.Stats.name}/ALL_GAMES") },
             imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
             iconColor = colorResource(id = R.color.primary_color),
             labelColor = colorResource(id = R.color.primary_color),

@@ -1,35 +1,21 @@
 package com.example.tfg.ui.components.mainactivity
 
 import android.graphics.Bitmap
-import android.util.Log
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -41,12 +27,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -56,11 +39,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import com.example.tfg.R
 import com.example.tfg.common.Difficulty
-import com.example.tfg.common.GameFactory
 import com.example.tfg.common.GameLowerInfo
 import com.example.tfg.common.entities.Game
 import com.example.tfg.common.utils.Timer
@@ -70,17 +50,12 @@ import com.example.tfg.games.Games
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2
-import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.CustomText
 import com.example.tfg.ui.components.common.CustomTextField
-import com.example.tfg.ui.components.common.InTransitionDuration
 import com.example.tfg.ui.components.common.LabeledIconButton
-import com.example.tfg.ui.components.common.OutTransitionDuration
-import com.example.tfg.ui.components.common.addDebugBorder
 import com.example.tfg.ui.components.common.animateBlur
 import com.example.tfg.ui.components.common.defaultBitmap
-import java.time.format.DateTimeFormatter
 
 private enum class Action {
     CREATE,
@@ -92,7 +67,8 @@ private enum class Action {
 fun GamesScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    onGoing: Boolean = false
+    onGoing: Boolean = false,
+    goStatsScreen: (Games) -> Unit
 ) {
     var onGoing = remember { mutableStateOf(onGoing) }
     var chosenGame =  Games.HAKYUU
@@ -115,6 +91,7 @@ fun GamesScreen(
         val gameHakyuu = Games.HAKYUU
         ChooseGameButton(
             game = gameHakyuu,
+            goStatsScreen = goStatsScreen,
             onClickInProgress = {
                 chosenGame = gameHakyuu
                 chosenGameAction.value = Action.IN_PROGRESS
@@ -349,6 +326,7 @@ private fun ChooseGameButton(
     modifier: Modifier = Modifier,
     game: Games,
     onClickInProgress: () -> Unit,
+    goStatsScreen: (Games) -> Unit,
     onChooseGame: () -> Unit,
 ) {
     CustomButton(
@@ -384,7 +362,7 @@ private fun ChooseGameButton(
 
                 val rulesLabel = stringResource(id = R.string.rules)
                 LabeledIconButton(
-                    onClick = { Log.d("button", "REGLAS") },
+                    onClick = { /*TODO: Rules*/ },
                     imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
                     iconColor = colorResource(id = R.color.primary_color),
                     label = rulesLabel,
@@ -410,7 +388,7 @@ private fun ChooseGameButton(
 
                 val statsLabel = stringResource(id = R.string.stats)
                 LabeledIconButton(
-                    onClick = { Log.d("button", "STATS") },
+                    onClick = { goStatsScreen(game) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
                     iconColor = colorResource(id = R.color.primary_color),
                     label = statsLabel,
