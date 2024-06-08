@@ -37,7 +37,11 @@ import com.example.tfg.ui.components.common.DropdownMenu
 import com.example.tfg.ui.components.common.DropdownMenuButton
 
 @Composable
-fun StatsScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
+fun StatsScreen(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    chosenGame: Games2?
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxHeight()
@@ -52,7 +56,7 @@ fun StatsScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
         ButtonRow(values = times, selected = selectedTime)
 
         val gameOptions = Games2.entries
-        val selectedGame = remember { mutableStateOf<Selection>(gameOptions.first()) }
+        val selectedGame = remember { mutableStateOf<Selection>(chosenGame ?: gameOptions.first()) }
         val mod = Modifier
         Dropdown(
             selectedGame = selectedGame,

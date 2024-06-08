@@ -12,6 +12,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.tfg.common.Games2
+import com.example.tfg.games.Games
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.NavigationBar
 
@@ -40,17 +42,24 @@ fun MainScreen(
             }
             composable(
                 route = "${MainActivity.Games.name}/{onGoing}",
-                arguments = listOf(navArgument("onGoing") { type = NavType.BoolType }
-            )
+                arguments = listOf(navArgument("onGoing") { type = NavType.BoolType })
             ) { backStackEntry ->
                 GamesScreen(
                     modifier = modifier,
                     viewModel = viewModel,
-                    onGoing = backStackEntry.arguments?.getBoolean("onGoing") ?: false
+                    onGoing = backStackEntry.arguments?.getBoolean("onGoing") ?: false,
+                    goStatsScreen = { game: Games -> navController.navigate("${MainActivity.Stats.name}/${game.toGames2().name}") }
                 )
             }
-            composable(route = MainActivity.Stats.name) {
-                StatsScreen(modifier = modifier, viewModel = viewModel)
+            composable(
+                route = "${MainActivity.Stats.name}/{chosenGame}",
+                arguments = listOf(navArgument("chosenGame") { type = NavType.StringType })
+            ) { backStackEntry ->
+                StatsScreen(
+                    modifier = modifier,
+                    viewModel = viewModel,
+                    chosenGame = Games2.fromString(backStackEntry.arguments?.getString("chosenGame"))
+                )
             }
         }
 
