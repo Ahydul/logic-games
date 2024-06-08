@@ -59,17 +59,43 @@ fun TopSection(
             modifier = modifier
         ) {
             val difficultyText = stringResource(id = R.string.difficulty)
-            CustomText(mainText = difficultyText, secondaryText = viewModel.getDifficulty(context), textColor = colorResource(R.color.primary_color))
+            CustomText(
+                mainText = difficultyText,
+                secondaryText = viewModel.getDifficulty(context),
+                textColor = colorResource(R.color.primary_color)
+            )
 
             val errorsText = stringResource(id = R.string.errors)
-            CustomText(mainText = errorsText, secondaryText = "${viewModel.getNumErrors()}", textColor = colorResource(R.color.primary_color))
+            CustomText(
+                mainText = errorsText,
+                secondaryText = "${viewModel.getNumErrors()}",
+                textColor = colorResource(R.color.primary_color)
+            )
 
-            val cluesText = stringResource(id = R.string.clues)
-            CustomText(mainText = cluesText, secondaryText = "${viewModel.getNumClues()}", textColor = colorResource(R.color.primary_color))
+            Row(verticalAlignment = Alignment.Bottom) {
+                val cluesText = stringResource(id = R.string.clues)
+                CustomText(
+                    mainText = cluesText,
+                    secondaryText = "${viewModel.getNumClues()}/${viewModel.getMaxNumCluesAllowed()}",
+                    textColor = colorResource(R.color.primary_color)
+                )
+
+                CustomIconButton(
+                    onClick = { viewModel.giveClue() },
+                    imageVector = ImageVector.vectorResource(R.drawable.question_mark_24px),
+                    contentDescription = stringResource(id = R.string.pause_game),
+                    enabled = viewModel.buttonShouldBeEnabled(),
+                    modifier = Modifier.size(30.dp)
+                )
+            }
 
             Row(verticalAlignment = Alignment.Bottom) {
                 val timeText = stringResource(id = R.string.time)
-                CustomText(mainText = timeText, secondaryText = viewModel.getTime(), textColor = colorResource(R.color.primary_color))
+                CustomText(
+                    mainText = timeText,
+                    secondaryText = viewModel.getTime(),
+                    textColor = colorResource(R.color.primary_color)
+                )
 
                 CustomIconButton(
                     onClick = { viewModel.pauseGame() },
@@ -81,6 +107,4 @@ fun TopSection(
             }
         }
     }
-
-
 }
