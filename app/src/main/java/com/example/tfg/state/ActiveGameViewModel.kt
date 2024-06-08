@@ -266,13 +266,13 @@ class ActiveGameViewModel(
         this.filesDirectory = filesDirectory
     }
 
-    private var lastSnapshotTaken = getGame().timer
+    private var lastSnapshotTaken = -10
     private fun snapshotTooEarly(): Boolean {
         return timer.passedSeconds.value - lastSnapshotTaken < 10
     }
 
     fun takeSnapshot() {
-        if (gameIsNotCompleted() || snapshotTooEarly() || timerPaused() ||
+        if (gameIsCompleted() || snapshotTooEarly() || timerPaused() ||
             snapshot == null || filesDirectory == null) return
 
         Log.d("snapshot", "Taking snapshot")
