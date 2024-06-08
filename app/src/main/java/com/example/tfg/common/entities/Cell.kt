@@ -63,6 +63,11 @@ data class Cell(
         return newNotes
     }
 
+    fun copyOnlyIndex(value: Int): Cell {
+        return Cell(cellId = this.cellId, value = value, notes = emptyNotes(), readOnly = false, backgroundColor = 0)
+    }
+
+
     fun copy(noteIndex: Int, noteValue: Int): Cell {
         return Cell(cellId = this.cellId, value = this.value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false, backgroundColor = this.backgroundColor)
     }

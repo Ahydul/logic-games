@@ -3,8 +3,8 @@ package com.example.tfg.common.entities
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.GameTypeEntity
+import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.GameType
 import java.time.LocalDateTime
 
@@ -34,6 +34,10 @@ data class Game(
         val res = errors.add(error)
         if (res) numErrors++
         return res
+    }
+
+    fun addClue() {
+        numClues++
     }
 
     companion object {

@@ -46,6 +46,8 @@ class ActiveGameViewModel(
 
     private var actualGameStatePointer = 0
     private val numErrors: MutableIntState
+    private val numClues: MutableIntState
+    private var maxCluesAllowed = 3
     private val isNote = mutableStateOf(false)
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
@@ -59,6 +61,7 @@ class ActiveGameViewModel(
 
     init {
         numErrors = mutableIntStateOf(getGame().numErrors)
+        numClues = mutableIntStateOf(getGame().numClues)
     }
 
     var completedPopupWasShown = false
@@ -71,15 +74,10 @@ class ActiveGameViewModel(
     }
 
     fun completeTheBoard() {
-        getGameType().completedBoard.forEachIndexed { position, value ->
+        getCompletedBoard().forEachIndexed { position, value ->
             val cell = getCell(position)
             if (cell.value != value) {
-                val newCell = cell.copy(
-                    value = value,
-                    notes = Cell.emptyNotes(),
-                    backgroundColor = 0,
-                    isError = false
-                )
+                val newCell = cell.copyOnlyIndex(value = value)
                 setCell(position, newCell)
             }
         }
@@ -330,6 +328,8 @@ class ActiveGameViewModel(
 
     fun getNumClues() = getGame().numClues
 
+    fun getMaxNumCluesAllowed() = maxCluesAllowed
+
     fun getDifficulty() = getGame().difficulty
 
     fun getDifficulty(context: Context) = getGame().difficulty.toString(context)
@@ -339,6 +339,8 @@ class ActiveGameViewModel(
     fun getMaxValue() = getRealGameType().maxRegionSize()
 
     private fun getRegions() = getRealGameType().getRegions()
+
+    private fun getCompletedBoard() = getGameType().completedBoard
 
     fun getRegionSize() = getRegions().size
 
@@ -513,6 +515,13 @@ class ActiveGameViewModel(
     private fun errorsDisabled(): Boolean {
         return getGameStateIds().size > 1
     }
+
+    private fun addClue() {
+        getGame().addClue()
+        numClues.intValue++
+        updateGameToDb()
+    }
+
 
     // Returns if setting this value completes the game
     private fun setCellValue(index: Int, value: Int, isError: Boolean = false): Boolean {
@@ -720,7 +729,7 @@ class ActiveGameViewModel(
         moveWithActions.actions.forEach {
             val newCell = it.newCell
             val previousCell = it.previousCell
-            val coordinate = Coordinate.fromIndex(it.cellIndex, getNumRows(), getNumColumns())
+            val coordinate = getCoordinate(it.cellIndex)
             //We select unless its a color error and its not the cell actively changed
             if (newCell.value != previousCell.value || newCell.backgroundColor != ERRORCELLBACKGROUNDCOLOR)
                 addSelection(coordinate)
@@ -733,7 +742,7 @@ class ActiveGameViewModel(
         moveWithActions.actions.forEach {
             val newCell = it.newCell
             val previousCell = it.previousCell
-            val coordinate = Coordinate.fromIndex(it.cellIndex, getNumRows(), getNumColumns())
+            val coordinate = getCoordinate(it.cellIndex)
             //We select unless its a color error and its not the cell actively changed
             if (previousCell.value != newCell.value || newCell.backgroundColor != ERRORCELLBACKGROUNDCOLOR) {
                 addSelection(coordinate)
@@ -808,7 +817,7 @@ class ActiveGameViewModel(
                 if (cell.backgroundColor != ERRORCELLBACKGROUNDCOLOR){
                     if (pos != position) {
                         previousCells.add(cell)
-                        coordinates.add(Coordinate.fromIndex(pos, numColumns = getNumColumns(), numRows = getNumRows()))
+                        coordinates.add(getCoordinate(pos))
                     }
                     setCellBackgroundColor(pos, ERRORCELLBACKGROUNDCOLOR)
                 }
@@ -818,7 +827,7 @@ class ActiveGameViewModel(
                 val cell = getCell(pos)
                 if (pos != position) {
                     previousCells.add(cell)
-                    coordinates.add(Coordinate.fromIndex(pos, numColumns = getNumColumns(), numRows = getNumRows()))
+                    coordinates.add(getCoordinate(pos))
                 }
                 setCellBackgroundColor(pos, 0) // This gets rid of the error color
             }
@@ -864,6 +873,43 @@ class ActiveGameViewModel(
     /*
     Other
      */
+
+    private fun getCoordinate(position: Int): Coordinate {
+        return Coordinate.fromIndex(position, numColumns = getNumColumns(), numRows = getNumRows())
+    }
+
+    private fun getPositions() = (0..< getNumCells())
+
+    private fun getRandomPosition(): Int { //There must be a value
+        return getPositions().shuffled().find { position -> getCellValue(position) == 0 }!!
+    }
+
+    private fun onlyOneCellLeft(): Boolean {
+        return getPositions().count { position -> getCellValue(position) == 0 } == 1
+    }
+
+    private fun noCluesLeft(): Boolean {
+        return getNumClues() == maxCluesAllowed
+    }
+
+    fun giveClue() {
+        //If only one value left refuse to allow player to "win"
+        if (noCluesLeft() || onlyOneCellLeft()) return
+
+        val position = if (selectedTiles.size == 1) selectedTiles.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+            else getRandomPosition()
+
+        if (getCellValue(position) != 0) return
+
+        setCell(
+            index = position,
+            newCell = getCell(position).copyOnlyIndex(value = getCompletedBoard()[position])
+        )
+
+        // We don't create a move to now avoid repeating clues
+
+        addClue()
+    }
 
     fun buttonShouldBeEnabled(): Boolean {
         return !timerPaused() && gameIsNotCompleted()
