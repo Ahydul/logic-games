@@ -81,7 +81,6 @@ class ActiveGameViewModel(
                     isError = false
                 )
                 setCell(position, newCell)
-                updateCellToDb(newCell)
             }
         }
 
@@ -97,9 +96,8 @@ class ActiveGameViewModel(
 
         stopGame()
 
-        // Delete the rest of game states
-        getGameStateIds().filter { it != getActualGameStateId() }
-            .forEach { deleteGameStateFromDb(it) }
+        // Delete all game states
+        getGameStateIds().forEach { deleteGameStateFromDb(it) }
 
         // Update winning streak
         if (playerWon) addOneToActualWinningStreak()
