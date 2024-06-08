@@ -9,9 +9,6 @@ import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.Score
 
-const val TIMEOUT_SOLVER = 500L
-const val TIMEOUT = 500L
-
 class Hakyuu(
     numColumns: Int,
     numRows: Int,
@@ -693,6 +690,9 @@ class Hakyuu(
     }
 
     companion object {
+        const val TIMEOUT_SOLVER = 500L
+        const val TIMEOUT = 500L
+
         fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
             val hakyuu = Hakyuu(
                 numRows = numRows,
