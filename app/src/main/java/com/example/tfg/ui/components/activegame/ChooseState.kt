@@ -71,8 +71,8 @@ fun ChooseState(
                 onClick = {
                     if (selectedIsActual) viewModel.setActualState(0)
                     viewModel.deleteGameState(selectedGameState.intValue)
-                    selectedGameState.intValue = 0
                     states.remove(selectedGameState.intValue)
+                    selectedGameState.intValue = 0
                 },
                 color = colorResource(id = R.color.cell_value_error),
                 text = stringResource(id = R.string.delete),

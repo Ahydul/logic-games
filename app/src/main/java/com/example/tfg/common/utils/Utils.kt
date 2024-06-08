@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Handler
+import android.os.Looper
 import com.example.tfg.ActiveGameView
 import com.example.tfg.MainActivity
 import com.example.tfg.common.entities.relations.GameStateSnapshot
@@ -135,6 +137,12 @@ abstract class Utils {
         fun deleteFile(filePath: String?): Boolean {
             val file = filePath?.let { File(it) }
             return file?.delete() ?: false
+        }
+
+        fun runFunctionWithDelay(delayMillis: Long, function: () -> Unit) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                function()
+            }, delayMillis)
         }
     }
 }

@@ -54,6 +54,7 @@ class ActiveGameViewModel(
     private val timer = Timer.create(getGame().timer, viewModelScope)
 
     private var snapshot: (() -> Bitmap?)? = null
+    private var lastSnapshotTaken = -10
     private var filesDirectory: File? = null
 
     private var _gameCompleted = mutableStateOf(false)
@@ -242,24 +243,20 @@ class ActiveGameViewModel(
         }
     }
 
-    private fun insertGameStateToDB(newGameState: GameState) {
+    private fun insertGameStateToDB(newGameState: GameState, newBoard: Board) {
         viewModelScope.launch(Dispatchers.IO) {
             gameDao.insertGameState(newGameState)
-        }
-    }
-
-    private fun insertBoardToDB(newBoard: Board) {
-        viewModelScope.launch(Dispatchers.IO) {
             gameDao.insertBoard(newBoard)
+            getCells().forEachIndexed { position, cell ->
+                insertNewCellToDb(cell.value.copy(cellId = 0), boardId = newBoard.boardId, cellPosition = position)
+            }
         }
     }
 
-    private fun insertNewCellToDb(newCell: Cell, boardId: Long, cellPosition: Int): Long {
-        return runBlocking {
-            val cellId = gameDao.insertCell(newCell)
-            gameDao.insertBoardCellCrossRef(BoardCellCrossRef(boardId = boardId, cellId = cellId, cellPosition = cellPosition))
-            cellId
-        }
+    suspend fun insertNewCellToDb(newCell: Cell, boardId: Long, cellPosition: Int): Long {
+        val cellId = gameDao.insertCell(newCell)
+        gameDao.insertBoardCellCrossRef(BoardCellCrossRef(boardId = boardId, cellId = cellId, cellPosition = cellPosition))
+        return cellId
     }
 
 
@@ -277,7 +274,6 @@ class ActiveGameViewModel(
         this.filesDirectory = filesDirectory
     }
 
-    private var lastSnapshotTaken = -10
     private fun snapshotTooEarly(): Boolean {
         return timer.passedSeconds.value - lastSnapshotTaken < 10
     }
@@ -407,6 +403,8 @@ class ActiveGameViewModel(
     }
 
     private fun loadNewGameState(newGameState: GameState, newBoard: Board) {
+        lastSnapshotTaken = -10
+
         getGameStateIds().add(newGameState.gameStateId)
         actualGameStatePointer = getGameStateIds().size - 1
         gameInstance.actualGameState = newGameState
@@ -421,12 +419,7 @@ class ActiveGameViewModel(
         val newGameState = GameState.create(from = getActualState(), position = getGameStateIds().size)
         val newBoard = Board.create(from = getBoard(), gameStateId = newGameState.gameStateId)
 
-        insertGameStateToDB(newGameState)
-        insertBoardToDB(newBoard)
-        getCells().forEachIndexed { position, cell ->
-            insertNewCellToDb(cell.value.copy(cellId = 0), boardId = newBoard.boardId, cellPosition = position)
-        }
-
+        insertGameStateToDB(newGameState, newBoard)
         loadNewGameState(newGameState, newBoard)
 
         Log.d("state", "New state: ${getActualState()}")
@@ -453,7 +446,7 @@ class ActiveGameViewModel(
  */
     fun getTime() = Timer.formatTime(timer.passedSeconds.value)
 
-    fun timerPaused() = timer.paused.currentState
+    fun timerPaused() = timer.paused.value
 
     fun getTimerState() = timer.paused
 
