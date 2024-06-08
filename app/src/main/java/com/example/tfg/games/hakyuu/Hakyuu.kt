@@ -1,13 +1,13 @@
 package com.example.tfg.games.hakyuu
 
-import com.example.tfg.common.Difficulty
+import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
-import com.example.tfg.common.utils.Direction
+import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Utils
-import com.example.tfg.games.GameType
-import com.example.tfg.games.Games
-import com.example.tfg.games.Score
+import com.example.tfg.games.common.GameType
+import com.example.tfg.games.common.Games
+import com.example.tfg.games.common.Score
 
 const val TIMEOUT_SOLVER = 500L
 const val TIMEOUT = 500L

@@ -2,8 +2,8 @@ package com.example.tfg.data
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.example.tfg.common.Difficulty
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Difficulty
+import com.example.tfg.games.common.Games
 import java.time.LocalDateTime
 
 @Dao

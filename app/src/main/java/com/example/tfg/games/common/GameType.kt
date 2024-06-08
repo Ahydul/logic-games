@@ -1,7 +1,6 @@
-package com.example.tfg.games
+package com.example.tfg.games.common
 
 import androidx.room.Ignore
-import com.example.tfg.common.Difficulty
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.hakyuu.NumberValue

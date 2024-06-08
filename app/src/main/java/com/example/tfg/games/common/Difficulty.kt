@@ -1,4 +1,4 @@
-package com.example.tfg.common
+package com.example.tfg.games.common
 
 import android.content.Context
 import com.example.tfg.R

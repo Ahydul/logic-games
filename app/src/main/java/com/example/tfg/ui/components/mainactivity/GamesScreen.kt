@@ -40,13 +40,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tfg.R
-import com.example.tfg.common.Difficulty
+import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.GameLowerInfo
-import com.example.tfg.common.entities.Game
 import com.example.tfg.common.utils.Timer
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.common.utils.dateFormatter
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Games
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2

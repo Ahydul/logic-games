@@ -1,6 +1,6 @@
-package com.example.tfg.games
+package com.example.tfg.games.common
 
-import com.example.tfg.common.Games2
+import com.example.tfg.common.enums.Games2
 
 enum class Games(val title: String) {
     HAKYUU("Hakyuu");
@@ -11,7 +11,7 @@ enum class Games(val title: String) {
 
     fun toGames2(): Games2 {
         return when(this){
-            Games.HAKYUU -> Games2.HAKYUU
+            HAKYUU -> Games2.HAKYUU
         }
     }
 

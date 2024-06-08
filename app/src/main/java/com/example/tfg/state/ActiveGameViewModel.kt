@@ -28,7 +28,7 @@ import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.common.utils.Quadruple
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.GameDao
-import com.example.tfg.games.GameValue
+import com.example.tfg.games.common.GameValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch

@@ -1,6 +1,7 @@
 package com.example.tfg.common
 
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Difficulty
+import com.example.tfg.games.common.Games
 import java.time.LocalDateTime
 
 class GameLowerInfo(

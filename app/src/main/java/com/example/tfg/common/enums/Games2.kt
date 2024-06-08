@@ -1,8 +1,8 @@
-package com.example.tfg.common
+package com.example.tfg.common.enums
 
 import android.content.Context
 import com.example.tfg.R
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Games
 
 enum class Games2: Selection {
     ALL_GAMES,
@@ -25,8 +25,8 @@ enum class Games2: Selection {
     companion object {
         fun fromString(str: String?): Games2? {
             return when (str) {
-                Games2.HAKYUU.name -> Games2.HAKYUU
-                Games2.ALL_GAMES.name -> Games2.ALL_GAMES
+                HAKYUU.name -> HAKYUU
+                ALL_GAMES.name -> ALL_GAMES
                 else -> null
             }
         }

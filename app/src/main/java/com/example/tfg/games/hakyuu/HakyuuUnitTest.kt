@@ -1,6 +1,6 @@
 package com.example.tfg.games.hakyuu
 
-import com.example.tfg.common.Difficulty
+import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.common.utils.Utils

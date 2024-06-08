@@ -1,6 +1,5 @@
-package com.example.tfg.games
+package com.example.tfg.games.common
 
-import com.example.tfg.common.Difficulty
 import com.google.gson.JsonElement
 
 abstract class Score(private val game: Games) {

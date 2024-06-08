@@ -1,8 +1,8 @@
 package com.example.tfg.common
 
-import com.example.tfg.games.GameType
-import com.example.tfg.games.Games
-import com.example.tfg.games.Score
+import com.example.tfg.games.common.GameType
+import com.example.tfg.games.common.Games
+import com.example.tfg.games.common.Score
 import com.example.tfg.games.hakyuu.Hakyuu
 import com.example.tfg.games.hakyuu.HakyuuScore
 

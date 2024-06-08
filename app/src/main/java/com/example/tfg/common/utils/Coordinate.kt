@@ -1,5 +1,7 @@
 package com.example.tfg.common.utils
 
+import com.example.tfg.common.enums.Direction
+
 
 data class Coordinate(val row: Int, val column: Int) {
     fun moveRight(numColumns: Int, value: Int = 1): Coordinate? {

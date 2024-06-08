@@ -6,8 +6,9 @@ import com.example.tfg.common.entities.Game
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.data.GameDao
-import com.example.tfg.games.GameType
-import com.example.tfg.games.Games
+import com.example.tfg.games.common.Difficulty
+import com.example.tfg.games.common.GameType
+import com.example.tfg.games.common.Games
 import com.example.tfg.games.hakyuu.Hakyuu
 
 class GameFactory(private val gameDao: GameDao) {

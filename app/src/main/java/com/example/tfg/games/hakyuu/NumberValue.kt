@@ -1,7 +1,7 @@
 package com.example.tfg.games.hakyuu
 
 import com.example.tfg.R
-import com.example.tfg.games.GameValue
+import com.example.tfg.games.common.GameValue
 
 enum class NumberValue(override val value: Int, override val icon: Int): GameValue {
     EMPTY(0, R.drawable.outline_close_24),
