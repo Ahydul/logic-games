@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,8 +20,11 @@ import com.example.tfg.common.IdGenerator
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
+import com.example.tfg.state.DarkTheme
+import com.example.tfg.state.LocalTheme
 import com.example.tfg.ui.components.activegame.ActiveGameScreen
 import com.example.tfg.ui.theme.TFGTheme
+import com.example.tfg.ui.theme.Theme
 
 class ActiveGameView : ComponentActivity() {
     private var viewModel: ActiveGameViewModel? = null
@@ -46,13 +50,19 @@ class ActiveGameView : ComponentActivity() {
         viewModel = vm
 
         setContent {
-            TFGTheme {
-                ActiveGameScreen(
-                    viewModel = vm,
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .fillMaxWidth()
-                )
+            val darkTheme = when (Theme.from(sharedPref.getString("theme", "LIGHT_MODE") ?: Theme.LIGHT_MODE.name)) {
+                Theme.LIGHT_MODE -> DarkTheme(false)
+                Theme.DARK_MODE -> DarkTheme(true)
+            }
+            CompositionLocalProvider(LocalTheme provides darkTheme) {
+                TFGTheme(darkTheme = LocalTheme.current.isDark) {
+                    ActiveGameScreen(
+                        viewModel = vm,
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.background)
+                            .fillMaxWidth()
+                    )
+                }
             }
         }
     }

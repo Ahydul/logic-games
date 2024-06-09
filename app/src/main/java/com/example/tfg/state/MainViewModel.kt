@@ -1,14 +1,17 @@
 package com.example.tfg.state
 
+import android.content.SharedPreferences
 import android.graphics.Bitmap
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.GameLowerInfo
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.LimitedGameDao
 import com.example.tfg.data.StatsDao
+import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
+import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 
@@ -16,10 +19,36 @@ class MainViewModel(
     private val gameDao: LimitedGameDao,
     private val statsDao: StatsDao,
     private val gameFactory: GameFactory,
-    private var lastPlayedGame: Long
+    private val configurationPrefs: SharedPreferences
 ) : ViewModel() {
 
+    private val themeUserSetting = mutableStateOf(
+        Theme.from(configurationPrefs.getString("theme", "LIGHT_MODE") ?: Theme.LIGHT_MODE.name)
+    )
+
+    private var lastPlayedGame = getLastPlayedGame()
+
 //  Main functions
+
+    private fun getLastPlayedGame(): Long {
+        var lastPlayedGame = configurationPrefs.getLong("lastPlayedGame", -1L)
+        if (lastPlayedGame != -1L && runBlocking { !gameDao.existsOnGoingGameById(lastPlayedGame) }) {
+            //Game was completed or doesn't exist
+            lastPlayedGame = -1L
+            with(configurationPrefs.edit()) {
+                putLong("lastPlayedGame", -1)
+                apply()
+            }
+        }
+        return lastPlayedGame
+    }
+
+    fun setLastPlayedGame(id: Long) {
+        with (configurationPrefs.edit()) {
+            putLong("lastPlayedGame", id)
+            apply() //asynchronous
+        }
+    }
 
     fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty): Long {
         return runBlocking {
@@ -29,6 +58,28 @@ class MainViewModel(
                 numColumns = numColumns,
                 difficulty = difficulty
             )
+        }
+    }
+
+    fun getTheme() = themeUserSetting.value
+
+    fun setConfigurationTheme(theme: Theme) {
+        with (configurationPrefs.edit()) {
+            putString("theme", theme.name)
+            apply()
+        }
+    }
+
+    fun setTheme() {
+        when(getTheme()){
+            Theme.DARK_MODE -> {
+                themeUserSetting.value = Theme.LIGHT_MODE
+                setConfigurationTheme(Theme.LIGHT_MODE)
+            }
+            Theme.LIGHT_MODE -> {
+                themeUserSetting.value = Theme.DARK_MODE
+                setConfigurationTheme(Theme.DARK_MODE)
+            }
         }
     }
 
@@ -55,15 +106,10 @@ class MainViewModel(
         return runBlocking { gameDao.getGameById(gameId) }
     }
 
-    fun getLastPlayedGame(): GameLowerInfo? {
+    fun getLastPlayedGameInfo(): GameLowerInfo? {
         return if (lastPlayedGame == -1L) null
             else getGameByIdFromBb(lastPlayedGame)
     }
-
-    fun setLastPlayedGame(lastPlayedGame: Long){
-        this.lastPlayedGame = lastPlayedGame
-    }
-
 
 // Stats functions
 

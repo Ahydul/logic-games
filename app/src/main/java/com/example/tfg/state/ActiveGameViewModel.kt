@@ -914,7 +914,7 @@ class ActiveGameViewModel(
             else getRandomPosition()
 
         if (getCellValue(position) != 0) return
-
+        addClue()
         setCell(
             index = position,
             newCell = getCell(position).copyOnlyIndex(value = getCompletedBoard()[position])
@@ -922,7 +922,6 @@ class ActiveGameViewModel(
 
         // We don't create a move to now avoid repeating clues
 
-        addClue()
     }
 
     fun buttonShouldBeEnabled(): Boolean {

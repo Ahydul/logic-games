@@ -7,10 +7,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import com.example.tfg.common.GameFactory
@@ -18,9 +21,12 @@ import com.example.tfg.common.IdGenerator
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.data.LimitedGameDao
 import com.example.tfg.state.CustomMainViewModelFactory
+import com.example.tfg.state.DarkTheme
+import com.example.tfg.state.LocalTheme
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.mainactivity.MainScreen
 import com.example.tfg.ui.theme.TFGTheme
+import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -34,24 +40,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun getLastPlayedGame(dao: LimitedGameDao, configurationPrefs: SharedPreferences): Long {
-        var lastPlayedGame = configurationPrefs.getLong("lastPlayedGame", -1L)
-        if (lastPlayedGame != -1L && runBlocking { !dao.existsOnGoingGameById(lastPlayedGame) }) {
-            //Game was completed or doesn't exist
-            lastPlayedGame = -1L
-            with(configurationPrefs.edit()) {
-                putLong("lastPlayedGame", -1)
-                apply()
-            }
-        }
-        return lastPlayedGame
-    }
-
     override fun onRestart() {
-        val dao = GameDatabase.getDatabase(this).limitedGameDao()
-        val configurationPrefs = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
-        val lastPlayedGame = getLastPlayedGame(dao, configurationPrefs)
-        viewModel?.setLastPlayedGame(lastPlayedGame)
+        viewModel?.setLastPlayedGame(-1)
         super.onRestart()
     }
 
@@ -63,21 +53,27 @@ class MainActivity : ComponentActivity() {
         val database = GameDatabase.getDatabase(this)
         val limitedGameDao = database.limitedGameDao()
         val statsDao = database.statsDao()
-        val lastPlayedGame = getLastPlayedGame(limitedGameDao, configurationPrefs)
         val gameFactory = GameFactory(database.gameDao())
-        val vm: MainViewModel by viewModels{ CustomMainViewModelFactory(limitedGameDao, statsDao, gameFactory, lastPlayedGame) }
+
+        val vm: MainViewModel by viewModels{ CustomMainViewModelFactory(limitedGameDao, statsDao, gameFactory, configurationPrefs) }
         viewModel = vm
 
         super.onCreate(savedInstanceState)
         setContent {
-            TFGTheme {
-                // A surface container using the 'background' color from the theme
-                MainScreen(
-                    viewModel = vm,
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .fillMaxWidth()
-                )
+            val darkTheme = when (vm.getTheme()) {
+                Theme.LIGHT_MODE -> DarkTheme(false)
+                Theme.DARK_MODE -> DarkTheme(true)
+            }
+            CompositionLocalProvider(LocalTheme provides darkTheme) {
+                TFGTheme(darkTheme = LocalTheme.current.isDark) {
+                    // A surface container using the 'background' color from the theme
+                    MainScreen(
+                        viewModel = vm,
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.background)
+                            .fillMaxWidth()
+                    )
+                }
             }
         }
     }

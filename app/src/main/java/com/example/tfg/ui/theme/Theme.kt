@@ -42,6 +42,21 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Color(0xFF242A2A),
 )
 
+enum class Theme {
+    DARK_MODE,
+    LIGHT_MODE;
+
+    companion object {
+        fun from(str: String?): Theme {
+            return when(str) {
+                DARK_MODE.name -> DARK_MODE
+                LIGHT_MODE.name -> LIGHT_MODE
+                else -> LIGHT_MODE
+            }
+        }
+    }
+}
+
 @Composable
 fun TFGTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

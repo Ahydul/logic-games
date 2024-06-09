@@ -54,6 +54,7 @@ import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.CustomText
 import com.example.tfg.ui.components.common.CustomTextField
 import com.example.tfg.ui.components.common.LabeledIconButton
+import com.example.tfg.ui.components.common.MainHeader
 import com.example.tfg.ui.components.common.animateBlur
 import com.example.tfg.ui.components.common.defaultBitmap
 
@@ -84,10 +85,11 @@ fun GamesScreen(
 
     Column(
         modifier = modifier
-            .padding(10.dp)
             .verticalScroll(rememberScrollState())
             .blur(animatedBlur)
     ) {
+        MainHeader(viewModel = viewModel, modifier = modifier)
+
         val gameHakyuu = Games.HAKYUU
         ChooseGameButton(
             game = gameHakyuu,
@@ -340,7 +342,7 @@ private fun ChooseGameButton(
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
         shape = RoundedCornerShape(8.dp),
         borderStroke = BorderStroke(0.5.dp, color = MaterialTheme.colorScheme.outline),
-        modifier = modifier
+        modifier = modifier.padding(horizontal = 10.dp)
     ) {
         Image(
             painter = painterResource(id = R.drawable.hakyuu_dark),

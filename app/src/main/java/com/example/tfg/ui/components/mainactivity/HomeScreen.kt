@@ -20,7 +20,7 @@ fun HomeScreen(
     Column(modifier = modifier
         .fillMaxHeight()
     ) {
-        MainHeader(modifier = modifier.weight(1.3f))
+        MainHeader(viewModel = viewModel, modifier = modifier.weight(1.3f))
         Spacer(modifier = mod.weight(8f))
         HomeButtons(
             modifier = mod.weight(5f),
