@@ -80,8 +80,12 @@ data class Cell(
         return IntArray(9){0}
     }
 
+    fun hasErrorBackground(): Boolean {
+        return this.backgroundColor == ERROR_CELL_BACKGROUND_COLOR
+    }
+
     fun isErrorAndHasErrorBackground(): Boolean {
-        return this.backgroundColor == ERROR_CELL_BACKGROUND_COLOR && this.isError
+        return hasErrorBackground() && this.isError
     }
 
     override fun equals(other: Any?): Boolean {

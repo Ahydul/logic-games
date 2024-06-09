@@ -330,6 +330,8 @@ class ActiveGameViewModel(
 
     private fun getGameStateIds() = gameInstance.gameStateIds
 
+    fun getNumberOfGameStates() = getGameStateIds().size
+
     private fun getActualState() = gameInstance.actualGameState
 
     private fun getActualMovesPointer() = getActualState().pointer
@@ -411,7 +413,7 @@ class ActiveGameViewModel(
         lastSnapshotTaken = -10
 
         getGameStateIds().add(newGameState.gameStateId)
-        actualGameStatePointer = getGameStateIds().size - 1
+        actualGameStatePointer = getNumberOfGameStates() - 1
         gameInstance.actualGameState = newGameState
         gameInstance.board = newBoard
         gameInstance.moves = mutableListOf()
@@ -421,7 +423,7 @@ class ActiveGameViewModel(
     fun newGameState() {
         Log.d("state", "Actual state: ${getActualState()}")
 
-        val newGameState = GameState.create(from = getActualState(), position = getGameStateIds().size)
+        val newGameState = GameState.create(gameId = getGame().gameId, position = getNumberOfGameStates())
         val newBoard = Board.create(from = getBoard(), gameStateId = newGameState.gameStateId)
 
         insertGameStateToDB(newGameState, newBoard)
@@ -432,7 +434,7 @@ class ActiveGameViewModel(
 
     fun setActualState(pointer: Int) {
         Log.d("state", "Actual state: ${getActualState()}")
-        if (pointer < getGameStateIds().size && pointer != getActualGameStatePosition()){
+        if (pointer < getNumberOfGameStates() && pointer != getActualGameStatePosition()){
             loadGameState(pointer)
             Log.d("state", "Changed to state: ${getActualState()}")
         }
@@ -440,11 +442,11 @@ class ActiveGameViewModel(
     }
 
     fun deleteGameState(pointer: Int) {
-        if (pointer < getGameStateIds().size && pointer != getActualGameStatePosition()){
+        if (pointer < getNumberOfGameStates() && pointer != getActualGameStatePosition()){
 
             deleteGameStateFromDb(getGameStateIds()[pointer])
             getGameStateIds().removeAt(pointer)
-
+            checkErrors()
             Log.d("state", "Changed to state: ${getActualState()}")
         }
     }
@@ -488,7 +490,9 @@ class ActiveGameViewModel(
 
     fun getCell(coordinate: Coordinate) = getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
 
-    private fun getCells(coordinates: List<Coordinate>) = coordinates.map { getCell(it) }
+    private fun getCells(coordinates: Collection<Coordinate>) = coordinates.map { getCell(it) }
+
+    private fun getCells2(positions: Collection<Int>) = positions.map { getCell(it) }
 
     private fun isReadOnly(index: Int) = getCell(index).readOnly
 
@@ -527,7 +531,7 @@ class ActiveGameViewModel(
     }
 
     private fun errorsDisabled(): Boolean {
-        return getGameStateIds().size > 1
+        return getNumberOfGameStates() > 1
     }
 
     private fun addClue() {
@@ -543,16 +547,35 @@ class ActiveGameViewModel(
         val newCell = previousCell.copy(
             value = if (previousCell.value == value) 0 else value,
             notes = Cell.emptyNotes(),
+            isError = isError
+            /*
             // If more than one state errors are disabled: only solved errors are shown
             isError = if (errorsDisabled() && !previousCell.isError) false
                 else isError
+             */
         )
         setCell(index = index, newCell = newCell)
 
-        if (isError) addError(index = index, value = value)
+        if (isError /*&& !errorsDisabled()*/) addError(index = index, value = value)
         else return gameWasCompleted()
 
         return false
+    }
+
+    private fun setCellError(index: Int, isError: Boolean, color: Int? = null) {
+        val previousCell = getCell(index)
+        val newCell = if (color != null)
+            previousCell.copy(
+                isError = isError,
+                backgroundColor = if (previousCell.backgroundColor == color) 0 else color
+            )
+        else previousCell.copy(
+                isError = isError
+            )
+
+        setCell(index = index, newCell = newCell)
+
+        if (isError) addError(index = index, value = previousCell.value)
     }
 
     private fun setCellNote(index: Int, noteIndex: Int, note: Int) {
@@ -703,7 +726,7 @@ class ActiveGameViewModel(
         updateGameStateInDb()
     }
 
-    private fun addMove(coordinates: List<Coordinate>, newCells: List<Cell>, previousCells: List<Cell>) {
+    private fun addMove(coordinates: Collection<Coordinate>, newCells: List<Cell>, previousCells: List<Cell>) {
         require(coordinates.size == newCells.size && coordinates.size == previousCells.size) { "Wrong sizes provided" }
         val gameStateId = getActualGameStateId()
         val pointer = getActualMovesPointer()
@@ -817,35 +840,36 @@ class ActiveGameViewModel(
             val position = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
             val oldErrors = checkValue(position = position, value = getCellValue(position))
 
-            val isError = isError(position = position, value = value)
+            val isError = isError(position = position, value = value) && !errorsDisabled()
             gameCompleted = setCellValue(value = value, index = position, isError = isError)
 
-            // Paint positions that causes errors
-            val errors = mutableSetOf<Int>()
-            getCells().forEachIndexed { pos, ms ->
-                val cell = ms.value
-                if (cell.isError) errors.addAll(checkValue(position = pos, value = cell.value))
-            }
-            errors.forEach { pos ->
-                val cell = getCell(pos)
-                if (cell.backgroundColor != Cell.ERROR_CELL_BACKGROUND_COLOR){
+            if (!errorsDisabled()) {
+                // Paint positions that causes errors
+                val errors = mutableSetOf<Int>()
+                getCells().forEachIndexed { pos, ms ->
+                    val cell = ms.value
+                    if (cell.isError) errors.addAll(checkValue(position = pos, value = cell.value))
+                }
+                errors.forEach { pos ->
+                    val cell = getCell(pos)
+                    if (cell.backgroundColor != Cell.ERROR_CELL_BACKGROUND_COLOR) {
+                        if (pos != position) {
+                            previousCells.add(cell)
+                            coordinates.add(getCoordinate(pos))
+                        }
+                        setCellBackgroundColor(pos, Cell.ERROR_CELL_BACKGROUND_COLOR)
+                    }
+                }
+
+                oldErrors.filter { !errors.contains(it) }.forEach { pos ->
+                    val cell = getCell(pos)
                     if (pos != position) {
                         previousCells.add(cell)
                         coordinates.add(getCoordinate(pos))
                     }
-                    setCellBackgroundColor(pos, Cell.ERROR_CELL_BACKGROUND_COLOR)
+                    setCellBackgroundColor(pos, 0) // This gets rid of the error color
                 }
             }
-
-            oldErrors.filter { !errors.contains(it) }.forEach { pos ->
-                val cell = getCell(pos)
-                if (pos != position) {
-                    previousCells.add(cell)
-                    coordinates.add(getCoordinate(pos))
-                }
-                setCellBackgroundColor(pos, 0) // This gets rid of the error color
-            }
-
             removeSelections()
         }
         else return
@@ -888,6 +912,55 @@ class ActiveGameViewModel(
     Other
      */
 
+    // For when more than one state
+    fun checkErrors() {
+        val backgroundErrors = mutableSetOf<Int>()
+        val coordinates = mutableSetOf<Int>()
+        val valueErrors = mutableListOf<Int>()
+
+        getPositions().forEach { position ->
+            val cell = getCell(position)
+            val errors = checkValue(position = position, value = cell.value)
+
+            //Has error
+            if (errors.isNotEmpty()) {
+                valueErrors.add(position)
+            }
+
+            backgroundErrors.addAll(errors)
+        }
+
+        val previousCells = mutableListOf<Cell>()
+
+        getPositions().forEach { position ->
+            val cell2 = getCell(position)
+            val hadBGError = cell2.hasErrorBackground()
+            val hasBGError = backgroundErrors.contains(position)
+
+            val setBackground = hasBGError != hadBGError
+
+            val wasError = cell2.isError
+            val isError = valueErrors.contains(position)
+            if (wasError != isError) {
+                setCellError(position, isError,
+                    if (setBackground)
+                        Cell.ERROR_CELL_BACKGROUND_COLOR
+                    else null
+                )
+                previousCells.add(cell2)
+                coordinates.add(position)
+            } else if (setBackground) {
+                setCellBackgroundColor(position, Cell.ERROR_CELL_BACKGROUND_COLOR)
+                previousCells.add(cell2)
+                coordinates.add(position)
+            }
+        }
+
+        val newCells = getCells2(coordinates)
+
+        addMove(coordinates = coordinates.map { getCoordinate(it) }, newCells = newCells, previousCells = previousCells)
+    }
+
     private fun getCoordinate(position: Int): Coordinate {
         return Coordinate.fromIndex(position, numColumns = getNumColumns(), numRows = getNumRows())
     }
@@ -898,8 +971,8 @@ class ActiveGameViewModel(
         return getPositions().shuffled().find { position -> getCellValue(position) == 0 }!!
     }
 
-    private fun onlyOneCellLeft(): Boolean {
-        return getPositions().count { position -> getCellValue(position) == 0 } == 1
+    private fun oneOrNoCellsLeft(): Boolean {
+        return getPositions().count { position -> getCellValue(position) == 0 } < 2
     }
 
     private fun noCluesLeft(): Boolean {
@@ -908,7 +981,7 @@ class ActiveGameViewModel(
 
     fun giveClue() {
         //If only one value left refuse to allow player to "win"
-        if (noCluesLeft() || onlyOneCellLeft()) return
+        if (noCluesLeft() || oneOrNoCellsLeft()) return
 
         val position = if (selectedTiles.size == 1) selectedTiles.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
             else getRandomPosition()

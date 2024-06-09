@@ -27,8 +27,12 @@ data class GameState(
     companion object{
         private fun generateId() = IdGenerator.generateId("gamestate")
 
-        fun create(from: GameState, position: Int) : GameState {
-            return from.copy(gameStateId = generateId(), position = position)
+        fun create(position: Int, gameId: Long) : GameState {
+            return GameState(
+                gameStateId = generateId(),
+                position = position,
+                gameId = gameId
+            )
         }
     }
 }
