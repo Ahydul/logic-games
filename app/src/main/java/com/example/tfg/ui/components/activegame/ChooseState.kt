@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -23,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
@@ -39,7 +39,7 @@ fun ChooseState(
     viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    val textColor = colorResource(id = R.color.text)
+    val textColor = MaterialTheme.colorScheme.onPrimary
     val actualGameStateID = viewModel.getActualGameStatePosition()
     val selectedGameState = remember { mutableIntStateOf(actualGameStateID) }
     val states = viewModel.getGameStatesBitmapFromDB()
@@ -73,7 +73,7 @@ fun ChooseState(
                     viewModel.deleteGameState(selectedGameState.intValue)
                     states.remove(selectedGameState.intValue)
                 },
-                color = colorResource(id = R.color.cell_value_error),
+                color = MaterialTheme.colorScheme.error,
                 text = stringResource(id = R.string.delete),
                 modifier = buttonModifier,
                 enabled = selectedGameState.intValue != 0
@@ -107,7 +107,7 @@ fun ChooseState(
 fun ChooseStateButton(
     onClick: () -> Unit,
     text: String,
-    color: Color = colorResource(id = R.color.background),
+    color: Color = MaterialTheme.colorScheme.background,
     enabled: Boolean = true,
     modifier: Modifier
 ) {

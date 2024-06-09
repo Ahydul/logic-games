@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -123,7 +124,7 @@ private fun ChosenGame(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val color = colorResource(id = R.color.text)
+    val color = MaterialTheme.colorScheme.onPrimary
     CustomPopup(
         expandedStates = expandedStates,
         offset = IntOffset(0,-100),
@@ -139,7 +140,7 @@ private fun ChosenGame(
                 Action.CREATE -> {
                     TextFields(
                         textColor = color,
-                        backgroundColor = colorResource(id = R.color.secondary),
+                        backgroundColor = MaterialTheme.colorScheme.secondary,
                         modifier = modifier.padding(vertical = 8.dp),
                         chosenGame = chosenGame,
                         viewModel = viewModel
@@ -186,7 +187,7 @@ private fun OnGoingBoard(
     game: GameLowerInfo,
     bitmap: Bitmap?,
     modifier: Modifier,
-    textColor: Color = colorResource(id = R.color.text)
+    textColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     val bitmap = (bitmap ?: defaultBitmap()).asImageBitmap()
     val context = LocalContext.current
@@ -238,7 +239,7 @@ private fun TextFields(
     val textFieldModifier = modifier
         .border(
             1.dp,
-            color = colorResource(id = R.color.border_primary),
+            color = MaterialTheme.colorScheme.outline,
             shape = RoundedCornerShape(10.dp)
         )
     val context = LocalContext.current
@@ -338,7 +339,7 @@ private fun ChooseGameButton(
         onClick = onChooseGame,
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
         shape = RoundedCornerShape(8.dp),
-        borderStroke = BorderStroke(0.5.dp, color = colorResource(id = R.color.border_primary)),
+        borderStroke = BorderStroke(0.5.dp, color = MaterialTheme.colorScheme.outline),
         modifier = modifier
     ) {
         Image(
@@ -353,7 +354,7 @@ private fun ChooseGameButton(
                 .weight(4f)
                 .fillMaxHeight()
         ) {
-            Text(text = "${game.title}", fontSize = 25.sp, color = colorResource(id = R.color.text))
+            Text(text = "${game.title}", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -369,9 +370,9 @@ private fun ChooseGameButton(
                 LabeledIconButton(
                     onClick = { /*TODO: Rules*/ },
                     imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
-                    iconColor = colorResource(id = R.color.text),
+                    iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = rulesLabel,
-                    labelColor = colorResource(id = R.color.text),
+                    labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,
@@ -382,9 +383,9 @@ private fun ChooseGameButton(
                 LabeledIconButton(
                     onClick = onClickInProgress,
                     imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
-                    iconColor = colorResource(id = R.color.text),
+                    iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = inProgressLabel,
-                    labelColor = colorResource(id = R.color.text),
+                    labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,
@@ -395,9 +396,9 @@ private fun ChooseGameButton(
                 LabeledIconButton(
                     onClick = { goStatsScreen(game) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
-                    iconColor = colorResource(id = R.color.text),
+                    iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = statsLabel,
-                    labelColor = colorResource(id = R.color.text),
+                    labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,

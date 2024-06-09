@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -29,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -89,8 +89,8 @@ fun CustomPopup(
     modifier: Modifier = Modifier,
     expandedStates: MutableTransitionState<Boolean>,
     onDismissRequest: (() -> Unit) = { expandedStates.targetState = false },
-    backgroundColor: Color = colorResource(id = R.color.background),
-    borderColor: Color = colorResource(id = R.color.border_primary),
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    borderColor: Color = MaterialTheme.colorScheme.outline,
     offset: IntOffset = IntOffset(0,0),
     startScale: Float = 0.8f,
     closable: Boolean = true,
@@ -155,7 +155,7 @@ fun DropdownMenu(
             Text(
                 text = selected,
                 fontSize = 15.sp,
-                color = colorResource(id = R.color.text),
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = modifier.padding(horizontal = 10.dp)
             )
         }

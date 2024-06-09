@@ -3,10 +3,10 @@ package com.example.tfg.ui.components.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -20,7 +20,7 @@ fun NavigationBar(
     modifier: Modifier = Modifier,
     navController: NavHostController
 ) {
-    val bgColor = colorResource(id = R.color.primary)
+    val bgColor = MaterialTheme.colorScheme.primary
     Divider()
     Row(modifier = modifier
         .background(bgColor)
@@ -35,8 +35,6 @@ fun NavigationBar(
         LabeledIconButton(
             onClick = { navController.navigate(MainActivity.Home.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.house),
-            iconColor = colorResource(id = R.color.text),
-            labelColor = colorResource(id = R.color.text),
             label = homeLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,
@@ -47,8 +45,6 @@ fun NavigationBar(
         LabeledIconButton(
             onClick = { navController.navigate("${MainActivity.Games.name}/false") },
             imageVector = ImageVector.vectorResource(id = R.drawable.controller_game),
-            iconColor = colorResource(id = R.color.text),
-            labelColor = colorResource(id = R.color.text),
             label = gamesLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,
@@ -59,8 +55,6 @@ fun NavigationBar(
         LabeledIconButton(
             onClick = { navController.navigate("${MainActivity.Stats.name}/ALL_GAMES") },
             imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
-            iconColor = colorResource(id = R.color.text),
-            labelColor = colorResource(id = R.color.text),
             label = statsLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,

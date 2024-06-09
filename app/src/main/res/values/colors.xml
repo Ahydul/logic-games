@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="pearl_white">#E2DFD2</color>
+    <color name="dark_text">#BFC0CB</color>
+    <color name="dark_background">#14181C</color>
+    <color name="dark_primary">#20272D</color>
+    <color name="dark_secondary">#29313A</color>
+    <color name="dark_border_primary">#3E3E46</color>
 
-    <color name="text">#BFC0CB</color>
-    <color name="background">#14181C</color>
-    <color name="primary">#20272D</color>
-    <color name="secondary">#29313A</color>
-    <color name="border_primary">#3E3E46</color>
-
+    <color name="error">#890A0A</color>
     <color name="section_border">#FF000000</color>
     <color name="selection_color">#3F6AA3</color>
     <color name="cell_value">#3F6AA3</color>
-    <color name="cell_value_error">#890A0A</color>
     <color name="note_color">#3C7D53</color>
 
     <color name="background2">#4B6A2D</color>

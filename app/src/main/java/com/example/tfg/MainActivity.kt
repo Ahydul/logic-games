@@ -72,19 +72,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             TFGTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    TFGTheme {
-                        MainScreen(
-                            viewModel = vm,
-                            modifier = Modifier
-                                .background(colorResource(id = R.color.background))
-                                .fillMaxWidth()
-                        )
-                    }
-                }
+                MainScreen(
+                    viewModel = vm,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxWidth()
+                )
             }
         }
     }
