@@ -13,7 +13,7 @@ data class Cell(
     var cellId: Long = 0,
     var value: Int,
     var notes: IntArray,
-    val readOnly: Boolean,
+    val readOnly: Boolean = false,
     val backgroundColor: Int,
     val isError: Boolean = false
 ) {
@@ -64,12 +64,12 @@ data class Cell(
     }
 
     fun copyOnlyIndex(value: Int): Cell {
-        return Cell(cellId = this.cellId, value = value, notes = emptyNotes(), readOnly = false, backgroundColor = 0)
+        return Cell(cellId = this.cellId, value = value, notes = emptyNotes(), backgroundColor = 0)
     }
 
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {
-        return Cell(cellId = this.cellId, value = this.value, notes = copyNotesChanging(noteIndex, noteValue), readOnly = false, backgroundColor = this.backgroundColor)
+        return Cell(cellId = this.cellId, value = this.value, notes = copyNotesChanging(noteIndex, noteValue), backgroundColor = this.backgroundColor)
     }
 
     fun copyErase(): Cell {
@@ -80,6 +80,9 @@ data class Cell(
         return IntArray(9){0}
     }
 
+    fun isErrorAndHasErrorBackground(): Boolean {
+        return this.backgroundColor == ERROR_CELL_BACKGROUND_COLOR && this.isError
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -109,8 +112,10 @@ data class Cell(
 
 
     companion object {
+        const val ERROR_CELL_BACKGROUND_COLOR = -7796214
+
         private fun emptyCell(backgroundColor: Int = 0) =
-            Cell(value = 0, notes = emptyNotes(), readOnly = false, backgroundColor = backgroundColor)
+            Cell(value = 0, notes = emptyNotes(), backgroundColor = backgroundColor)
 
         private fun readOnlyCell(value: Int) =
             Cell(value = value, notes = IntArray(0), readOnly = true, backgroundColor = 0)
@@ -130,6 +135,25 @@ data class Cell(
             else readOnlyCell(value)
         }
 
+        fun exampleWithNote(): Cell {
+            val notes = emptyNotes()
+            notes[0] = 2
+            notes[1] = 3
+            notes[2] = 4
+            return Cell(value = 0, notes = notes, backgroundColor = 0)
+        }
+
+        fun exampleError(): Cell {
+            return Cell(value = 3, notes = emptyNotes(), isError = true, backgroundColor = 0)
+        }
+
+        fun exampleBackgroundError(): Cell {
+            return Cell(value = 1, notes = emptyNotes(), backgroundColor = ERROR_CELL_BACKGROUND_COLOR)
+        }
+
+        fun exampleBackgroundErrorWithError(): Cell {
+            return Cell(value = 1, notes = emptyNotes(), isError = true, backgroundColor = ERROR_CELL_BACKGROUND_COLOR)
+        }
     }
 
 }

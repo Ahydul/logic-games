@@ -11,11 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.integerArrayResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
@@ -64,7 +63,7 @@ fun BottomActionRow(
     Log.d("recomposition", "BottomActionRow recomposition")
 
     val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
-    val defaultCellBackground = colorResource(id = R.color.cell_background)
+    val defaultCellBackground = colorResource(id = R.color.secondary_background)
     val numValues = viewModel.getMaxValue()+1
     HorizontalGrid(
         numRows = if (numValues > 10) 3 else if (numValues > 4) 2 else 1,
@@ -85,7 +84,7 @@ fun BottomActionRow(
             backgroundColors.forEachIndexed { index, color ->
                 CustomIconButton(                                                 //First color is remove the background
                     onClick = { viewModel.paintAction(colorInt = color)},
-                    imageVector =  ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
+                    painter =  painterResource(id = R.drawable.baseline_color_lens_24),
                     iconColor = Color(color),
                     contentDescription = "Color $index",
                     modifier = modifierValueButtons,
@@ -97,12 +96,11 @@ fun BottomActionRow(
             for(v in 0..< numValues) {
                 val value = viewModel.getValue(v)
                 val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
-                                else colorResource(id = R.color.primary_color)
-                val icon = ImageVector.vectorResource(id = value.icon)
+                                else colorResource(id = R.color.primary)
 
                 CustomIconButton(
                     onClick = { viewModel.noteOrWriteAction(value.value) },
-                    imageVector = icon,
+                    painter =  painterResource(id = value.icon),
                     iconColor = iconColor,
                     contentDescription = null,
                     modifier = modifierValueButtons,
@@ -128,13 +126,13 @@ fun TopActionRow(
         componentsScale = 0.5f,
         modifier = modifier
     ) {
-        val iconColor = colorResource(id = R.color.primary_color)
+        val iconColor = colorResource(id = R.color.primary)
         val backgroundColor = colorResource(id = R.color.primary_background)
         val selectedColor = colorResource(id = R.color.cell_value)
         CustomIconButton( //States
             onClick = onStateClick,
             iconColor = iconColor,
-            imageVector = ImageVector.vectorResource(id = R.drawable.notebook),
+            painter =  painterResource(id = R.drawable.notebook),
             contentDescription = stringResource(id = R.string.change_gamestate),
             modifier = actionModifier,
             enabled = viewModel.buttonShouldBeEnabled()
@@ -143,7 +141,7 @@ fun TopActionRow(
             onClick = { viewModel.setIsPaint() },
             iconColor = if (viewModel.isPaint()) Color.Black else iconColor,
             color = if (viewModel.isPaint()) selectedColor else backgroundColor,
-            imageVector = ImageVector.vectorResource(id = R.drawable.broad_paint_brush),
+            painter =  painterResource(id = R.drawable.broad_paint_brush),
             contentDescription = stringResource(id = R.string.brush_action),
             modifier = actionModifier,
             enabled = viewModel.buttonShouldBeEnabled()
@@ -151,7 +149,7 @@ fun TopActionRow(
         CustomIconButton( //Erase
             onClick = { viewModel.eraseAction() },
             iconColor = iconColor,
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_eraser),
+            painter =  painterResource(id = R.drawable.outline_eraser),
             contentDescription = stringResource(id = R.string.erase_action),
             modifier = actionModifier,
             enabled = viewModel.buttonShouldBeEnabled()
@@ -160,7 +158,7 @@ fun TopActionRow(
             onClick = { viewModel.setIsNote() },
             iconColor = if (viewModel.isNote()) Color.Black else iconColor,
             color = if (viewModel.isNote()) selectedColor else backgroundColor,
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_edit_24),
+            painter =  painterResource(id = R.drawable.outline_edit_24),
             contentDescription = stringResource(id = R.string.edit_action),
             modifier = actionModifier,
             enabled = viewModel.buttonShouldBeEnabled()
@@ -168,7 +166,7 @@ fun TopActionRow(
         CustomIconButton( //Undo
             onClick = { viewModel.undoMove() },
             iconColor = iconColor,
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_undo_24),
+            painter =  painterResource(id = R.drawable.outline_undo_24),
             contentDescription = stringResource(id = R.string.undo_action),
             modifier = actionModifier,
             enabled = viewModel.buttonShouldBeEnabled()
@@ -176,7 +174,7 @@ fun TopActionRow(
         CustomIconButton( //Redo
             onClick = { viewModel.redoMove() },
             iconColor = iconColor,
-            imageVector = ImageVector.vectorResource(id = R.drawable.outline_redo_24),
+            painter =  painterResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
             modifier = actionModifier,
             enabled = viewModel.buttonShouldBeEnabled()

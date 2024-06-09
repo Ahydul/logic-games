@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.colorResource
-import com.example.tfg.R
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.HorizontalGrid
@@ -79,9 +77,6 @@ fun Board(
 
 
     ) {
-        val borderColor = colorResource(id = R.color.section_border)
-        val gridColor = colorResource(id = R.color.board_grid)
-        val noteColor = colorResource(id = R.color.cell_note)
         val numColumns = viewModel.getNumColumns()
         val numRows = viewModel.getNumRows()
 
@@ -92,14 +87,7 @@ fun Board(
         ) {
             (0..< viewModel.getNumCells()).forEach { index ->
                 val coordinate = Coordinate.fromIndex(index = index, numRows = numRows, numColumns = numColumns)
-
-                Cell (
-                    viewModel = viewModel,
-                    coordinate = coordinate,
-                    borderColor = borderColor,
-                    gridColor = gridColor,
-                    noteColor = noteColor
-                )
+                Cell (viewModel = viewModel, coordinate = coordinate)
             }
         }
     }

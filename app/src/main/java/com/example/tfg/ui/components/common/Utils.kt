@@ -26,7 +26,7 @@ val defaultBitmap = {
 @Composable
 fun Divider(modifier: Modifier = Modifier) {
     Divider (
-        color = colorResource(id = R.color.board_grid2),
+        color = colorResource(id = R.color.border_primary),
         modifier = modifier
             .height(1.dp)
             .fillMaxWidth()

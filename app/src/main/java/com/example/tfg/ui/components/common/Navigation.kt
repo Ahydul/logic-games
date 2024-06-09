@@ -20,7 +20,7 @@ fun NavigationBar(
     modifier: Modifier = Modifier,
     navController: NavHostController
 ) {
-    val bgColor = colorResource(id = R.color.board_grid)
+    val bgColor = colorResource(id = R.color.primary_background_lighter)
     Divider()
     Row(modifier = modifier
         .background(bgColor)
@@ -35,8 +35,8 @@ fun NavigationBar(
         LabeledIconButton(
             onClick = { navController.navigate(MainActivity.Home.name) },
             imageVector = ImageVector.vectorResource(id = R.drawable.house),
-            iconColor = colorResource(id = R.color.primary_color),
-            labelColor = colorResource(id = R.color.primary_color),
+            iconColor = colorResource(id = R.color.primary),
+            labelColor = colorResource(id = R.color.primary),
             label = homeLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,
@@ -47,8 +47,8 @@ fun NavigationBar(
         LabeledIconButton(
             onClick = { navController.navigate("${MainActivity.Games.name}/false") },
             imageVector = ImageVector.vectorResource(id = R.drawable.controller_game),
-            iconColor = colorResource(id = R.color.primary_color),
-            labelColor = colorResource(id = R.color.primary_color),
+            iconColor = colorResource(id = R.color.primary),
+            labelColor = colorResource(id = R.color.primary),
             label = gamesLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,
@@ -59,8 +59,8 @@ fun NavigationBar(
         LabeledIconButton(
             onClick = { navController.navigate("${MainActivity.Stats.name}/ALL_GAMES") },
             imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
-            iconColor = colorResource(id = R.color.primary_color),
-            labelColor = colorResource(id = R.color.primary_color),
+            iconColor = colorResource(id = R.color.primary),
+            labelColor = colorResource(id = R.color.primary),
             label = statsLabel,
             fontSize = fontSize,
             iconPadding = iconPadding,

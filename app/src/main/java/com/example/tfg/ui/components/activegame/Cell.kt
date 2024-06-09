@@ -23,13 +23,7 @@ import com.example.tfg.ui.components.common.HorizontalGrid
 
 
 @Composable
-fun Cell(
-    viewModel: ActiveGameViewModel,
-    coordinate: Coordinate,
-    borderColor: Color,
-    noteColor: Color,
-    gridColor: Color
-    ) {
+fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
     val cell = viewModel.getCell(coordinate)
 
     Log.d("recomposition", "CELL recomposition $cell")
@@ -37,8 +31,13 @@ fun Cell(
     val isSelected = remember { { viewModel.isTileSelected(coordinate) } }
     val dividersToDraw = remember { viewModel.dividersToDraw(coordinate) }
 
-    val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.cell_background)
-                            else Color(cell.backgroundColor).copy(alpha = 0.4f)
+    val borderColor = colorResource(id = R.color.section_border)
+    val gridColor = colorResource(id = R.color.primary_background)
+    val noteColor = colorResource(id = R.color.note_color)
+    val selectionColor = colorResource(id = R.color.selection_color)
+    val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.secondary_background)
+        else if (cell.isErrorAndHasErrorBackground()) Color(cell.backgroundColor).copy(alpha = 0.4f)
+        else Color(cell.backgroundColor)
     val iconColor = if (cell.readOnly) colorResource(id = R.color.cell_read_only)
         else if (cell.isError) colorResource(id = R.color.cell_value_error)
         else colorResource(id = R.color.cell_value)
@@ -108,7 +107,7 @@ fun Cell(
             else drawLeftDivider(gridColor, smallBorderSize)
 
             if(isSelected()){
-                drawOval(color = Color.Red, alpha = 0.2f)
+                drawOval(color = selectionColor, alpha = 0.2f)
             }
         }
     }

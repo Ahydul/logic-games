@@ -139,6 +139,7 @@ private fun ChosenGame(
                 Action.CREATE -> {
                     TextFields(
                         textColor = color,
+                        backgroundColor = colorResource(id = R.color.primary_background_lighter),
                         modifier = modifier.padding(vertical = 8.dp),
                         chosenGame = chosenGame,
                         viewModel = viewModel
@@ -185,7 +186,7 @@ private fun OnGoingBoard(
     game: GameLowerInfo,
     bitmap: Bitmap?,
     modifier: Modifier,
-    textColor: Color = colorResource(id = R.color.primary_color)
+    textColor: Color = colorResource(id = R.color.primary)
 ) {
     val bitmap = (bitmap ?: defaultBitmap()).asImageBitmap()
     val context = LocalContext.current
@@ -230,13 +231,14 @@ private fun OnGoingBoard(
 private fun TextFields(
     modifier: Modifier = Modifier,
     textColor: Color,
+    backgroundColor: Color,
     chosenGame: Games,
     viewModel: MainViewModel
 ) {
     val textFieldModifier = modifier
         .border(
             1.dp,
-            color = colorResource(id = R.color.board_grid2),
+            color = colorResource(id = R.color.border_primary),
             shape = RoundedCornerShape(10.dp)
         )
     val context = LocalContext.current
@@ -255,6 +257,7 @@ private fun TextFields(
         state = difficulty,
         range = difficultyRange,
         color = textColor,
+        backgroundColor = backgroundColor,
         label = { Text(text = difficultyLabel, color = textColor) },
         modifier = textFieldModifier
     )
@@ -264,6 +267,7 @@ private fun TextFields(
         state = numColumns,
         range = range,
         color = textColor,
+        backgroundColor = backgroundColor,
         label = { Text(text = numColumnsLabel, color = textColor) },
         modifier = textFieldModifier
     )
@@ -273,6 +277,7 @@ private fun TextFields(
         state = numRows,
         range = range,
         color = textColor,
+        backgroundColor = backgroundColor,
         label = { Text(text = numRowsLabel, color = textColor) },
         modifier = textFieldModifier
     )
@@ -281,6 +286,7 @@ private fun TextFields(
     CustomTextField(
         state = seed,
         color = textColor,
+        backgroundColor = backgroundColor,
         label = { Text(text = seedLabel, color = textColor) },
         modifier = textFieldModifier
     )
@@ -332,7 +338,7 @@ private fun ChooseGameButton(
         onClick = onChooseGame,
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
         shape = RoundedCornerShape(8.dp),
-        borderStroke = BorderStroke(0.5.dp, color = colorResource(id = R.color.board_grid2)),
+        borderStroke = BorderStroke(0.5.dp, color = colorResource(id = R.color.border_primary)),
         modifier = modifier
     ) {
         Image(
@@ -347,7 +353,7 @@ private fun ChooseGameButton(
                 .weight(4f)
                 .fillMaxHeight()
         ) {
-            Text(text = "${game.title}", fontSize = 25.sp, color = colorResource(id = R.color.primary_color))
+            Text(text = "${game.title}", fontSize = 25.sp, color = colorResource(id = R.color.primary))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -363,9 +369,9 @@ private fun ChooseGameButton(
                 LabeledIconButton(
                     onClick = { /*TODO: Rules*/ },
                     imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
-                    iconColor = colorResource(id = R.color.primary_color),
+                    iconColor = colorResource(id = R.color.primary),
                     label = rulesLabel,
-                    labelColor = colorResource(id = R.color.primary_color),
+                    labelColor = colorResource(id = R.color.primary),
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,
@@ -376,9 +382,9 @@ private fun ChooseGameButton(
                 LabeledIconButton(
                     onClick = onClickInProgress,
                     imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
-                    iconColor = colorResource(id = R.color.primary_color),
+                    iconColor = colorResource(id = R.color.primary),
                     label = inProgressLabel,
-                    labelColor = colorResource(id = R.color.primary_color),
+                    labelColor = colorResource(id = R.color.primary),
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,
@@ -389,9 +395,9 @@ private fun ChooseGameButton(
                 LabeledIconButton(
                     onClick = { goStatsScreen(game) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
-                    iconColor = colorResource(id = R.color.primary_color),
+                    iconColor = colorResource(id = R.color.primary),
                     label = statsLabel,
-                    labelColor = colorResource(id = R.color.primary_color),
+                    labelColor = colorResource(id = R.color.primary),
                     fontSize = fontSize,
                     shape = shape,
                     iconPadding = iconPadding,

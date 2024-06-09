@@ -13,7 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.animateBlur
 
@@ -22,7 +24,7 @@ import com.example.tfg.ui.components.common.animateBlur
 fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(8.dp)
     val firstBorderColor = Color.Black
-    val secondBorderColor = Color.Black
+    val secondBorderColor = colorResource(id = R.color.section_border)
 
     val expandedStates = remember { MutableTransitionState(false) }
     val animatedBlur by animateBlur(expandedStates)

@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
     <color name="pearl_white">#E2DFD2</color>
 
+    <color name="primary_background">#FF222222</color>
+    <color name="primary_background_lighter">#FF282828</color>
+    <color name="secondary_background">#FF333333</color>
+    <color name="border_primary">#3E3E3E</color>
     <color name="section_border">#FF000000</color>
-    <color name="board_grid2">#3E3E3E</color>
-    <color name="board_grid">#FF282828</color>
+    <color name="selection_color">#890A0A</color>
     <color name="cell_value">#3F6AA3</color>
     <color name="cell_read_only">#FF888888</color>
     <color name="cell_value_error">#890A0A</color>
+    <color name="cell_background_error">#890A0A</color>
     <color name="cell_note">#FF777777</color>
-    <color name="primary_color">#FF999999</color>
+    <color name="primary">#FF999999</color>
     <color name="note_color">#FF295438</color>
-    <color name="primary_background">#FF222222</color>
 
-    <color name="cell_background">#FF333333</color>
     <color name="background2">#FF456724</color>
     <color name="background3">#FF893454</color>
     <color name="background4">#FF394857</color>

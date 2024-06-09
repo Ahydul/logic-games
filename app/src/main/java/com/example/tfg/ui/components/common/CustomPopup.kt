@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -26,11 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -89,7 +89,8 @@ fun CustomPopup(
     modifier: Modifier = Modifier,
     expandedStates: MutableTransitionState<Boolean>,
     onDismissRequest: (() -> Unit) = { expandedStates.targetState = false },
-    backgroundColor: Color = colorResource(id = R.color.board_grid),
+    backgroundColor: Color = colorResource(id = R.color.primary_background),
+    borderColor: Color = colorResource(id = R.color.border_primary),
     offset: IntOffset = IntOffset(0,0),
     startScale: Float = 0.8f,
     closable: Boolean = true,
@@ -105,27 +106,28 @@ fun CustomPopup(
             properties = PopupProperties(focusable = true),
             offset = offset,
         ) {
+            val shape = RoundedCornerShape(8.dp)
             Box(
                 modifier = modifier
                     .graphicsLayer {
                         //scaleX = scale
                         scaleY = scale
                     }
-                    .clip(RoundedCornerShape(8.dp))
+                    .border(color = borderColor, width = 1.dp, shape = shape)
+                    .clip(shape)
                     .background(backgroundColor)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(backgroundColor)
                 ) {
                     content()
                 }
                 if (closable)
                     CustomIconButton(
                         onClick = onDismissRequest,
-                        imageVector = ImageVector.vectorResource(id = R.drawable.outline_close_24),
+                        painter =  painterResource(id = R.drawable.outline_close_24),
                         contentDescription = "",
                     )
             }
@@ -153,7 +155,7 @@ fun DropdownMenu(
             Text(
                 text = selected,
                 fontSize = 15.sp,
-                color = colorResource(id = R.color.primary_color),
+                color = colorResource(id = R.color.primary),
                 modifier = modifier.padding(horizontal = 10.dp)
             )
         }
