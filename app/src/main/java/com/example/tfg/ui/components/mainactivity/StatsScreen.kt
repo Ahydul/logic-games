@@ -2,6 +2,7 @@ package com.example.tfg.ui.components.mainactivity
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,19 +59,24 @@ fun StatsScreen(
         val gameOptions = Games2.entries
         val selectedGame = remember { mutableStateOf<Selection>(chosenGame ?: gameOptions.first()) }
         val mod = Modifier
-        Dropdown(
-            selectedGame = selectedGame,
-            gameOptions = gameOptions,
+        Box(
+            contentAlignment = Alignment.TopCenter,
             modifier = mod
-        )
+        ){
+            Stats(
+                selectedTime = selectedTime.value,
+                selectedDifficulty = selectedDifficulty.value,
+                selectedGame = selectedGame.value,
+                viewModel = viewModel,
+                modifier = mod,
+            )
+            Dropdown(
+                selectedGame = selectedGame,
+                gameOptions = gameOptions,
+                modifier = mod
+            )
 
-        Stats(
-            selectedTime = selectedTime.value,
-            selectedDifficulty = selectedDifficulty.value,
-            selectedGame = selectedGame.value,
-            viewModel = viewModel,
-            modifier = mod,
-        )
+        }
     }
 }
 
@@ -95,6 +100,7 @@ private fun Stats(
         modifier = modifier
             .fillMaxWidth(0.9f)
             .verticalScroll(scrollState)
+            .padding(top = 20.dp)
     ) {
         val mod = modifier.padding(vertical = 10.dp)
 
@@ -283,7 +289,7 @@ private fun CustomButtonStats(
     text1: String,
     text2: String,
 ) {
-    val color = MaterialTheme.colorScheme.onPrimary
+    val color = MaterialTheme.colorScheme.onSecondary
     val bgColor = MaterialTheme.colorScheme.secondary
     CustomButton2(
         onClick = onClick,
@@ -327,7 +333,7 @@ private fun ButtonRow(
     values: Collection<Selection>
 ) {
     val color = MaterialTheme.colorScheme.onPrimary
-    val selectedColor = colorResource(id = R.color.cell_value)
+    val selectedColor = MaterialTheme.colorScheme.tertiary
     val context = LocalContext.current
     Divider()
 

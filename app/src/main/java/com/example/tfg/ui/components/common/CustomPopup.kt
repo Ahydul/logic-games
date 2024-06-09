@@ -89,7 +89,7 @@ fun CustomPopup(
     modifier: Modifier = Modifier,
     expandedStates: MutableTransitionState<Boolean>,
     onDismissRequest: (() -> Unit) = { expandedStates.targetState = false },
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     borderColor: Color = MaterialTheme.colorScheme.outline,
     offset: IntOffset = IntOffset(0,0),
     startScale: Float = 0.8f,
@@ -180,12 +180,13 @@ fun DropdownMenuButton(
     text: String
 ) {
     CustomButton(
+        color = Color.Transparent,
         onClick = onClick,
     ) {
         Text(
             text = text,
             fontSize = 15.sp,
-            color = color
+            color = color,
         )
     }
 }
