@@ -1,6 +1,7 @@
 package com.example.tfg.ui.components.common
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -54,9 +56,9 @@ import com.example.tfg.R
 fun CustomIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    imageVector: ImageVector,
-    contentDescription: String?,
-    iconColor: Color = colorResource(id = R.color.primary_color),
+    painter: Painter,
+    contentDescription: String? = null,
+    iconColor: Color = colorResource(id = R.color.primary),
     enabled: Boolean = true
 ) {
     IconButton(
@@ -66,7 +68,7 @@ fun CustomIconButton(
     ) {
         Icon(
             tint = iconColor,
-            imageVector = imageVector,
+            painter = painter,
             contentDescription = contentDescription,
             modifier = Modifier.fillMaxSize()
         )
@@ -77,11 +79,11 @@ fun CustomIconButton(
 fun CustomFilledIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    imageVector: ImageVector,
+    painter: Painter,
     contentDescription: String?,
     enabled: Boolean = true,
     color: Color = colorResource(id = R.color.primary_background),
-    iconColor: Color = colorResource(id = R.color.primary_color)
+    iconColor: Color = colorResource(id = R.color.primary)
 ) {
     FilledIconButton(
         onClick = onClick,
@@ -91,7 +93,7 @@ fun CustomFilledIconButton(
     ) {
         Icon(
             tint = iconColor,
-            imageVector = imageVector,
+            painter = painter,
             contentDescription = contentDescription,
             modifier = Modifier.fillMaxSize()
         )
@@ -102,7 +104,7 @@ fun CustomFilledIconButton(
 fun CustomText(
     modifier: Modifier = Modifier,
     mainText: String,
-    textColor: Color = colorResource(id = R.color.primary_color),
+    textColor: Color = colorResource(id = R.color.primary),
     mainFontSize: TextUnit = TextUnit.Unspecified,
     secondaryText: String? = null
 ) {
@@ -127,16 +129,16 @@ fun CustomText(
 fun CustomButton2(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    color: Color = colorResource(id = R.color.board_grid),
+    color: Color = colorResource(id = R.color.primary_background_lighter),
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.HorizontalOrVertical = Arrangement.Center,
     content: @Composable RowScope.() -> Unit
 ) {
-    val boardColor = colorResource(id = R.color.board_grid2)
+    val borderColor = colorResource(id = R.color.border_primary)
     val shape = RoundedCornerShape(10.dp)
     Button(
         onClick = onClick,
-        border = BorderStroke(1.dp, boardColor),
+        border = BorderStroke(1.dp, borderColor),
         colors = ButtonDefaults.buttonColors(containerColor = color),
         shape = shape,
         modifier = modifier.width(IntrinsicSize.Min),
@@ -157,8 +159,8 @@ fun CustomFilledButton(
     mainText: String,
     secondaryText: String? = null,
     color: Color,
-    borderColor: Color = colorResource(id = R.color.board_grid2),
-    textColor: Color = colorResource(id = R.color.primary_color),
+    borderColor: Color = colorResource(id = R.color.border_primary),
+    textColor: Color = colorResource(id = R.color.primary),
     fontSize: TextUnit = TextUnit.Unspecified,
     enabled: Boolean = true,
     textModifier: Modifier = Modifier
@@ -184,9 +186,9 @@ fun LabeledIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     imageVector: ImageVector,
-    iconColor: Color = colorResource(id = R.color.primary_color),
+    iconColor: Color = colorResource(id = R.color.primary),
     label: String,
-    labelColor: Color = colorResource(id = R.color.primary_color),
+    labelColor: Color = colorResource(id = R.color.primary),
     fontSize: TextUnit = TextUnit.Unspecified,
     shape: Shape = RectangleShape,
     borderStroke: BorderStroke? = null,
@@ -235,7 +237,7 @@ fun CustomButton(
     Button(
         onClick = onClick,
         shape = shape,
-        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.board_grid)),
+        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.primary_background_lighter)),
         contentPadding = paddingValues,
         border = borderStroke,
         enabled = enabled,
@@ -252,6 +254,7 @@ fun CustomTextField(
     label: @Composable (() -> Unit)? = null,
     bgColors: TextFieldColors = TextFieldDefaults.colors(unfocusedContainerColor = Color.Transparent,focusedContainerColor = Color(1f,1f,1f, 0.04f)),
     color: Color,
+    backgroundColor: Color,
     numberValues: Boolean = false,
     range: List<String>? = null
 ) {
@@ -266,11 +269,11 @@ fun CustomTextField(
             textStyle = textStyle,
             onValueChange = { state.value = it },
             label = label,
-            modifier = modifier,
+            modifier = modifier.background(backgroundColor),
             colors = bgColors,
             readOnly = isRange,
             keyboardOptions = if (numberValues) KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
-            else KeyboardOptions.Default
+                else KeyboardOptions.Default
         )
         if (isRange) {
             val i = range!!.indexOf(state.value).let { if (it == -1) null else it }
@@ -285,39 +288,28 @@ fun CustomTextField(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 val buttonMod = Modifier.size(25.dp)
-                val iconModifier = Modifier.fillMaxSize()
-                IconButton(
+                CustomIconButton(
                     modifier = buttonMod,
+                    iconColor = color,
+                    painter = painterResource(id = R.drawable.expand_less_24px),
                     onClick = {
                         if (pointer.intValue < range.size - 1) {
                             pointer.intValue = pointer.intValue + 1
                             state.value = range[pointer.intValue]
                         }
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.expand_less_24px),
-                        contentDescription = "Add one",
-                        tint = color,
-                        modifier = iconModifier
-                    )
-                }
-                IconButton(
+                )
+                CustomIconButton(
                     modifier = buttonMod,
+                    iconColor = color,
+                    painter = painterResource(id = R.drawable.expand_more_24px),
                     onClick = {
                         if (pointer.intValue > 0) {
                             pointer.intValue = pointer.intValue - 1
                             state.value = range[pointer.intValue]
                         }
                     }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.expand_more_24px),
-                        contentDescription = "Subtract one",
-                        tint = color,
-                        modifier = iconModifier
-                    )
-                }
+                )
             }
         }
     }

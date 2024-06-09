@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.tfg.common.entities.Action
 import com.example.tfg.common.entities.Board
 import com.example.tfg.common.entities.Cell
@@ -35,6 +36,19 @@ abstract class GameDatabase : RoomDatabase() {
                     // To change this behaviour investigate Migration
                     .fallbackToDestructiveMigration()
                     .allowMainThreadQueries()
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                            db.execSQL(
+                                "CREATE TRIGGER IF NOT EXISTS delete_cells_after_board_delete " +
+                                        "AFTER DELETE ON Board " +
+                                        "BEGIN " +
+                                        "DELETE FROM Cell " +
+                                        "WHERE cellId IN (SELECT cellId FROM BoardCellCrossRef WHERE boardId = old.boardId);" +
+                                        "END;"
+                            )
+                        }
+                    })
                     .build()
                     .also { Instance = it }
             }

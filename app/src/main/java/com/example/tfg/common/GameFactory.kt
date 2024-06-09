@@ -99,7 +99,15 @@ class GameFactory(private val gameDao: GameDao) {
         fun exampleHakyuuGame() = Game.create(exampleHakyuu(), Difficulty.EASY)
         fun exampleGameState(gameId: Long) = GameState(gameStateId = 0, gameId = gameId, position = 0)
         fun exampleBoard(gameStateId: Long) = Board(boardId = 0, numRows = 8, numColumns = 8, gameStateId = gameStateId)
-        fun exampleCells(cellArray: IntArray) = cellArray.map { Cell.create(it) }.toTypedArray()
+        fun exampleCells(cellArray: IntArray) = cellArray.mapIndexed { index, value ->
+            when (index) {
+                0 -> Cell.exampleWithNote()
+                2 -> Cell.exampleError()
+                8 -> Cell.exampleBackgroundError()
+                11 -> Cell.exampleBackgroundErrorWithError()
+                else -> Cell.create(value)
+            }
+        }.toTypedArray()
 
         private const val COMPLETED_STR =
             "1 4 1 2 3 1 2 1\n" +

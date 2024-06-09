@@ -9,6 +9,9 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -25,13 +28,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -61,6 +64,7 @@ class LeftPopupPositionProvider(private val buttonBounds: IntRect) : PopupPositi
 fun PopupMenu(
     modifier: Modifier = Modifier,
     properties: PopupProperties = PopupProperties(focusable = true),
+    menuBackgroundColor: Color,
     expandedColor: Color,
     dismissedColor: Color,
     content: @Composable RowScope.() -> Unit
@@ -87,14 +91,15 @@ fun PopupMenu(
     val transformOriginState = remember { mutableStateOf(TransformOrigin.Center) }
 
     val menuButton: @Composable (Modifier) -> Unit = {
-        Surface(
-            shape = CircleShape,
-            color = animatedSurfaceColor,
-            border = BorderStroke(1.dp, animatedBorderColor)
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .border(color = animatedBorderColor, width = 1.dp)
+                .background(animatedSurfaceColor)
         ) {
             CustomIconButton(
                 onClick = { expandedStates.targetState = !expandedStates.targetState },
-                imageVector = ImageVector.vectorResource(id = R.drawable.baseline_color_lens_24),
+                painter =  painterResource(id = R.drawable.baseline_color_lens_24),
                 contentDescription = "Click me for menu",
                 modifier = it
             )
@@ -115,7 +120,7 @@ fun PopupMenu(
                 expandedStates = expandedStates,
                 transformOriginState = transformOriginState,
                 borderColor = expandedColor,
-                surfaceColor = dismissedColor,
+                surfaceColor = menuBackgroundColor,
                 modifier = modifier,
                 content = content,
                 buttonBounds = buttonBounds

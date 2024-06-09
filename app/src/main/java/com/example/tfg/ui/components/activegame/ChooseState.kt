@@ -39,7 +39,7 @@ fun ChooseState(
     viewModel: ActiveGameViewModel,
     modifier: Modifier = Modifier
 ) {
-    val textColor = colorResource(id = R.color.primary_color)
+    val textColor = colorResource(id = R.color.primary)
     val actualGameStateID = viewModel.getActualGameStatePosition()
     val selectedGameState = remember { mutableIntStateOf(actualGameStateID) }
     val states = viewModel.getGameStatesBitmapFromDB()
@@ -107,7 +107,7 @@ fun ChooseState(
 fun ChooseStateButton(
     onClick: () -> Unit,
     text: String,
-    color: Color = colorResource(id = R.color.board_grid),
+    color: Color = colorResource(id = R.color.primary_background),
     enabled: Boolean = true,
     modifier: Modifier
 ) {

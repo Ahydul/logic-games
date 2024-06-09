@@ -44,8 +44,8 @@ fun ConfigurationPopup(
             viewModel.resumeGame()
         }
     ) {
-        val backgroundColor2 = colorResource(id = R.color.board_grid)
-        val textColor = colorResource(id = R.color.primary_color)
+        val backgroundColor2 = colorResource(id = R.color.primary_background_lighter)
+        val textColor = colorResource(id = R.color.primary)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

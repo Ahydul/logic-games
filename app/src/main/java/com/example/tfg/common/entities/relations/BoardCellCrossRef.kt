@@ -9,7 +9,7 @@ import com.example.tfg.common.entities.Cell
 @Entity(
     primaryKeys = ["boardId", "cellId"],
     foreignKeys = [
-        ForeignKey(entity = Board::class, parentColumns = ["boardId"], childColumns = ["boardId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = Board::class, parentColumns = ["boardId"], childColumns = ["boardId"], onDelete = ForeignKey.NO_ACTION),
         ForeignKey(entity = Cell::class, parentColumns = ["cellId"], childColumns = ["cellId"], onDelete = ForeignKey.CASCADE)
     ],
     indices = [Index(value = ["cellId"])]

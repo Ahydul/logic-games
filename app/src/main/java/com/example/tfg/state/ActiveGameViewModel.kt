@@ -36,7 +36,6 @@ import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.LocalDateTime
 import java.util.SortedMap
-private const val ERRORCELLBACKGROUNDCOLOR = -65536
 
 class ActiveGameViewModel(
     private val gameInstance: GameInstance,
@@ -90,8 +89,7 @@ class ActiveGameViewModel(
         // Set end date and if player won
         val endDate = getGame().endGame(playerWon = playerWon)
 
-        // Update game timer and update game to DB
-        updateTimer()
+        updateGameTimerAndEndDateToDB(timer = timer.passedSeconds.value, endDate = endDate)
 
         stopGame()
 
@@ -174,6 +172,13 @@ class ActiveGameViewModel(
             gameDao.updateGameTimer(timer = timer, gameId = getGame().gameId)
         }
     }
+
+    private fun updateGameTimerAndEndDateToDB(timer: Int, endDate: LocalDateTime) {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameDao.updateGameTimerAndEndDate(timer = timer, endDate = endDate, gameId = getGame().gameId)
+        }
+    }
+
 
     private fun addClueToGameDB() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -740,7 +745,7 @@ class ActiveGameViewModel(
             val previousCell = it.previousCell
             val coordinate = getCoordinate(it.cellIndex)
             //We select unless its a color error and its not the cell actively changed
-            if (newCell.value != previousCell.value || newCell.backgroundColor != ERRORCELLBACKGROUNDCOLOR)
+            if (newCell.value != previousCell.value || newCell.backgroundColor != Cell.ERROR_CELL_BACKGROUND_COLOR)
                 addSelection(coordinate)
             setCell(coordinate = coordinate, newCell = newCell)
         }
@@ -753,7 +758,7 @@ class ActiveGameViewModel(
             val previousCell = it.previousCell
             val coordinate = getCoordinate(it.cellIndex)
             //We select unless its a color error and its not the cell actively changed
-            if (previousCell.value != newCell.value || newCell.backgroundColor != ERRORCELLBACKGROUNDCOLOR) {
+            if (previousCell.value != newCell.value || newCell.backgroundColor != Cell.ERROR_CELL_BACKGROUND_COLOR) {
                 addSelection(coordinate)
             }
             setCell(coordinate = coordinate, newCell = previousCell)
@@ -823,12 +828,12 @@ class ActiveGameViewModel(
             }
             errors.forEach { pos ->
                 val cell = getCell(pos)
-                if (cell.backgroundColor != ERRORCELLBACKGROUNDCOLOR){
+                if (cell.backgroundColor != Cell.ERROR_CELL_BACKGROUND_COLOR){
                     if (pos != position) {
                         previousCells.add(cell)
                         coordinates.add(getCoordinate(pos))
                     }
-                    setCellBackgroundColor(pos, ERRORCELLBACKGROUNDCOLOR)
+                    setCellBackgroundColor(pos, Cell.ERROR_CELL_BACKGROUND_COLOR)
                 }
             }
 
