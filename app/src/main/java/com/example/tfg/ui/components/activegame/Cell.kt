@@ -56,19 +56,17 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
                 )
             }
             //Notes
-            HorizontalGrid(numRows = 3) {
-                val iconModifier = Modifier.padding(2.dp)
+            HorizontalGrid(numRows = 3, modifier = Modifier.padding(2.dp)) {
                 cell.notes.forEach {
                     if (it != 0) {
                         Icon(
                             painter = painterResource(id = NumberValue.get(it).icon),
                             tint = noteColor,
                             contentDescription = "Value $it",
-                            modifier = iconModifier
                         )
                     }
                     else {
-                        Spacer(modifier = iconModifier)
+                        Spacer(modifier = Modifier)
                     }
                 }
             }
