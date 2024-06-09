@@ -41,7 +41,7 @@ fun HomeButtons(
         }
         else {
             val continueLabel = stringResource(id = R.string._continue)
-            val game = viewModel.getLastPlayedGame()
+            val game = viewModel.getLastPlayedGameInfo()
 
             if (game!= null) {
                 val context = LocalContext.current
