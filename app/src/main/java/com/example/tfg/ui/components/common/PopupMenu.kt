@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -100,6 +101,7 @@ fun PopupMenu(
             CustomIconButton(
                 onClick = { expandedStates.targetState = !expandedStates.targetState },
                 painter =  painterResource(id = R.drawable.baseline_color_lens_24),
+                iconColor = MaterialTheme.colorScheme.onBackground,
                 contentDescription = "Click me for menu",
                 modifier = it
             )

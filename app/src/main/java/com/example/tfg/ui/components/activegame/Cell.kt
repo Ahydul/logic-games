@@ -33,7 +33,7 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
     val dividersToDraw = remember { viewModel.dividersToDraw(coordinate) }
 
     val borderColor = colorResource(id = R.color.section_border)
-    val gridColor = MaterialTheme.colorScheme.background
+    val gridColor = MaterialTheme.colorScheme.outlineVariant
     val noteColor = colorResource(id = R.color.note_color)
     val selectionColor = colorResource(id = R.color.selection_color)
     val backgroundColor = if (cell.backgroundColor == 0) MaterialTheme.colorScheme.secondary

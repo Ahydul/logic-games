@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -62,13 +60,12 @@ fun CustomIconButton(
     IconButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
     ) {
         Icon(
             tint = iconColor,
             painter = painter,
             contentDescription = contentDescription,
-            modifier = Modifier.fillMaxSize()
+            modifier = modifier.fillMaxSize()
         )
     }
 }
@@ -233,6 +230,7 @@ fun LabeledIconButton(
 fun CustomButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    color: Color = MaterialTheme.colorScheme.primary,
     paddingValues: PaddingValues = PaddingValues(0.dp),
     shape: Shape = RectangleShape,
     borderStroke: BorderStroke? = null,
@@ -242,7 +240,7 @@ fun CustomButton(
     Button(
         onClick = onClick,
         shape = shape,
-        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+        colors = ButtonDefaults.buttonColors(color),
         contentPadding = paddingValues,
         border = borderStroke,
         enabled = enabled,
@@ -266,7 +264,7 @@ fun CustomTextField(
     val isRange = !range.isNullOrEmpty()
 
     Box(
-        modifier = Modifier.height(IntrinsicSize.Min)
+        modifier = Modifier.height(IntrinsicSize.Max)
     ) {
         TextField(
             value = state.value,
@@ -285,35 +283,41 @@ fun CustomTextField(
 
             val pointer = remember { mutableIntStateOf(i) }
             Column(
-                modifier = modifier
-                    .fillMaxHeight()
-                    .align(Alignment.CenterEnd),
+                modifier = modifier.align(Alignment.CenterEnd).height(54.dp),
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                val buttonMod = Modifier.size(25.dp)
-                CustomIconButton(
+                val buttonMod = Modifier.weight(1f)
+                IconButton(
                     modifier = buttonMod,
-                    iconColor = color,
-                    painter = painterResource(id = R.drawable.expand_less_24px),
                     onClick = {
                         if (pointer.intValue < range.size - 1) {
                             pointer.intValue = pointer.intValue + 1
                             state.value = range[pointer.intValue]
                         }
                     }
-                )
-                CustomIconButton(
+                ) {
+                    Icon(
+                        tint = color,
+                        painter = painterResource(id = R.drawable.expand_less_24px),
+                        contentDescription = null,
+                    )
+                }
+                IconButton(
                     modifier = buttonMod,
-                    iconColor = color,
-                    painter = painterResource(id = R.drawable.expand_more_24px),
                     onClick = {
                         if (pointer.intValue > 0) {
                             pointer.intValue = pointer.intValue - 1
                             state.value = range[pointer.intValue]
                         }
                     }
-                )
+                ) {
+                    Icon(
+                        tint = color,
+                        painter = painterResource(id = R.drawable.expand_more_24px),
+                        contentDescription = null,
+                    )
+                }
             }
         }
     }

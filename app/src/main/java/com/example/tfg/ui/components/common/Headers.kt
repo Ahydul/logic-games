@@ -41,6 +41,7 @@ fun MainHeader(modifier: Modifier = Modifier) {
         CustomIconButton(
             onClick = { /*TODO: Configuration menu*/ },
             painter =  painterResource(id = R.drawable.gear),
+            iconColor = MaterialTheme.colorScheme.onBackground,
             contentDescription = "Click me for menu",
         )
     }
