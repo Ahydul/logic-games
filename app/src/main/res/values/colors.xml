@@ -17,14 +17,14 @@
     <color name="note_color">#FF295438</color>
 
     <color name="background2">#FF456724</color>
-    <color name="background3">#FF893454</color>
-    <color name="background4">#FF394857</color>
-    <color name="background5">#FF295438</color>
-    <color name="background6">#FF983674</color>
-    <color name="background7">#FF547893</color>
-    <color name="background8">#FF634892</color>
-    <color name="background9">#FF293666</color>
-    <color name="background10">#FF552616</color>
+    <color name="background3">#D7AC2B</color>
+    <color name="background4">#654898</color>
+    <color name="background5">#1C532F</color>
+    <color name="background6">#9B5D84</color>
+    <color name="background7">#416682</color>
+    <color name="background8">#408772</color>
+    <color name="background9">#354277</color>
+    <color name="background10">#713B28</color>
 
 
     <color name="prueba">#FFFFFFFF</color>
