@@ -2,11 +2,12 @@
 <resources>
     <color name="pearl_white">#E2DFD2</color>
 
-    <color name="primary">#FF999999</color>
-    <color name="primary_background">#FF222222</color>
-    <color name="primary_background_lighter">#FF282828</color>
-    <color name="secondary_background">#FF333333</color>
-    <color name="border_primary">#3E3E3E</color>
+    <color name="text">#BFC0CB</color>
+    <color name="background">#14181C</color>
+    <color name="primary">#20272D</color>
+    <color name="secondary">#29313A</color>
+    <color name="border_primary">#3E3E46</color>
+
     <color name="section_border">#FF000000</color>
     <color name="selection_color">#3F6AA3</color>
     <color name="cell_value">#3F6AA3</color>

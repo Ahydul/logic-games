@@ -15,9 +15,9 @@ fun MainHeader(modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
         Spacer(modifier = Modifier.weight(1f))
         PopupMenu(
-            menuBackgroundColor = colorResource(id = R.color.primary_background_lighter),
+            menuBackgroundColor = colorResource(id = R.color.primary),
             expandedColor = colorResource(id = R.color.border_primary),
-            dismissedColor = colorResource(id = R.color.primary_background)
+            dismissedColor = colorResource(id = R.color.background)
         ) {
             CustomFilledIconButton( /*TODO: THEMES*/
                 onClick = { },

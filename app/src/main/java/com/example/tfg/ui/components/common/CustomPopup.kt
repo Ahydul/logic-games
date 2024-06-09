@@ -89,7 +89,7 @@ fun CustomPopup(
     modifier: Modifier = Modifier,
     expandedStates: MutableTransitionState<Boolean>,
     onDismissRequest: (() -> Unit) = { expandedStates.targetState = false },
-    backgroundColor: Color = colorResource(id = R.color.primary_background),
+    backgroundColor: Color = colorResource(id = R.color.background),
     borderColor: Color = colorResource(id = R.color.border_primary),
     offset: IntOffset = IntOffset(0,0),
     startScale: Float = 0.8f,
@@ -155,7 +155,7 @@ fun DropdownMenu(
             Text(
                 text = selected,
                 fontSize = 15.sp,
-                color = colorResource(id = R.color.primary),
+                color = colorResource(id = R.color.text),
                 modifier = modifier.padding(horizontal = 10.dp)
             )
         }

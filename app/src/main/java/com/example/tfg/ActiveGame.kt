@@ -59,7 +59,7 @@ class ActiveGameView : ComponentActivity() {
                         ActiveGameScreen(
                             viewModel = vm,
                             modifier = Modifier
-                                .background(colorResource(id = R.color.primary_background))
+                                .background(colorResource(id = R.color.background))
                                 .fillMaxWidth()
                         )
                     }
@@ -95,7 +95,7 @@ fun ActiveGameScreenPreview() {
         ActiveGameScreen(
             viewModel = viewModel,
             modifier = Modifier
-                .background(colorResource(id = R.color.primary_background))
+                .background(colorResource(id = R.color.background))
                 .fillMaxWidth()
         )
     }

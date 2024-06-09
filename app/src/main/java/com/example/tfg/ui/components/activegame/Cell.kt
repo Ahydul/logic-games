@@ -32,13 +32,13 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
     val dividersToDraw = remember { viewModel.dividersToDraw(coordinate) }
 
     val borderColor = colorResource(id = R.color.section_border)
-    val gridColor = colorResource(id = R.color.primary_background)
+    val gridColor = colorResource(id = R.color.background)
     val noteColor = colorResource(id = R.color.note_color)
     val selectionColor = colorResource(id = R.color.selection_color)
-    val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.secondary_background)
+    val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.secondary)
         else if (cell.isErrorAndHasErrorBackground()) Color(cell.backgroundColor).copy(alpha = 0.4f)
         else Color(cell.backgroundColor).copy(alpha = 0.7f)
-    val iconColor = if (cell.readOnly) colorResource(id = R.color.primary)
+    val iconColor = if (cell.readOnly) colorResource(id = R.color.text)
         else if (cell.isError) colorResource(id = R.color.cell_value_error)
         else colorResource(id = R.color.cell_value)
 
@@ -51,22 +51,24 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
                 Icon(
                     painter = painterResource(id = NumberValue.get(value).icon),
                     tint = iconColor,
-                    contentDescription = "Value $value"
+                    contentDescription = "Value $value",
+                    modifier = Modifier.padding(6.dp)
                 )
             }
             //Notes
             HorizontalGrid(numRows = 3) {
+                val iconModifier = Modifier.padding(2.dp)
                 cell.notes.forEach {
                     if (it != 0) {
                         Icon(
                             painter = painterResource(id = NumberValue.get(it).icon),
                             tint = noteColor,
                             contentDescription = "Value $it",
-                            modifier = Modifier.padding(2.dp)
+                            modifier = iconModifier
                         )
                     }
                     else {
-                        Spacer(modifier = Modifier.padding(2.dp))
+                        Spacer(modifier = iconModifier)
                     }
                 }
             }

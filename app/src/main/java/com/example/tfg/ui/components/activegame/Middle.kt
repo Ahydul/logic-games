@@ -49,7 +49,7 @@ fun ResumeGame(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.primary_background))
+            .background(colorResource(id = R.color.background))
     ) {
         LabeledIconButton(
             modifier = Modifier.fillMaxSize(0.5f),

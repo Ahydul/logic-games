@@ -37,15 +37,15 @@ fun ConfigurationPopup(
     CustomPopup(
         modifier = modifier.fillMaxSize(),
         expandedStates = expandedStates,
-        backgroundColor = colorResource(id = R.color.primary_background),
+        backgroundColor = colorResource(id = R.color.background),
         startScale = 0f,
         onDismissRequest = {
             expandedStates.targetState = false
             viewModel.resumeGame()
         }
     ) {
-        val backgroundColor2 = colorResource(id = R.color.primary_background_lighter)
-        val textColor = colorResource(id = R.color.primary)
+        val backgroundColor2 = colorResource(id = R.color.primary)
+        val textColor = colorResource(id = R.color.text)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
