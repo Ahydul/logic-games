@@ -37,7 +37,7 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
     val selectionColor = colorResource(id = R.color.selection_color)
     val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.secondary_background)
         else if (cell.isErrorAndHasErrorBackground()) Color(cell.backgroundColor).copy(alpha = 0.4f)
-        else Color(cell.backgroundColor)
+        else Color(cell.backgroundColor).copy(alpha = 0.7f)
     val iconColor = if (cell.readOnly) colorResource(id = R.color.primary)
         else if (cell.isError) colorResource(id = R.color.cell_value_error)
         else colorResource(id = R.color.cell_value)
@@ -107,7 +107,7 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
             else drawLeftDivider(gridColor, smallBorderSize)
 
             if(isSelected()){
-                drawOval(color = selectionColor, alpha = 0.2f)
+                drawRect(color = selectionColor, alpha = 0.3f)
             }
         }
     }

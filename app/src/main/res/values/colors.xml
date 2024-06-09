@@ -8,13 +8,13 @@
     <color name="secondary_background">#FF333333</color>
     <color name="border_primary">#3E3E3E</color>
     <color name="section_border">#FF000000</color>
-    <color name="selection_color">#890A0A</color>
+    <color name="selection_color">#3F6AA3</color>
     <color name="cell_value">#3F6AA3</color>
     <color name="cell_value_error">#890A0A</color>
     <color name="note_color">#3C7D53</color>
 
-    <color name="background2">#FF456724</color>
-    <color name="background3">#D7AC2B</color>
+    <color name="background2">#4B6A2D</color>
+    <color name="background3">#A1842C</color>
     <color name="background4">#654898</color>
     <color name="background5">#1C532F</color>
     <color name="background6">#9B5D84</color>
