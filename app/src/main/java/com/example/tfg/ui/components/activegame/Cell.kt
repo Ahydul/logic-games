@@ -38,7 +38,7 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
     val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.secondary_background)
         else if (cell.isErrorAndHasErrorBackground()) Color(cell.backgroundColor).copy(alpha = 0.4f)
         else Color(cell.backgroundColor)
-    val iconColor = if (cell.readOnly) colorResource(id = R.color.cell_read_only)
+    val iconColor = if (cell.readOnly) colorResource(id = R.color.primary)
         else if (cell.isError) colorResource(id = R.color.cell_value_error)
         else colorResource(id = R.color.cell_value)
 
