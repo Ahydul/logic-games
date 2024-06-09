@@ -2,6 +2,7 @@
 <resources>
     <color name="pearl_white">#E2DFD2</color>
 
+    <color name="primary">#FF999999</color>
     <color name="primary_background">#FF222222</color>
     <color name="primary_background_lighter">#FF282828</color>
     <color name="secondary_background">#FF333333</color>
@@ -9,12 +10,8 @@
     <color name="section_border">#FF000000</color>
     <color name="selection_color">#890A0A</color>
     <color name="cell_value">#3F6AA3</color>
-    <color name="cell_read_only">#FF888888</color>
     <color name="cell_value_error">#890A0A</color>
-    <color name="cell_background_error">#890A0A</color>
-    <color name="cell_note">#FF777777</color>
-    <color name="primary">#FF999999</color>
-    <color name="note_color">#FF295438</color>
+    <color name="note_color">#3C7D53</color>
 
     <color name="background2">#FF456724</color>
     <color name="background3">#D7AC2B</color>
