@@ -82,7 +82,7 @@ private fun Stats(
     selectedDifficulty: Selection,
     selectedTime: Selection
 ) {
-    val color = colorResource(id = R.color.primary)
+    val color = colorResource(id = R.color.text)
     val scrollState = rememberScrollState()
 
     val type = (selectedGame as Games2).toGames()
@@ -282,10 +282,12 @@ private fun CustomButtonStats(
     text1: String,
     text2: String,
 ) {
-    val color = colorResource(id = R.color.primary)
+    val color = colorResource(id = R.color.text)
+    val bgColor = colorResource(id = R.color.secondary)
     CustomButton2(
         onClick = onClick,
         horizontalArrangement = Arrangement.SpaceBetween,
+        color = bgColor,
         enabled = false, //TODO: Stats graphs
         modifier = modifier.fillMaxWidth()
     ) {
@@ -300,7 +302,7 @@ private fun Dropdown(
     selectedGame: MutableState<Selection>,
     gameOptions: List<Selection>
 ) {
-    val color = colorResource(id = R.color.primary)
+    val color = colorResource(id = R.color.text)
     val context = LocalContext.current
     DropdownMenu(
         modifier = modifier,
@@ -323,7 +325,7 @@ private fun ButtonRow(
     selected: MutableState<Selection>,
     values: Collection<Selection>
 ) {
-    val color = colorResource(id = R.color.primary)
+    val color = colorResource(id = R.color.text)
     val selectedColor = colorResource(id = R.color.cell_value)
     val context = LocalContext.current
     Divider()

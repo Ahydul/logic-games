@@ -63,7 +63,6 @@ fun BottomActionRow(
     Log.d("recomposition", "BottomActionRow recomposition")
 
     val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
-    val defaultCellBackground = colorResource(id = R.color.secondary_background)
     val numValues = viewModel.getMaxValue()+1
     HorizontalGrid(
         numRows = if (numValues > 10) 3 else if (numValues > 4) 2 else 1,
@@ -76,7 +75,7 @@ fun BottomActionRow(
         val modifierValueButtons = Modifier
             .clip(shape)
             .background(
-                color = defaultCellBackground,
+                color = colorResource(id = R.color.primary),
                 shape = shape
             )
 
@@ -96,7 +95,7 @@ fun BottomActionRow(
             for(v in 0..< numValues) {
                 val value = viewModel.getValue(v)
                 val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
-                                else colorResource(id = R.color.primary)
+                                else colorResource(id = R.color.text)
 
                 CustomIconButton(
                     onClick = { viewModel.noteOrWriteAction(value.value) },
@@ -126,8 +125,8 @@ fun TopActionRow(
         componentsScale = 0.5f,
         modifier = modifier
     ) {
-        val iconColor = colorResource(id = R.color.primary)
-        val backgroundColor = colorResource(id = R.color.primary_background)
+        val iconColor = colorResource(id = R.color.text)
+        val backgroundColor = colorResource(id = R.color.background)
         val selectedColor = colorResource(id = R.color.cell_value)
         CustomIconButton( //States
             onClick = onStateClick,

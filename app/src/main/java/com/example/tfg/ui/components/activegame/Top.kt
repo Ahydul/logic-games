@@ -59,24 +59,27 @@ fun TopSection(
         ) {
             val difficultyText = stringResource(id = R.string.difficulty)
             CustomText(
-                mainText = difficultyText,
-                secondaryText = viewModel.getDifficulty(context),
-                textColor = colorResource(R.color.primary)
+                mainText = viewModel.getDifficulty(context),
+                secondaryText = difficultyText,
+                reverse = true,
+                textColor = colorResource(R.color.text)
             )
 
             val errorsText = stringResource(id = R.string.errors)
             CustomText(
-                mainText = errorsText,
-                secondaryText = "${viewModel.getNumErrors()}",
-                textColor = colorResource(R.color.primary)
+                mainText = viewModel.getNumErrors().toString(),
+                secondaryText = errorsText,
+                reverse = true,
+                textColor = colorResource(R.color.text)
             )
 
             Row(verticalAlignment = Alignment.Bottom) {
                 val cluesText = stringResource(id = R.string.clues)
                 CustomText(
-                    mainText = cluesText,
-                    secondaryText = "${viewModel.getNumClues()}/${viewModel.getMaxNumCluesAllowed()}",
-                    textColor = colorResource(R.color.primary)
+                    mainText = "${viewModel.getNumClues()}/${viewModel.getMaxNumCluesAllowed()}",
+                    secondaryText = cluesText,
+                    reverse = true,
+                    textColor = colorResource(R.color.text)
                 )
 
                 CustomIconButton(
@@ -91,9 +94,10 @@ fun TopSection(
             Row(verticalAlignment = Alignment.Bottom) {
                 val timeText = stringResource(id = R.string.time)
                 CustomText(
-                    mainText = timeText,
-                    secondaryText = viewModel.getTime(),
-                    textColor = colorResource(R.color.primary)
+                    mainText = viewModel.getTime(),
+                    secondaryText = timeText,
+                    reverse = true,
+                    textColor = colorResource(R.color.text)
                 )
 
                 CustomIconButton(

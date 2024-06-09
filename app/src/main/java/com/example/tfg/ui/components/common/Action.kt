@@ -1,7 +1,6 @@
 package com.example.tfg.ui.components.common
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -58,7 +56,7 @@ fun CustomIconButton(
     onClick: () -> Unit,
     painter: Painter,
     contentDescription: String? = null,
-    iconColor: Color = colorResource(id = R.color.primary),
+    iconColor: Color = colorResource(id = R.color.text),
     enabled: Boolean = true
 ) {
     IconButton(
@@ -82,8 +80,8 @@ fun CustomFilledIconButton(
     painter: Painter,
     contentDescription: String?,
     enabled: Boolean = true,
-    color: Color = colorResource(id = R.color.primary_background),
-    iconColor: Color = colorResource(id = R.color.primary)
+    color: Color = colorResource(id = R.color.background),
+    iconColor: Color = colorResource(id = R.color.text)
 ) {
     FilledIconButton(
         onClick = onClick,
@@ -104,11 +102,18 @@ fun CustomFilledIconButton(
 fun CustomText(
     modifier: Modifier = Modifier,
     mainText: String,
-    textColor: Color = colorResource(id = R.color.primary),
+    textColor: Color = colorResource(id = R.color.text),
     mainFontSize: TextUnit = TextUnit.Unspecified,
+    reverse: Boolean = false,
     secondaryText: String? = null
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        if (reverse && secondaryText != null)
+            Text(text = secondaryText,
+                color = textColor.copy(alpha = 0.5f),
+                textAlign = TextAlign.Center,
+                modifier = modifier
+            )
         Text(
             text = mainText,
             color = textColor,
@@ -116,7 +121,7 @@ fun CustomText(
             textAlign = TextAlign.Center,
             modifier = modifier
         )
-        if (secondaryText != null)
+        if (!reverse && secondaryText != null)
             Text(text = secondaryText,
                 color = textColor.copy(alpha = 0.5f),
                 textAlign = TextAlign.Center,
@@ -129,12 +134,12 @@ fun CustomText(
 fun CustomButton2(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    color: Color = colorResource(id = R.color.primary_background_lighter),
+    color: Color = colorResource(id = R.color.primary),
+    borderColor: Color = colorResource(id = R.color.border_primary),
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.HorizontalOrVertical = Arrangement.Center,
     content: @Composable RowScope.() -> Unit
 ) {
-    val borderColor = colorResource(id = R.color.border_primary)
     val shape = RoundedCornerShape(10.dp)
     Button(
         onClick = onClick,
@@ -160,7 +165,7 @@ fun CustomFilledButton(
     secondaryText: String? = null,
     color: Color,
     borderColor: Color = colorResource(id = R.color.border_primary),
-    textColor: Color = colorResource(id = R.color.primary),
+    textColor: Color = colorResource(id = R.color.text),
     fontSize: TextUnit = TextUnit.Unspecified,
     enabled: Boolean = true,
     textModifier: Modifier = Modifier
@@ -186,9 +191,9 @@ fun LabeledIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     imageVector: ImageVector,
-    iconColor: Color = colorResource(id = R.color.primary),
+    iconColor: Color = colorResource(id = R.color.text),
     label: String,
-    labelColor: Color = colorResource(id = R.color.primary),
+    labelColor: Color = colorResource(id = R.color.text),
     fontSize: TextUnit = TextUnit.Unspecified,
     shape: Shape = RectangleShape,
     borderStroke: BorderStroke? = null,
@@ -237,7 +242,7 @@ fun CustomButton(
     Button(
         onClick = onClick,
         shape = shape,
-        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.primary_background_lighter)),
+        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.primary)),
         contentPadding = paddingValues,
         border = borderStroke,
         enabled = enabled,
@@ -252,7 +257,6 @@ fun CustomTextField(
     modifier: Modifier = Modifier,
     state: MutableState<String>,
     label: @Composable (() -> Unit)? = null,
-    bgColors: TextFieldColors = TextFieldDefaults.colors(unfocusedContainerColor = Color.Transparent,focusedContainerColor = Color(1f,1f,1f, 0.04f)),
     color: Color,
     backgroundColor: Color,
     numberValues: Boolean = false,
@@ -269,8 +273,8 @@ fun CustomTextField(
             textStyle = textStyle,
             onValueChange = { state.value = it },
             label = label,
-            modifier = modifier.background(backgroundColor),
-            colors = bgColors,
+            modifier = modifier,
+            colors = TextFieldDefaults.colors(unfocusedContainerColor = backgroundColor,focusedContainerColor = backgroundColor.copy(alpha = 0.7f)),
             readOnly = isRange,
             keyboardOptions = if (numberValues) KeyboardOptions(keyboardType = KeyboardType.NumberPassword)
                 else KeyboardOptions.Default
