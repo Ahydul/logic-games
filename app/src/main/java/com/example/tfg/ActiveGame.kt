@@ -14,7 +14,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.common.GameInstance
@@ -59,7 +58,7 @@ class ActiveGameView : ComponentActivity() {
                         ActiveGameScreen(
                             viewModel = vm,
                             modifier = Modifier
-                                .background(colorResource(id = R.color.background))
+                                .background(MaterialTheme.colorScheme.background)
                                 .fillMaxWidth()
                         )
                     }
@@ -95,7 +94,7 @@ fun ActiveGameScreenPreview() {
         ActiveGameScreen(
             viewModel = viewModel,
             modifier = Modifier
-                .background(colorResource(id = R.color.background))
+                .background(MaterialTheme.colorScheme.background)
                 .fillMaxWidth()
         )
     }

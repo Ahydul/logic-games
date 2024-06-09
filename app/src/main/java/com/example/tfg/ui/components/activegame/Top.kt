@@ -6,12 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -62,7 +62,7 @@ fun TopSection(
                 mainText = viewModel.getDifficulty(context),
                 secondaryText = difficultyText,
                 reverse = true,
-                textColor = colorResource(R.color.text)
+                textColor = MaterialTheme.colorScheme.onPrimary
             )
 
             val errorsText = stringResource(id = R.string.errors)
@@ -70,7 +70,7 @@ fun TopSection(
                 mainText = viewModel.getNumErrors().toString(),
                 secondaryText = errorsText,
                 reverse = true,
-                textColor = colorResource(R.color.text)
+                textColor = MaterialTheme.colorScheme.onPrimary
             )
 
             Row(verticalAlignment = Alignment.Bottom) {
@@ -79,7 +79,7 @@ fun TopSection(
                     mainText = "${viewModel.getNumClues()}/${viewModel.getMaxNumCluesAllowed()}",
                     secondaryText = cluesText,
                     reverse = true,
-                    textColor = colorResource(R.color.text)
+                    textColor = MaterialTheme.colorScheme.onPrimary
                 )
 
                 CustomIconButton(
@@ -97,7 +97,7 @@ fun TopSection(
                     mainText = viewModel.getTime(),
                     secondaryText = timeText,
                     reverse = true,
-                    textColor = colorResource(R.color.text)
+                    textColor = MaterialTheme.colorScheme.onPrimary
                 )
 
                 CustomIconButton(

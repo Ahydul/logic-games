@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +76,7 @@ fun BottomActionRow(
         val modifierValueButtons = Modifier
             .clip(shape)
             .background(
-                color = colorResource(id = R.color.primary),
+                color = MaterialTheme.colorScheme.primary,
                 shape = shape
             )
 
@@ -95,7 +96,7 @@ fun BottomActionRow(
             for(v in 0..< numValues) {
                 val value = viewModel.getValue(v)
                 val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
-                                else colorResource(id = R.color.text)
+                                else MaterialTheme.colorScheme.onPrimary
 
                 CustomIconButton(
                     onClick = { viewModel.noteOrWriteAction(value.value) },
@@ -125,8 +126,8 @@ fun TopActionRow(
         componentsScale = 0.5f,
         modifier = modifier
     ) {
-        val iconColor = colorResource(id = R.color.text)
-        val backgroundColor = colorResource(id = R.color.background)
+        val iconColor = MaterialTheme.colorScheme.onPrimary
+        val backgroundColor = MaterialTheme.colorScheme.background
         val selectedColor = colorResource(id = R.color.cell_value)
         CustomIconButton( //States
             onClick = onStateClick,

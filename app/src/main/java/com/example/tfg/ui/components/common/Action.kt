@@ -26,6 +26,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -40,7 +41,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,7 +56,7 @@ fun CustomIconButton(
     onClick: () -> Unit,
     painter: Painter,
     contentDescription: String? = null,
-    iconColor: Color = colorResource(id = R.color.text),
+    iconColor: Color = MaterialTheme.colorScheme.onPrimary,
     enabled: Boolean = true
 ) {
     IconButton(
@@ -80,8 +80,8 @@ fun CustomFilledIconButton(
     painter: Painter,
     contentDescription: String?,
     enabled: Boolean = true,
-    color: Color = colorResource(id = R.color.background),
-    iconColor: Color = colorResource(id = R.color.text)
+    color: Color = MaterialTheme.colorScheme.background,
+    iconColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     FilledIconButton(
         onClick = onClick,
@@ -102,7 +102,7 @@ fun CustomFilledIconButton(
 fun CustomText(
     modifier: Modifier = Modifier,
     mainText: String,
-    textColor: Color = colorResource(id = R.color.text),
+    textColor: Color = MaterialTheme.colorScheme.onPrimary,
     mainFontSize: TextUnit = TextUnit.Unspecified,
     reverse: Boolean = false,
     secondaryText: String? = null
@@ -134,8 +134,8 @@ fun CustomText(
 fun CustomButton2(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    color: Color = colorResource(id = R.color.primary),
-    borderColor: Color = colorResource(id = R.color.border_primary),
+    color: Color = MaterialTheme.colorScheme.primary,
+    borderColor: Color = MaterialTheme.colorScheme.outline,
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.HorizontalOrVertical = Arrangement.Center,
     content: @Composable RowScope.() -> Unit
@@ -164,8 +164,8 @@ fun CustomFilledButton(
     mainText: String,
     secondaryText: String? = null,
     color: Color,
-    borderColor: Color = colorResource(id = R.color.border_primary),
-    textColor: Color = colorResource(id = R.color.text),
+    borderColor: Color = MaterialTheme.colorScheme.outline,
+    textColor: Color = MaterialTheme.colorScheme.onPrimary,
     fontSize: TextUnit = TextUnit.Unspecified,
     enabled: Boolean = true,
     textModifier: Modifier = Modifier
@@ -191,9 +191,9 @@ fun LabeledIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     imageVector: ImageVector,
-    iconColor: Color = colorResource(id = R.color.text),
+    iconColor: Color = MaterialTheme.colorScheme.onPrimary,
     label: String,
-    labelColor: Color = colorResource(id = R.color.text),
+    labelColor: Color = MaterialTheme.colorScheme.onPrimary,
     fontSize: TextUnit = TextUnit.Unspecified,
     shape: Shape = RectangleShape,
     borderStroke: BorderStroke? = null,
@@ -242,7 +242,7 @@ fun CustomButton(
     Button(
         onClick = onClick,
         shape = shape,
-        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.primary)),
+        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
         contentPadding = paddingValues,
         border = borderStroke,
         enabled = enabled,

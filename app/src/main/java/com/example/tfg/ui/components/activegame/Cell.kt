@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -32,14 +33,14 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
     val dividersToDraw = remember { viewModel.dividersToDraw(coordinate) }
 
     val borderColor = colorResource(id = R.color.section_border)
-    val gridColor = colorResource(id = R.color.background)
+    val gridColor = MaterialTheme.colorScheme.background
     val noteColor = colorResource(id = R.color.note_color)
     val selectionColor = colorResource(id = R.color.selection_color)
-    val backgroundColor = if (cell.backgroundColor == 0) colorResource(id = R.color.secondary)
+    val backgroundColor = if (cell.backgroundColor == 0) MaterialTheme.colorScheme.secondary
         else if (cell.isErrorAndHasErrorBackground()) Color(cell.backgroundColor).copy(alpha = 0.4f)
         else Color(cell.backgroundColor).copy(alpha = 0.7f)
-    val iconColor = if (cell.readOnly) colorResource(id = R.color.text)
-        else if (cell.isError) colorResource(id = R.color.cell_value_error)
+    val iconColor = if (cell.readOnly) MaterialTheme.colorScheme.onPrimary
+        else if (cell.isError) MaterialTheme.colorScheme.error
         else colorResource(id = R.color.cell_value)
 
     val value = cell.value
