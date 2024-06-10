@@ -139,8 +139,7 @@ interface StatsDao {
 
     @Query("""
         SELECT wins from WinningStreak
-        WHERE endDate IS NULL 
-        AND gameEnum = :gameEnum
+        WHERE gameEnum = :gameEnum
         AND (:startDate IS NULL OR startDate >= :startDate)
         ORDER BY wins DESC LIMIT 1
 """)
@@ -148,8 +147,7 @@ interface StatsDao {
 
     @Query("""
         SELECT wins from WinningStreak
-        WHERE endDate IS NULL 
-        AND gameEnum IS NULL
+        WHERE gameEnum IS NULL
         AND (:startDate IS NULL OR startDate >= :startDate)
         ORDER BY wins DESC LIMIT 1
 """)

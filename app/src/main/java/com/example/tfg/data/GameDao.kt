@@ -37,8 +37,8 @@ interface GameDao {
     suspend fun getAllGames(): List<Game>
     @Query("UPDATE Game SET timer = :timer WHERE gameId = :gameId")
     suspend fun updateGameTimer(timer: Int, gameId: Long)
-    @Query("UPDATE Game SET timer = :timer, endDate = :endDate WHERE gameId = :gameId")
-    suspend fun updateGameTimerAndEndDate(timer: Int, endDate: LocalDateTime, gameId: Long)
+    @Query("UPDATE Game SET timer = :timer, endDate = :endDate, playerWon = :playerWon WHERE gameId = :gameId")
+    suspend fun updateGameTimerAndEndDate(timer: Int, playerWon: Boolean, endDate: LocalDateTime, gameId: Long)
     @Query("UPDATE Game SET numClues = numClues + 1 WHERE gameId = :gameId")
     suspend fun addClueToGame(gameId: Long)
 
