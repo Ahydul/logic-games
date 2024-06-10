@@ -89,7 +89,7 @@ class ActiveGameViewModel(
         // Set end date and if player won
         val endDate = getGame().endGame(playerWon = playerWon)
 
-        updateGameTimerAndEndDateToDB(timer = timer.passedSeconds.value, endDate = endDate)
+        updateGameToDB(timer = timer.passedSeconds.value, playerWon = playerWon, endDate = endDate)
 
         stopGame()
 
@@ -177,9 +177,9 @@ class ActiveGameViewModel(
         }
     }
 
-    private fun updateGameTimerAndEndDateToDB(timer: Int, endDate: LocalDateTime) {
+    private fun updateGameToDB(timer: Int, playerWon: Boolean, endDate: LocalDateTime) {
         viewModelScope.launch(Dispatchers.IO) {
-            gameDao.updateGameTimerAndEndDate(timer = timer, endDate = endDate, gameId = getGame().gameId)
+            gameDao.updateGameTimerAndEndDate(timer = timer, endDate = endDate, playerWon = playerWon, gameId = getGame().gameId)
         }
     }
 

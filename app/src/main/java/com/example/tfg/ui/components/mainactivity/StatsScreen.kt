@@ -108,7 +108,7 @@ private fun Stats(
         val gamesEnded = viewModel.getNumberGamesEnded(type = type, difficulty = difficulty, startDate = startDate)
         val gamesWon = viewModel.getNumberGamesWon(type = type, difficulty = difficulty, startDate = startDate)
         val winRate = viewModel.getWinRate(games = gamesEnded, gamesWon = gamesWon)
-        val endRate = viewModel.getWinRate(games = gamesStarted, gamesWon = gamesWon)
+        val endRate = viewModel.getWinRate(games = gamesStarted, gamesWon = gamesEnded)
         Games(modifier = mod, buttonModifier = modifier, color = color, gamesStarted = gamesStarted, gamesEnded = gamesEnded, gamesWon = gamesWon, winRate = winRate, endRate = endRate)
 
         val absoluteTotalTime = viewModel.getAbsoluteTotalTime(type = type, difficulty = difficulty, startDate = startDate)
