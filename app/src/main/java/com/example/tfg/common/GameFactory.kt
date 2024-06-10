@@ -56,10 +56,10 @@ class GameFactory(private val gameDao: GameDao) {
        gameDao.insertBoard(board)
 
         // Initialize cells
-        val cells = gameType.startBoard.map { Cell.create(it) }.toTypedArray()
+        val cells = gameType.startBoard.map { Cell.initializeBoardCell(it) }.toTypedArray()
         cells.forEachIndexed { index, cell ->
-            val cellId = gameDao.insertCell(cell)
-            val crossRef = BoardCellCrossRef(boardId = board.boardId, cellId = cellId, cellPosition = index)
+            gameDao.insertCell(cell)
+            val crossRef = BoardCellCrossRef(boardId = board.boardId, cellId = cell.cellId, cellPosition = index)
             gameDao.insertBoardCellCrossRef(crossRef)
         }
 
@@ -105,7 +105,7 @@ class GameFactory(private val gameDao: GameDao) {
                 2 -> Cell.exampleError()
                 8 -> Cell.exampleBackgroundError()
                 11 -> Cell.exampleBackgroundErrorWithError()
-                else -> Cell.create(value)
+                else -> Cell.initializeBoardCell(value)
             }
         }.toTypedArray()
 

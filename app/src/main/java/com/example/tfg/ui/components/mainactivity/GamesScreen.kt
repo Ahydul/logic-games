@@ -33,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -57,6 +56,7 @@ import com.example.tfg.ui.components.common.LabeledIconButton
 import com.example.tfg.ui.components.common.MainHeader
 import com.example.tfg.ui.components.common.animateBlur
 import com.example.tfg.ui.components.common.defaultBitmap
+import com.example.tfg.ui.theme.Theme
 
 private enum class Action {
     CREATE,
@@ -91,8 +91,11 @@ fun GamesScreen(
         MainHeader(viewModel = viewModel, modifier = modifier)
 
         val gameHakyuu = Games.HAKYUU
+        val imageID = if (viewModel.getTheme().equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
+        else R.drawable.hakyuu_light
         ChooseGameButton(
             game = gameHakyuu,
+            imageID = imageID,
             goStatsScreen = goStatsScreen,
             onClickInProgress = {
                 chosenGame = gameHakyuu
@@ -332,6 +335,7 @@ private fun TextFields(
 @Composable
 private fun ChooseGameButton(
     modifier: Modifier = Modifier,
+    imageID: Int,
     game: Games,
     onClickInProgress: () -> Unit,
     goStatsScreen: (Games) -> Unit,
@@ -345,7 +349,7 @@ private fun ChooseGameButton(
         modifier = modifier.padding(horizontal = 10.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.hakyuu_dark),
+            painter = painterResource(id = imageID),
             contentDescription = "",
             modifier = Modifier.weight(3f)
         )

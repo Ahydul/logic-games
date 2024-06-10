@@ -21,9 +21,13 @@ data class GameState(
     @PrimaryKey
     val gameStateId: Long = generateId(),
     var pointer: Int = -1,
-    val position: Int,
+    var position: Int,
     var gameId: Long,
 ){
+    fun movePositionLeft() {
+        position -= 1
+    }
+
     companion object{
         private fun generateId() = IdGenerator.generateId("gamestate")
 

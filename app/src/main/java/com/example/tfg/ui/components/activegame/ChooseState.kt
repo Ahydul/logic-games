@@ -66,17 +66,21 @@ fun ChooseState(
             val buttonModifier = modifier
                 .weight(1f)
                 .padding(2.5.dp)
-            val selectedIsActual = selectedGameState.intValue == actualGameStateID
+            val position = selectedGameState.intValue
+            val selectedIsActual = position == actualGameStateID
             ChooseStateButton(
                 onClick = {
-                    if (selectedIsActual) viewModel.setActualState(0)
-                    viewModel.deleteGameState(selectedGameState.intValue)
-                    states.remove(selectedGameState.intValue)
+                    if (selectedIsActual) {
+                        viewModel.setActualState(0)
+                        selectedGameState.intValue = 0
+                    }
+                    viewModel.deleteGameState(position)
+                    states.remove(position)
                 },
                 color = MaterialTheme.colorScheme.error,
                 text = stringResource(id = R.string.delete),
                 modifier = buttonModifier,
-                enabled = selectedGameState.intValue != 0
+                enabled = position != 0
             )
 
             ChooseStateButton(
@@ -92,7 +96,7 @@ fun ChooseState(
                 onClick = {
                     if (!selectedIsActual) {
                         expandedStates.targetState = false
-                        viewModel.setActualState(selectedGameState.intValue)
+                        viewModel.setActualState(position)
                         viewModel.resumeGame()
                     }
                 },

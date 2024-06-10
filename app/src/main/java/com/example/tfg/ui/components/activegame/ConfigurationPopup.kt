@@ -103,12 +103,12 @@ private fun solveBoardButton(
                         viewModel.completeTheBoard()
                     }
                 ) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(R.string.confirm), color = MaterialTheme.colorScheme.onPrimary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.error)
                 }
             },
             title = { Text(text = stringResource(R.string.solve_board)) },
