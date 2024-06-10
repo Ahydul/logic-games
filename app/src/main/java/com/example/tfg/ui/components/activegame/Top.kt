@@ -87,7 +87,7 @@ fun TopSection(
                 //.clip(CircleShape)
                 //.border(shape = CircleShape, color = MaterialTheme.colorScheme.outlineVariant, width = 1.dp)
 
-            Row(verticalAlignment = Alignment.Bottom) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 val cluesText = stringResource(id = R.string.clues)
                 CustomText(
                     mainText = "${viewModel.getNumClues()}/${viewModel.getMaxNumCluesAllowed()}",
@@ -105,7 +105,7 @@ fun TopSection(
                 )
             }
 
-            Row(verticalAlignment = Alignment.Bottom) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 val timeText = stringResource(id = R.string.time)
                 CustomText(
                     mainText = viewModel.getTime(),
