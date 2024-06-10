@@ -93,8 +93,11 @@ class ActiveGameViewModel(
 
         stopGame()
 
-        // Delete all game states
-        getGameStateIds().forEach { deleteGameStateFromDb(it) }
+        // Delete all game states with timeout to avoid race conditions
+        // as last cell is updating and the game may be deleted before the cell
+        getGameStateIds().forEach {
+            Utils.runFunctionWithDelay(delayMillis = 1000) { deleteGameStateFromDb(it) }
+        }
 
         // Update winning streak
         if (playerWon) addOneToActualWinningStreak()
