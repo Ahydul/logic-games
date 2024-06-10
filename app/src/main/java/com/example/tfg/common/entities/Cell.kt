@@ -2,6 +2,7 @@ package com.example.tfg.common.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.tfg.common.IdGenerator
 
 
 /*
@@ -9,8 +10,8 @@ import androidx.room.PrimaryKey
 * */
 @Entity
 data class Cell(
-    @PrimaryKey(autoGenerate = true)
-    var cellId: Long = 0,
+    @PrimaryKey
+    var cellId: Long = generateId(),
     var value: Int,
     var notes: IntArray,
     val readOnly: Boolean = false,
@@ -64,16 +65,19 @@ data class Cell(
     }
 
     fun copyOnlyIndex(value: Int): Cell {
-        return Cell(cellId = this.cellId, value = value, notes = emptyNotes(), backgroundColor = 0)
+        return Cell(cellId = this.cellId, value = value, notes = emptyNotes(), backgroundColor = 0, isError = this.isError)
     }
 
+    fun copyWithNewIndex(): Cell {
+        return Cell(cellId = generateId(), value = this.value, notes = this.notes.clone(), backgroundColor = this.backgroundColor, isError = this.isError)
+    }
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {
-        return Cell(cellId = this.cellId, value = this.value, notes = copyNotesChanging(noteIndex, noteValue), backgroundColor = this.backgroundColor)
+        return Cell(cellId = this.cellId, value = this.value, notes = copyNotesChanging(noteIndex, noteValue), backgroundColor = this.backgroundColor, isError = this.isError)
     }
 
     fun copyErase(): Cell {
-        return Cell(cellId = this.cellId, value = 0, notes = emptyNotes(), readOnly = this.readOnly, backgroundColor = this.backgroundColor)
+        return Cell(cellId = this.cellId, value = 0, notes = emptyNotes(), readOnly = this.readOnly, backgroundColor = if (hasErrorBackground()) 0 else this.backgroundColor)
     }
 
     private fun emptyNotes(): IntArray {
@@ -118,6 +122,8 @@ data class Cell(
     companion object {
         const val ERROR_CELL_BACKGROUND_COLOR = -7796214
 
+        private fun generateId() = IdGenerator.generateId("cell")
+
         private fun emptyCell(backgroundColor: Int = 0) =
             Cell(value = 0, notes = emptyNotes(), backgroundColor = backgroundColor)
 
@@ -128,13 +134,7 @@ data class Cell(
             return IntArray(9){0}
         }
 
-        fun create(value: Int) : Cell {
-            return if (value == 0) emptyCell()
-            else readOnlyCell(value)
-        }
-
-        fun create(str: String) : Cell {
-            val value = str.toInt()
+        fun initializeBoardCell(value: Int) : Cell {
             return if (value == 0) emptyCell()
             else readOnlyCell(value)
         }

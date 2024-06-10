@@ -47,6 +47,13 @@ interface GameDao {
     suspend fun insertGameState(gameState: GameState)
     @Update
     suspend fun updateGameState(gameState: GameState)
+    @Query("UPDATE GameState SET pointer = pointer + 1 WHERE gameStateId = :gameStateId")
+    suspend fun movePointerRight(gameStateId: Long)
+    @Query("UPDATE GameState SET pointer = pointer - 1 WHERE gameStateId = :gameStateId")
+    suspend fun movePointerLeft(gameStateId: Long)
+    @Query("UPDATE GameState SET position = position - 1 WHERE gameStateId = :gameStateId")
+    suspend fun movePositionLeft(gameStateId: Long)
+
     @Delete
     suspend fun deleteGameState(gameState: GameState)
     @Query("DELETE FROM GameState WHERE gameStateId = :gameStateId")
@@ -83,7 +90,7 @@ interface GameDao {
     suspend fun getBoardCells(boardId: Long): List<Cell>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertCell(cell: Cell): Long
+    suspend fun insertCell(cell: Cell)
     @Update
     suspend fun updateCell(cell: Cell)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
