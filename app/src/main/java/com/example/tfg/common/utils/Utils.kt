@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import com.example.tfg.ActiveGameView
@@ -143,6 +144,12 @@ abstract class Utils {
             Handler(Looper.getMainLooper()).postDelayed({
                 function()
             }, delayMillis)
+        }
+
+        fun goToWebPage(url: String, context: Context) {
+            val i = Intent(Intent.ACTION_VIEW)
+            i.data = Uri.parse(url)
+            context.startActivity(i)
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.example.tfg.ui.components.mainactivity
 
+import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,6 +63,7 @@ import com.example.tfg.ui.components.common.defaultBitmap
 import com.example.tfg.ui.theme.Theme
 
 private enum class Action {
+    RULES,
     CREATE,
     IN_PROGRESS,
     IN_PROGRESS_NO_GAME
@@ -97,6 +102,11 @@ fun GamesScreen(
             game = gameHakyuu,
             imageID = imageID,
             goStatsScreen = goStatsScreen,
+            onClickRules = {
+                chosenGame = gameHakyuu
+                chosenGameAction.value = Action.RULES
+                expandedStates.targetState = true
+            },
             onClickInProgress = {
                 chosenGame = gameHakyuu
                 chosenGameAction.value = Action.IN_PROGRESS
@@ -152,8 +162,9 @@ private fun ChosenGame(
                     )
                 }
                 //TODO: Someday implement LazyColumn somehow
-                Action.IN_PROGRESS -> inProgress(modifier = modifier, chosenGame = chosenGame, viewModel = viewModel)
-                Action.IN_PROGRESS_NO_GAME -> inProgress(modifier = modifier, viewModel = viewModel)
+                Action.IN_PROGRESS -> InProgress(modifier = modifier, chosenGame = chosenGame, viewModel = viewModel)
+                Action.IN_PROGRESS_NO_GAME -> InProgress(modifier = modifier, viewModel = viewModel)
+                Action.RULES -> Rules(modifier = modifier, chosenGame = chosenGame)
             }
 
         }
@@ -161,7 +172,25 @@ private fun ChosenGame(
 }
 
 @Composable
-private fun inProgress(
+private fun Rules(
+    modifier: Modifier = Modifier,
+    chosenGame: Games,
+) {
+    Column(modifier.padding(15.dp)) {
+
+        val annotatedString = chosenGame.getRules()
+        val context = LocalContext.current
+        ClickableText(text = annotatedString, style = TextStyle(color = MaterialTheme.colorScheme.onPrimary) ) { offset ->
+            annotatedString.getStringAnnotations(tag = "web", start = offset, end = offset).firstOrNull()?.let {
+                Utils.goToWebPage(it.item, context = context)
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun InProgress(
     modifier: Modifier = Modifier,
     chosenGame: Games? = null,
     viewModel: MainViewModel
@@ -337,6 +366,7 @@ private fun ChooseGameButton(
     modifier: Modifier = Modifier,
     imageID: Int,
     game: Games,
+    onClickRules: () -> Unit,
     onClickInProgress: () -> Unit,
     goStatsScreen: (Games) -> Unit,
     onChooseGame: () -> Unit,
@@ -374,7 +404,7 @@ private fun ChooseGameButton(
 
                 val rulesLabel = stringResource(id = R.string.rules)
                 LabeledIconButton(
-                    onClick = { /*TODO: Rules*/ },
+                    onClick = onClickRules,
                     imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = rulesLabel,
