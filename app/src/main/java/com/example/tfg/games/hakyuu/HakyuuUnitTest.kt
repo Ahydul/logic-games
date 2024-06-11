@@ -1,9 +1,9 @@
 package com.example.tfg.games.hakyuu
 
-import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.common.utils.Utils
+import com.example.tfg.games.common.Difficulty
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
@@ -381,7 +381,7 @@ class HakyuuUnitTest {
     @ParameterizedTest
     @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
     fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
-        val repeat = 100
+        val repeat = 10000
 
         val getGameType = { _: Int ->
             val seed = (Math.random()*10000000000).toLong()
@@ -402,7 +402,9 @@ class HakyuuUnitTest {
             numRows = numColumns,
             repeat = repeat,
             getGameType = getGameType,
-            getTest = getTest
+            getTest = getTest,
+            printBoards = false,
+            summarizeStats = true
         )
     }
 

@@ -8,6 +8,7 @@ import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.Score
+import kotlin.random.Random
 
 class Hakyuu(
     numColumns: Int,
@@ -47,9 +48,16 @@ class Hakyuu(
     }
 
     override fun createGame(difficulty: Difficulty) {
-        do {
+        var timeout = 0
+        while (true) {
             val noTimedout = createGame2(difficulty)
-        } while (!noTimedout)
+            if (noTimedout) return
+            else {
+                timeout ++
+                random = Random((Math.random()*10000000000).toLong())
+                println("TIMEOUT $timeout creating regions")
+            }
+        }
     }
 
     fun createGame2(difficulty: Difficulty): Boolean {
@@ -58,10 +66,7 @@ class Hakyuu(
         while (!boardCreated()) {
             startTime = System.currentTimeMillis()
             propagateRandomRegion()
-            if (System.currentTimeMillis() - startTime > TIMEOUT) {
-                println("TIMEOUT creating regions")
-                return false
-            }
+            if (System.currentTimeMillis() - startTime > TIMEOUT)  return false
         }
 
         // Create startBoard
