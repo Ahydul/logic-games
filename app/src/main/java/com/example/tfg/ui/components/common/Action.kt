@@ -299,7 +299,7 @@ fun CustomTextField(
                 ) {
                     Icon(
                         tint = color,
-                        painter = painterResource(id = R.drawable.expand_less_24px),
+                        painter = painterResource(id = R.drawable.arrow_up),
                         contentDescription = null,
                     )
                 }
@@ -314,7 +314,7 @@ fun CustomTextField(
                 ) {
                     Icon(
                         tint = color,
-                        painter = painterResource(id = R.drawable.expand_more_24px),
+                        painter = painterResource(id = R.drawable.arrow_down),
                         contentDescription = null,
                     )
                 }
