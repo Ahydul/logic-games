@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     //id("kotlin-android")
     id("kotlin-kapt")
+    id("com.mikepenz.aboutlibraries.plugin")
 }
 
 android {
@@ -60,7 +61,9 @@ android {
     }
 
 }
-
+aboutLibraries {
+    configPath = "config"
+}
 
 dependencies {
 
@@ -81,12 +84,14 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation(platform("androidx.compose:compose-bom:2023.08.00"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2") // Add this line
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
@@ -99,31 +104,13 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.8")
 
     val roomVersion = "2.6.1"
-    
     implementation("androidx.room:room-runtime:$roomVersion")
-    //annotationProcessor("androidx.room:room-compiler:$room_version")
-
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:$roomVersion")
-    // To use Kotlin Symbol Processing (KSP)
-    //ksp("androidx.room:room-compiler:$room_version")
-
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$roomVersion")
 
-    // optional - RxJava2 support for Room
-    //implementation("androidx.room:room-rxjava2:$room_version")
-
-    // optional - RxJava3 support for Room
-    //implementation("androidx.room:room-rxjava3:$room_version")
-
-    // optional - Guava support for Room, including Optional and ListenableFuture
-    //implementation("androidx.room:room-guava:$room_version")
-
-    // optional - Test helpers
-    //testImplementation("androidx.room:room-testing:$room_version")
-
-    // optional - Paging 3 Integration
-    //implementation("androidx.room:room-paging:$room_version")
-
+    val aboutLib = "11.2.1"
+    implementation("com.mikepenz:aboutlibraries:$aboutLib") // Add this line
+    implementation ("com.mikepenz:aboutlibraries-compose-m3:$aboutLib")
 }
