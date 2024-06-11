@@ -84,7 +84,7 @@ fun BottomActionRow(
             backgroundColors.forEachIndexed { index, color ->
                 CustomIconButton(                                                 //First color is remove the background
                     onClick = { viewModel.paintAction(colorInt = color)},
-                    painter =  painterResource(id = R.drawable.baseline_color_lens_24),
+                    painter =  painterResource(id = R.drawable.palette),
                     iconColor = Color(color),
                     contentDescription = "Color $index",
                     modifier = modifierValueButtons,

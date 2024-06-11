@@ -98,7 +98,7 @@ fun TopSection(
 
                 CustomIconButton(
                     onClick = { viewModel.giveClue() },
-                    painter = painterResource(R.drawable.question_mark_24px),
+                    painter = painterResource(R.drawable.question_mark),
                     contentDescription = stringResource(id = R.string.pause_game),
                     enabled = viewModel.buttonShouldBeEnabled(),
                     modifier = iconModifier

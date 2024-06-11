@@ -1,8 +1,6 @@
 package com.example.tfg.ui.components.mainactivity
 
-import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -405,7 +403,7 @@ private fun ChooseGameButton(
                 val rulesLabel = stringResource(id = R.string.rules)
                 LabeledIconButton(
                     onClick = onClickRules,
-                    imageVector = ImageVector.vectorResource(id = R.drawable.question_mark_24px),
+                    imageVector = ImageVector.vectorResource(id = R.drawable.question_mark),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = rulesLabel,
                     labelColor = MaterialTheme.colorScheme.onPrimary,

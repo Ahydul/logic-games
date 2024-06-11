@@ -100,7 +100,7 @@ fun PopupMenu(
         ) {
             CustomIconButton(
                 onClick = { expandedStates.targetState = !expandedStates.targetState },
-                painter =  painterResource(id = R.drawable.baseline_color_lens_24),
+                painter =  painterResource(id = R.drawable.palette),
                 iconColor = MaterialTheme.colorScheme.onBackground,
                 contentDescription = "Click me for menu",
                 modifier = it
