@@ -1,0 +1,10 @@
+{
+  "uniqueId": "com.google:fonts",
+  "developers": [],
+  "description": "(Merged) The flexible, easy to use, all in one drawer library for your Android project.",
+  "name": "Google Fonts Material Icons",
+  "website": "https://developers.google.com/fonts/docs/material_icons",
+  "licenses": [
+    "Apache-2.0"
+  ]
+}
