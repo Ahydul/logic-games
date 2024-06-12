@@ -46,6 +46,7 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
     val value = cell.value
 
     Box {
+        val modifier = Modifier
         //Main value
         Surface(color = backgroundColor) {
             if (value != 0) {
@@ -53,11 +54,11 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
                     painter = painterResource(id = NumberValue.get(value).icon),
                     tint = iconColor,
                     contentDescription = "Value $value",
-                    modifier = Modifier.padding(6.dp)
+                    modifier = modifier.padding(6.dp)
                 )
             }
             //Notes
-            HorizontalGrid(numRows = 3, modifier = Modifier.padding(2.dp)) {
+            HorizontalGrid(numRows = 3, modifier = modifier.padding(2.dp)) {
                 cell.notes.forEach {
                     if (it != 0) {
                         Icon(
@@ -67,14 +68,14 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
                         )
                     }
                     else {
-                        Spacer(modifier = Modifier)
+                        Spacer(modifier = modifier)
                     }
                 }
             }
         }
 
         //Paints region borders and selecting UI
-        Canvas(modifier = Modifier.matchParentSize()) {
+        Canvas(modifier = modifier.matchParentSize()) {
             val bigBorderSize = 2.dp.toPx()
             val smallBorderSize = 0.8.dp.toPx()
 

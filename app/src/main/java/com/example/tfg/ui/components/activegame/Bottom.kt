@@ -40,7 +40,7 @@ fun BottomSection(
             viewModel = viewModel,
             onStateClick = onStateClick,
             modifier = Modifier
-                .weight(2f)
+                .weight(1f)
                 .padding(2.dp)
 
         )
@@ -48,7 +48,7 @@ fun BottomSection(
             viewModel = viewModel,
             modifier = Modifier
                 .padding(4.dp)
-                .weight(6f)
+                .weight(3f)
 
         )
         Spacer(modifier = Modifier.weight(1f))

@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.common.GameInstance
@@ -85,6 +86,61 @@ class ActiveGameView : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun ActiveGameScreenPreview() {
+    IdGenerator.initialize(LocalContext.current)
+    val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
+    val gameInstance = GameInstance.example()
+    val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
+
+    TFGTheme {
+        ActiveGameScreen(
+            viewModel = viewModel,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxWidth()
+        )
+    }
+}
+
+
+@Preview(showBackground = true, device = Devices.NEXUS_5)
+@Composable
+fun ActiveGameScreenPreview2() {
+    IdGenerator.initialize(LocalContext.current)
+    val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
+    val gameInstance = GameInstance.example()
+    val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
+
+    TFGTheme {
+        ActiveGameScreen(
+            viewModel = viewModel,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxWidth()
+        )
+    }
+}
+
+@Preview(showBackground = true, device = Devices.FOLDABLE)
+@Composable
+fun ActiveGameScreenPreview3() {
+    IdGenerator.initialize(LocalContext.current)
+    val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
+    val gameInstance = GameInstance.example()
+    val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
+
+    TFGTheme {
+        ActiveGameScreen(
+            viewModel = viewModel,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .fillMaxWidth()
+        )
+    }
+}
+
+@Preview(showBackground = true, device = Devices.NEXUS_10)
+@Composable
+fun ActiveGameScreenPreview4() {
     IdGenerator.initialize(LocalContext.current)
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
     val gameInstance = GameInstance.example()
