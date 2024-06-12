@@ -30,6 +30,7 @@ import com.example.tfg.common.enums.Difficulty2
 import com.example.tfg.common.enums.Games2
 import com.example.tfg.common.enums.Selection
 import com.example.tfg.common.enums.Times
+import com.example.tfg.common.utils.Timer
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2
@@ -194,31 +195,31 @@ private fun Times(
         CustomButtonStats(
             modifier = buttonModifier,
             text1 = "Total time (all games)",
-            text2 = formatNumber(absoluteTotalTime),
+            text2 = if (absoluteTotalTime != null) Timer.formatTime(absoluteTotalTime) else "-",
             onClick = {  }
         )
         CustomButtonStats(
             modifier = buttonModifier,
             text1 = "Total time (on going games)",
-            text2 = formatNumber(totalTimeOnGoing),
+            text2 = if (totalTimeOnGoing != null) Timer.formatTime(totalTimeOnGoing) else "-",
             onClick = {  }
         )
         CustomButtonStats(
             modifier = buttonModifier,
             text1 = stringResource(R.string.total_time_games_won),
-            text2 = formatNumber(totalTimeGamesWon),
+            text2 = if (totalTimeGamesWon != null) Timer.formatTime(totalTimeGamesWon) else "-",
             onClick = {  }
         )
         CustomButtonStats(
             modifier = buttonModifier,
             text1 = stringResource(R.string.best_time),
-            text2 = formatNumber(bestTime),
+            text2 = if (bestTime != null) Timer.formatTime(bestTime) else "-",
             onClick = {  }
         )
         CustomButtonStats(
             modifier = buttonModifier,
             text1 = stringResource(R.string.mean_time),
-            text2 = formatNumber(meanTime),
+            text2 = if (meanTime != null) Timer.formatTime(meanTime.toInt()) else "-",
             onClick = {  }
         )
     }
