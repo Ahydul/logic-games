@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -29,7 +28,7 @@ fun TopSection(
 ) {
     Log.d("TAG", "TOP currentRecomposeScope $currentRecomposeScope")
 
-    Column(modifier = modifier.padding(bottom = 8.dp)) {
+    Column(modifier = modifier) {
         val context = LocalContext.current
 
         Row(
