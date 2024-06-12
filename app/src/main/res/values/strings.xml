@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TFG</string>
+    <string name="app_name">Logic Games</string>
     <string name="title_activity_active_game_view">ActiveGameView</string>
     <string name="brush_action">Paint cells</string>
     <string name="change_gamestate">Change game state</string>
