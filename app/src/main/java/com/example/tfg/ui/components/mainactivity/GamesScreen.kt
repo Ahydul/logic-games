@@ -396,7 +396,6 @@ private fun ChooseGameButton(
                 val mod = Modifier
                     .weight(1f)
                     .aspectRatio(1f)
-                val shape = RoundedCornerShape(20.dp)
                 val fontSize = 11.sp
                 val iconPadding = 14.dp
 
@@ -408,7 +407,6 @@ private fun ChooseGameButton(
                     label = rulesLabel,
                     labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
-                    shape = shape,
                     iconPadding = iconPadding,
                     modifier = mod
                 )
@@ -421,7 +419,6 @@ private fun ChooseGameButton(
                     label = inProgressLabel,
                     labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
-                    shape = shape,
                     iconPadding = iconPadding,
                     modifier = mod
                 )
@@ -434,7 +431,6 @@ private fun ChooseGameButton(
                     label = statsLabel,
                     labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
-                    shape = shape,
                     iconPadding = iconPadding,
                     modifier = mod
                 )
