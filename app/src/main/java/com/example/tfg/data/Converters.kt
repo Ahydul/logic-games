@@ -51,18 +51,17 @@ object Converters {
     // Set<Pair<Int, Int>> converters
 
     @TypeConverter
-    fun fromPairSet(set: Set<Pair<Int, Int>>?): String? {
+    fun fromPairSet(set: MutableSet<Pair<Int, Int>>?): String? {
         return Gson().toJson(set)
     }
 
     @TypeConverter
-    fun toPairSet(setString: String?): Set<Pair<Int, Int>>? {
+    fun toPairSet(setString: String?): MutableSet<Pair<Int, Int>>? {
         return setString?.let {
-            val type = object : TypeToken<Set<Pair<Int, Int>>>() {}.type
+            val type = object : TypeToken<MutableSet<Pair<Int, Int>>>() {}.type
             Gson().fromJson(it, type)
         }
     }
-
 
     // IntArray converters
 
