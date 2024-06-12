@@ -14,8 +14,8 @@ android {
         applicationId = "com.ahydul.logic_games"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -62,6 +62,7 @@ android {
 
 }
 aboutLibraries {
+    // When licences break reload this before making the apk... this is so stupid
     additionalLicenses += "MIT"
     configPath = "config"
 }
