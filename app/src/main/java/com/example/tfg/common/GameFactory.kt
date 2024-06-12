@@ -105,7 +105,7 @@ class GameFactory(private val gameDao: GameDao) {
                 2 -> Cell.exampleError()
                 8 -> Cell.exampleBackgroundError()
                 11 -> Cell.exampleBackgroundErrorWithError()
-                else -> Cell.initializeBoardCell(value)
+                else -> Cell.exampleCell(value)
             }
         }.toTypedArray()
 

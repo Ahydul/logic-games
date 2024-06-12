@@ -144,19 +144,23 @@ data class Cell(
             notes[0] = 2
             notes[1] = 3
             notes[2] = 4
-            return Cell(value = 0, notes = notes, backgroundColor = 0)
+            return Cell(cellId = 0, value = 0, notes = notes, backgroundColor = 0)
         }
 
         fun exampleError(): Cell {
-            return Cell(value = 3, notes = emptyNotes(), isError = true, backgroundColor = 0)
+            return Cell(cellId = 0, value = 3, notes = emptyNotes(), isError = true, backgroundColor = 0)
         }
 
         fun exampleBackgroundError(): Cell {
-            return Cell(value = 1, notes = emptyNotes(), backgroundColor = ERROR_CELL_BACKGROUND_COLOR)
+            return Cell(cellId = 0, value = 1, notes = emptyNotes(), backgroundColor = ERROR_CELL_BACKGROUND_COLOR)
         }
 
         fun exampleBackgroundErrorWithError(): Cell {
-            return Cell(value = 1, notes = emptyNotes(), isError = true, backgroundColor = ERROR_CELL_BACKGROUND_COLOR)
+            return Cell(cellId = 0, value = 1, notes = emptyNotes(), isError = true, backgroundColor = ERROR_CELL_BACKGROUND_COLOR)
+        }
+
+        fun exampleCell(value: Int): Cell {
+            return Cell(cellId = 0, value = value, notes = emptyNotes(), backgroundColor = 0)
         }
     }
 
