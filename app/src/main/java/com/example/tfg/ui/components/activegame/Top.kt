@@ -20,7 +20,6 @@ import com.example.tfg.common.utils.Utils
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.CustomText
-import com.example.tfg.ui.components.common.addDebugBorder
 
 @Composable
 fun TopSection(
@@ -35,7 +34,7 @@ fun TopSection(
 
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier.padding(top = 8.dp).addDebugBorder()
+            modifier = modifier.padding(top = 8.dp)
         ) {
             CustomIconButton(
                 onClick = {
