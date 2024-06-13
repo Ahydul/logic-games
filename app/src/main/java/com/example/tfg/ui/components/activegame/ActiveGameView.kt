@@ -39,6 +39,7 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
             onConfigurationClick = { configurationExpandedStates.targetState = true },
             modifier = modifier
                 .weight(1.2f)
+                .padding(horizontal = 5.dp)
         )
         MiddleSection(
             viewModel = viewModel,

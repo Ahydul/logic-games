@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import com.example.tfg.common.utils.Utils
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomIconButton
 import com.example.tfg.ui.components.common.CustomText
+import com.example.tfg.ui.components.common.addDebugBorder
 
 @Composable
 fun TopSection(
@@ -33,7 +35,7 @@ fun TopSection(
 
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier
+            modifier = modifier.padding(top = 8.dp).addDebugBorder()
         ) {
             CustomIconButton(
                 onClick = {
@@ -62,7 +64,7 @@ fun TopSection(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = modifier
         ) {
             val difficultyText = stringResource(id = R.string.difficulty)
