@@ -68,16 +68,20 @@ class ActiveGameView : ComponentActivity() {
         }
     }
 
+    /*
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+        val v = viewModel?.timerPaused()
         if (!hasFocus) {
             viewModel?.takeSnapshot()
             viewModel?.pauseGame()
         }
     }
+     */
 
     override fun onPause() {
         super.onPause()
+        viewModel?.takeSnapshot()
         viewModel?.pauseGame()
     }
 }

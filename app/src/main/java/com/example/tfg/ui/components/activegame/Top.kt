@@ -38,7 +38,7 @@ fun TopSection(
         ) {
             CustomIconButton(
                 onClick = {
-                    viewModel.setSnapshot(null) // To avoid snapshot
+                    //viewModel.setSnapshotNull() // To avoid snapshot
                     Utils.startHomeActivity(context)
                 },
                 painter = painterResource(id = R.drawable.back_arrow),

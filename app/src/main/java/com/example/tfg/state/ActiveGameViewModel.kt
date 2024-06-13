@@ -284,8 +284,8 @@ class ActiveGameViewModel(
 
 //  Snapshot functionality
 
-    fun setSnapshot(snapshot: (() -> Bitmap)?) {
-        this.snapshot = snapshot
+    fun setSnapshotNull() {
+        this.snapshot = null
     }
 
     fun setSnapshot2(snapshot: (() -> Bitmap?)) {
@@ -298,6 +298,34 @@ class ActiveGameViewModel(
 
     private fun snapshotTooEarly(): Boolean {
         return timer.passedSeconds.value - lastSnapshotTaken < 10
+    }
+
+    fun takeSnapshotBlocking() {
+        if (!snapshotsAllowed || gameIsCompleted() || snapshotTooEarly() || timerPaused() ||
+            snapshot == null || filesDirectory == null) return
+
+        Log.d("snapshot", "Taking snapshot")
+        val bitmap = snapshot!!.invoke()
+
+        if (bitmap == null) {
+            Log.d("snapshot", "Failed")
+            return
+        }
+
+        runBlocking {
+            val bitmapFilePath = Utils.saveBitmapToFile(
+                bitmap = bitmap,
+                filesDir = filesDirectory!!,
+                fileName = "gameStateId-${getActualGameStateId()}",
+                directory = getGameEnum().name.lowercase()
+            )
+            if (bitmapFilePath != null) {
+                val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
+                insertGameStateSnapshotToDB(gameStateSnapshot)
+            }
+        }
+
+        lastSnapshotTaken = timer.passedSeconds.value
     }
 
     fun takeSnapshot() {
