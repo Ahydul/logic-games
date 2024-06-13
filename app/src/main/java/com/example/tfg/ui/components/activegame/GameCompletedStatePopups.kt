@@ -34,7 +34,7 @@ fun StateAndGameCompletedPopup(
         onDismissRequest = {
             if (gameCompleted){
                 expandedStates.targetState = false
-                viewModel.setSnapshot(null) // To avoid snapshot
+                viewModel.setSnapshotNull() // To avoid snapshot
             } else {
                 expandedStates.targetState = false
                 Utils.runFunctionWithDelay((OutTransitionDuration).toLong()) {
