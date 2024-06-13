@@ -60,6 +60,7 @@ fun CustomIconButton(
     IconButton(
         onClick = onClick,
         enabled = enabled,
+        modifier = modifier.padding(0.dp)
     ) {
         Icon(
             tint = iconColor,
