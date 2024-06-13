@@ -90,9 +90,10 @@ fun GamesScreen(
         modifier = modifier
             .verticalScroll(rememberScrollState())
             .blur(animatedBlur)
+            .padding(top = 8.dp, start = 6.dp, end = 6.dp)
     ) {
         MainHeader(viewModel = viewModel, modifier = modifier)
-
+        val mod = Modifier.padding(vertical = 10.dp)
         val gameHakyuu = Games.HAKYUU
         val imageID = if (viewModel.getTheme().equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
         else R.drawable.hakyuu_light
@@ -114,10 +115,11 @@ fun GamesScreen(
                 chosenGame = gameHakyuu
                 chosenGameAction.value = Action.CREATE
                 expandedStates.targetState = true
-            }
+            },
+            modifier = mod
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = mod.height(10.dp))
 
     }
 

@@ -2,10 +2,8 @@ package com.example.tfg.ui.components.mainactivity
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,10 +21,7 @@ fun MainScreen(
     viewModel: MainViewModel,
     navController: NavHostController = rememberNavController()
 ) {
-    Column(modifier = modifier
-        .fillMaxHeight()
-        .padding(top = 5.dp)
-    ) {
+    Column(modifier = modifier.fillMaxHeight()) {
         NavHost(
             navController = navController,
             startDestination = MainActivity.Home.name,
