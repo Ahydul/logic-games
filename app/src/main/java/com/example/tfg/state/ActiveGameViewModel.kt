@@ -36,6 +36,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.LocalDateTime
 import java.util.SortedMap
+import kotlin.math.floor
 
 class ActiveGameViewModel(
     private val gameInstance: GameInstance,
@@ -485,9 +486,9 @@ class ActiveGameViewModel(
         }
     }
 
-/*
-    Timer
- */
+    /*
+        Timer
+     */
     fun getTime() = Timer.formatTime(timer.passedSeconds.value)
 
     fun timerPaused() = timer.paused.value
@@ -604,8 +605,8 @@ class ActiveGameViewModel(
                 backgroundColor = if (previousCell.backgroundColor == color) 0 else color
             )
         else previousCell.copy(
-                isError = isError
-            )
+            isError = isError
+        )
 
         setCell(index = index, newCell = newCell)
 
@@ -695,9 +696,29 @@ class ActiveGameViewModel(
     private fun getRow(y: Float, height: Int) = (y * getNumRows() / height).toInt()
 
     private fun coordinateFromPosition(size: IntSize, position: Offset): Coordinate? {
+        val row = if (getNumColumns() > getNumRows()) {
+            val factor = getNumRows().toFloat() / getNumColumns()
+            val actualHeight = size.height * factor
+
+            val actualY = position.y - ((size.height - actualHeight) / 2)
+
+            floor(actualY * getNumRows() / actualHeight).toInt()
+        }
+        else (position.y * getNumRows() / size.height).toInt()
+
+        val column = if (getNumColumns() < getNumRows()) {
+            val factor = getNumColumns().toFloat() / getNumRows()
+            val actualWidth = (size.width * factor).toInt()
+            val actualX = position.x - ((size.width - actualWidth) / 2)
+
+            floor(actualX * getNumColumns() / actualWidth).toInt()
+        }
+        else (position.x * getNumColumns() / size.width).toInt()
+
+
         val coordinate = Coordinate(
-            row = getRow(y = position.y, height = size.height),
-            column = getColumn(x = position.x, width = size.width)
+            row = row,
+            column = column
         )
         return if (coordinate.isOutOfBounds(numRows = getNumRows(), numColumns = getNumColumns())) null
         else {coordinate}
@@ -743,6 +764,7 @@ class ActiveGameViewModel(
             if (selecting) selectedTiles.add(coordinate)
             else if (!removePrevious) selectedTiles.remove(coordinate)
         }
+        else if (removePrevious) removeSelections()
     }
 
 
@@ -855,9 +877,9 @@ class ActiveGameViewModel(
 
     private fun isError(position: Int, value: Int): Boolean {
         return getRealGameType().isError(
-                position = position,
-                value = value
-            )
+            position = position,
+            value = value
+        )
     }
 
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
@@ -1018,7 +1040,7 @@ class ActiveGameViewModel(
         if (noCluesLeft() || oneOrNoCellsLeft()) return
 
         val position = if (selectedTiles.size == 1) selectedTiles.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
-            else getRandomPosition()
+        else getRandomPosition()
 
         if (getCellValue(position) != 0) return
         addClue()
