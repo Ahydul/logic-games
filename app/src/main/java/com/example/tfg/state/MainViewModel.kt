@@ -1,9 +1,11 @@
 package com.example.tfg.state
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.GameLowerInfo
 import com.example.tfg.common.utils.Utils
@@ -12,6 +14,8 @@ import com.example.tfg.data.StatsDao
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.ui.theme.Theme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 
@@ -27,6 +31,8 @@ class MainViewModel(
     )
 
     private var lastPlayedGame = getLastPlayedGame()
+
+    private val isLoading = mutableStateOf(false)
 
 //  Main functions
 
@@ -50,14 +56,28 @@ class MainViewModel(
         }
     }
 
-    fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty): Long {
-        return runBlocking {
-            gameFactory.createGame(
+    private fun showLoading() {
+        isLoading.value = true
+    }
+
+    private fun hideLoading() {
+        isLoading.value = false
+    }
+
+    fun isLoading() = isLoading.value
+
+    fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty, context: Context) {
+        showLoading()
+        viewModelScope.launch(Dispatchers.IO) {
+            val gameId = gameFactory.createGame(
                 chosenGame = chosenGame,
                 numRows = numRows,
                 numColumns = numColumns,
                 difficulty = difficulty
             )
+            hideLoading()
+
+            Utils.startActiveGameActivity(context, gameId)
         }
     }
 

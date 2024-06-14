@@ -6,12 +6,14 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +51,7 @@ import com.example.tfg.common.utils.Timer
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.common.utils.dateFormatter
 import com.example.tfg.games.common.Games
+import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2
@@ -150,7 +154,7 @@ private fun ChosenGame(
             verticalArrangement = Arrangement.SpaceAround
         ) {
             if (chosenGameAction.value != Action.IN_PROGRESS_NO_GAME)
-                Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color)
+                Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color, modifier = modifier.padding(top = 16.dp))
             when(chosenGameAction.value){
                 Action.CREATE -> {
                     TextFields(
@@ -270,12 +274,6 @@ private fun TextFields(
     chosenGame: Games,
     viewModel: MainViewModel
 ) {
-    val textFieldModifier = modifier
-        .border(
-            1.dp,
-            color = MaterialTheme.colorScheme.outline,
-            shape = RoundedCornerShape(10.dp)
-        )
     val context = LocalContext.current
     val difficultyRange = Difficulty.entries.map { it.toString(context) }
     val difficulty = remember { mutableStateOf(Difficulty.EASY.toString(context)) }
@@ -294,7 +292,7 @@ private fun TextFields(
         color = textColor,
         backgroundColor = backgroundColor,
         label = { Text(text = difficultyLabel, color = textColor) },
-        modifier = textFieldModifier
+        modifier = modifier.padding(top = 10.dp)
     )
 
     val numColumnsLabel = stringResource(id = R.string.num_columns)
@@ -304,7 +302,7 @@ private fun TextFields(
         color = textColor,
         backgroundColor = backgroundColor,
         label = { Text(text = numColumnsLabel, color = textColor) },
-        modifier = textFieldModifier
+        modifier = modifier
     )
 
     val numRowsLabel = stringResource(id = R.string.num_rows)
@@ -314,7 +312,7 @@ private fun TextFields(
         color = textColor,
         backgroundColor = backgroundColor,
         label = { Text(text = numRowsLabel, color = textColor) },
-        modifier = textFieldModifier
+        modifier = modifier
     )
 
     val seedLabel = stringResource(id = R.string.seed)
@@ -323,11 +321,11 @@ private fun TextFields(
         color = textColor,
         backgroundColor = backgroundColor,
         label = { Text(text = seedLabel, color = textColor) },
-        modifier = textFieldModifier
+        modifier = modifier
     )
 
     Row(
-        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(horizontal = 15.dp)
     ) {
 /*
@@ -342,23 +340,35 @@ private fun TextFields(
             enabled = false
         )
  */
+        val mod = modifier.weight(1f)
+        Spacer(modifier = mod)
 
-        Spacer(modifier = modifier.weight(2f))
+        LoadingIcon(viewModel = viewModel, modifier = mod)
+
         val createText = stringResource(id = R.string.create)
         CustomButton2(
             onClick = {
                 val rows = numRows.value.toInt()
                 val cols = numColumns.value.toInt()
                 val diff = Difficulty.get(difficulty.value)
-                val gameId = viewModel.createGame(chosenGame, rows, cols, diff)
-
-                Utils.startActiveGameActivity(context, gameId)
+                viewModel.createGame(chosenGame, rows, cols, diff, context)
             },
-            modifier = modifier
+            modifier = mod
         ){
             CustomText(mainText = createText, textColor = textColor, modifier = modifier)
         }
     }
+}
+
+@Composable
+private fun LoadingIcon(viewModel: MainViewModel, modifier: Modifier) {
+    if (viewModel.isLoading()) Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+    ) {
+        CircularProgressIndicator()
+    }
+    else Spacer(modifier = modifier)
 }
 
 @Composable
