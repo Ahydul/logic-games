@@ -66,7 +66,7 @@ fun TopSection(
         ) {
             val difficultyText = stringResource(id = R.string.difficulty)
             CustomText(
-                mainText = viewModel.getDifficulty(context),
+                mainText = "${viewModel.getDifficulty(context)} (${viewModel.getScoreValue()})",
                 secondaryText = difficultyText,
                 reverse = true,
                 textColor = MaterialTheme.colorScheme.onPrimary
