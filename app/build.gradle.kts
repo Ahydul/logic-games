@@ -14,8 +14,8 @@ android {
         applicationId = "com.ahydul.logic_games"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4 //Check licenses before changing
-        versionName = "1.0.4"
+        versionCode = 5 //Check licenses before changing
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
