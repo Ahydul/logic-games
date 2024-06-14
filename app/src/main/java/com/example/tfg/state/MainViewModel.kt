@@ -66,14 +66,16 @@ class MainViewModel(
 
     fun isLoading() = isLoading.value
 
-    fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty, context: Context) {
+    fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty, seed: String, context: Context) {
         showLoading()
+        val seed = if (seed == "") null else seed.toLongOrNull() ?: seed.hashCode().toLong()
         viewModelScope.launch(Dispatchers.IO) {
             val gameId = gameFactory.createGame(
                 chosenGame = chosenGame,
                 numRows = numRows,
                 numColumns = numColumns,
-                difficulty = difficulty
+                difficulty = difficulty,
+                seed = seed
             )
             hideLoading()
 
@@ -83,7 +85,7 @@ class MainViewModel(
 
     fun getTheme() = themeUserSetting.value
 
-    fun setConfigurationTheme(theme: Theme) {
+    private fun setConfigurationTheme(theme: Theme) {
         with (configurationPrefs.edit()) {
             putString("theme", theme.name)
             apply()
@@ -128,7 +130,7 @@ class MainViewModel(
 
     fun getLastPlayedGameInfo(): GameLowerInfo? {
         return if (lastPlayedGame == -1L) null
-            else getGameByIdFromBb(lastPlayedGame)
+        else getGameByIdFromBb(lastPlayedGame)
     }
 
 // Stats functions
