@@ -1,12 +1,45 @@
 *.iml
 .gradle
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+
+# Android Studio / IntelliJ
+.idea/*
+# keep project and workspace settings
+!.idea/misc.xml
+!.idea/modules.xml
+!.idea/vcs.xml
+# keep run configurations
+!.idea/runConfigurations/
+# keep code style settings
+!.idea/codeStyles/
+# keep inspections
+!.idea/inspectionProfiles/
+# ignore other files
+.idea/libraries
+.idea/caches
+.idea/navEditor.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/gradle.xml
+.idea/uiDesigner.xml
+.idea/dataSources/
+.idea/dataSources.ids
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/markdown-navigator.xml
+.idea/kotlinCodeStyle.xml
+.idea/copyright/
+.idea/assetWizardSettings.xml
+.idea/markdown-navigator.xml
+.idea/markdown-navigator.custom.json
+.idea/markdown-navigator.shared.json
+.idea/deploymentTargetDropDown.xml
+.idea/migrations.xml
+
 .DS_Store
 /build
 /captures
