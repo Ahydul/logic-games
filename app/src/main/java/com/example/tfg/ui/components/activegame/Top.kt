@@ -1,6 +1,5 @@
 package com.example.tfg.ui.components.activegame
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,9 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -27,7 +26,6 @@ fun TopSection(
     onConfigurationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Log.d("TAG", "TOP currentRecomposeScope $currentRecomposeScope")
 
     Column(modifier = modifier) {
         val context = LocalContext.current
@@ -82,46 +80,68 @@ fun TopSection(
                 textColor = MaterialTheme.colorScheme.onPrimary
             )
 
-            val iconModifier = Modifier
-                .size(30.dp)
-                //.clip(CircleShape)
-                //.border(shape = CircleShape, color = MaterialTheme.colorScheme.outlineVariant, width = 1.dp)
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val cluesText = stringResource(id = R.string.clues)
-                CustomText(
-                    mainText = "${viewModel.getNumClues()}/${viewModel.getMaxNumCluesAllowed()}",
-                    secondaryText = cluesText,
-                    reverse = true,
-                    textColor = MaterialTheme.colorScheme.onPrimary
-                )
-
-                CustomIconButton(
-                    onClick = { viewModel.giveClue() },
-                    painter = painterResource(R.drawable.question_mark),
-                    contentDescription = stringResource(id = R.string.pause_game),
-                    enabled = viewModel.buttonShouldBeEnabled(),
-                    modifier = iconModifier
-                )
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val timeText = stringResource(id = R.string.time)
-                CustomText(
-                    mainText = viewModel.getTime(),
-                    secondaryText = timeText,
-                    reverse = true,
-                    textColor = MaterialTheme.colorScheme.onPrimary
-                )
-
-                CustomIconButton(
-                    onClick = { viewModel.pauseGame() },
-                    painter = painterResource(R.drawable.pause),
-                    contentDescription = stringResource(id = R.string.pause_game),
-                    enabled = viewModel.buttonShouldBeEnabled(),
-                    modifier = iconModifier
-                )
-            }
+            val iconModifier = Modifier.size(30.dp)
+            Clues(viewModel = viewModel, modifier = iconModifier)
+            Timer(viewModel = viewModel, modifier = iconModifier)
         }
+    }
+}
+@Composable
+fun Clues(
+    viewModel: ActiveGameViewModel,
+    modifier: Modifier = Modifier
+) {
+    TextNextToButton(
+        mainText = "${viewModel.getNumClues()}/${viewModel.getMaxNumCluesAllowed()}",
+        secondaryText = stringResource(id = R.string.clues),
+        icon = painterResource(R.drawable.question_mark),
+        contentDescription = stringResource(id = R.string.give_clue),
+        enabled = viewModel.buttonShouldBeEnabled(),
+        buttonModifier = modifier,
+        onClick = { viewModel.giveClue() }
+    )
+}
+
+@Composable
+fun Timer(
+    viewModel: ActiveGameViewModel,
+    modifier: Modifier = Modifier
+) {
+    TextNextToButton(
+        mainText = viewModel.getTime(),
+        secondaryText = stringResource(id = R.string.time),
+        icon = painterResource(R.drawable.pause),
+        contentDescription = stringResource(id = R.string.pause_game),
+        enabled = viewModel.buttonShouldBeEnabled(),
+        buttonModifier = modifier,
+        onClick = { viewModel.pauseGame() }
+    )
+}
+
+@Composable
+private fun TextNextToButton(
+    mainText: String,
+    secondaryText: String,
+    enabled: Boolean,
+    icon: Painter,
+    contentDescription: String,
+    onClick: () -> Unit,
+    buttonModifier: Modifier = Modifier
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        CustomText(
+            mainText = mainText,
+            secondaryText = secondaryText,
+            reverse = true,
+            textColor = MaterialTheme.colorScheme.onPrimary
+        )
+
+        CustomIconButton(
+            onClick = onClick,
+            painter = icon,
+            contentDescription = contentDescription,
+            enabled = enabled,
+            modifier = buttonModifier
+        )
     }
 }

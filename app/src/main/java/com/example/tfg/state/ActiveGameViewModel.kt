@@ -387,7 +387,7 @@ class ActiveGameViewModel(
 
     fun getActualGameStateId() = getGameStateIds()[getActualGameStatePosition()]
 
-    fun getNumClues() = getGame().numClues
+    fun getNumClues() = numClues.value
 
     fun getMaxNumCluesAllowed() = maxCluesAllowed
 
