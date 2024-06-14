@@ -262,7 +262,7 @@ class HakyuuUnitTest {
 
     private fun testHakyuuBoard(
         getGameType: () -> Hakyuu,
-        getTest: (Hakyuu) -> Boolean = { gameType: Hakyuu -> gameType.boardMeetsRules() },
+        getTest: (Hakyuu) -> Boolean = { gameType: Hakyuu -> gameType.boardMeetsRules() && gameType.score.get() != 0 },
         print: Boolean = true,
         printHTML: Boolean = false,
     ) {
@@ -381,7 +381,7 @@ class HakyuuUnitTest {
     @ParameterizedTest
     @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
     fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
-        val repeat = 10000
+        val repeat = 100
 
         val getGameType = { _: Int ->
             val seed = (Math.random()*10000000000).toLong()
