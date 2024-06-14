@@ -351,7 +351,7 @@ private fun TextFields(
                 val rows = numRows.value.toInt()
                 val cols = numColumns.value.toInt()
                 val diff = Difficulty.get(difficulty.value)
-                viewModel.createGame(chosenGame, rows, cols, diff, context)
+                viewModel.createGame(chosenGame, rows, cols, diff, seed.value, context)
             },
             modifier = mod
         ){
