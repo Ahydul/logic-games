@@ -40,6 +40,8 @@ Some of its features are:
 
 -   Graphs in the statistics section.
 
+-   Improve fluidity of the interface.
+
 Enventually:
 
 -   More games.
