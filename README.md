@@ -2,9 +2,7 @@
 
 This Android app is a collection of Sudoku like logic games. Right now the only game available is [Hakyuu](https://www.janko.at/Raetsel/Hakyuu/index.htm). This app is the end result of my final degree thesis and it's free, open-source software.
 
-![Screenshot 1](assets/home.png)
-
-![Screenshot 2](assets/game.png)
+![Screenshot 1](assets/game_home.png)
 
 ## Features
 
