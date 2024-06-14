@@ -29,6 +29,12 @@ class Hakyuu(
     startBoard = startBoard,
     boardRegions = regions
 ) {
+    override fun solveBoard2(board: IntArray): IntArray {
+        maxAmmountOfBruteForces = 0
+        solveBoard(board)
+        return board
+    }
+
     // Helper variables
     private val helperRemainingPositions: MutableSet<Int> = initRemainingPositionsHelper()
     private var currentID = 0
@@ -110,20 +116,23 @@ class Hakyuu(
         startTime = System.currentTimeMillis()
 
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
-        val score = HakyuuScore()
+        val scoreResult = HakyuuScore()
         for (position in (0..<numPositions())) {
             val size = getRegionSize(getRegionId(position))
             if (size == 1 && board[position] == 0) {
                 board[position] = 1
-                score.addScoreNewValue()
+                scoreResult.addScoreNewValue()
             }
             else if (board[position] == 0) possibleValues[position].addAll(1.. size)
         }
 
-        val res = populatePositions(possibleValues = possibleValues, actualValues = board)
-        if (res != null) res.add(score)
+        val populateResult = populatePositions(possibleValues = possibleValues, actualValues = board)
 
-        return res
+        if (populateResult.gotSuccess()) {
+            scoreResult.add(populateResult.get())
+            return scoreResult
+        }
+        else return null
     }
 
     override fun boardMeetsRulesStr(board: IntArray): String {
@@ -336,26 +345,29 @@ class Hakyuu(
         actualValues: IntArray,
         foundSPT: MutableList<Int> = mutableListOf(),
         ammountOfBruteForces: Int = 0
-    ): HakyuuScore? {
+    ): PopulateResult {
         val score = HakyuuScore()
 
         while (getRemainingPositions(actualValues).isNotEmpty())
         {
-            if (System.currentTimeMillis() - startTime > TIMEOUT_SOLVER)   return null
+            //if (System.currentTimeMillis() - startTime > TIMEOUT_SOLVER) return null
 
             val res = populateValues(
                 possibleValues = possibleValues,
                 actualValues = actualValues,
                 foundSPT = foundSPT,
                 ammountOfBruteForces = ammountOfBruteForces
-            ) ?: return null // Found contradiction -> can't populate
+            ).let {
+                it.get() ?: return it // Found error -> can't populate
+            }
 
             score.add(res)
         }
+
         return if (boardMeetsRules(actualValues)) {
-            score
+            PopulateResult.success(score)
         } else {
-            null
+            PopulateResult.contradiction()
         }
     }
 
@@ -377,7 +389,7 @@ class Hakyuu(
         actualValues: IntArray,
         foundSPT: MutableList<Int>,
         ammountOfBruteForces: Int
-    ): HakyuuScore? {
+    ): PopulateResult {
         val score = HakyuuScore()
 
         val addToRegions = { regionID: Int, position: Int, regions: MutableMap<Int, MutableList<Int>> ->
@@ -406,7 +418,7 @@ class Hakyuu(
             possibleValuesInPosition.removeIf { value ->
                 var res = false
                 // Check rule 2
-                if (valuesInRegion!=null && valuesInRegion.contains(value)) {
+                if (valuesInRegion != null && valuesInRegion.contains(value)) {
                     score.addScoreRule2()
                     res = true
                 }
@@ -423,11 +435,11 @@ class Hakyuu(
                 addToRegions(regionID, position, filteredRegions)
                 removeFromRegions(regionID, position, remainingRegions)
             }
-            else if(possibleValuesInPosition.size == 0) return null
+            else if(possibleValuesInPosition.size == 0) return PopulateResult.contradiction()
         }
 
         // Possible values changed
-        if (score.get() > 0) return score
+        if (score.get() > 0) return PopulateResult.success(score)
 
         for (region in remainingRegions.values) {
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
@@ -454,11 +466,10 @@ class Hakyuu(
             for (position in getRemainingPositions(actualValues)) {
                 val values = possibleValues[position]
                 if (values.size == 1) addValueToActualValues(values, actualValues, position, score)
-                else if(values.size == 0)  return null
+                else if(values.size == 0) return PopulateResult.contradiction()
             }
-            return if (boardMeetsRules(actualValues)) score else {
-                null
-            }
+            return if (boardMeetsRules(actualValues)) PopulateResult.success(score)
+                else PopulateResult.contradiction()
         }
 
         // If the possible values didn't change: Brute force a value
@@ -466,14 +477,10 @@ class Hakyuu(
             possibleValues = possibleValues,
             actualValues = actualValues,
             foundSPT = foundSPT,
-            ammountOfBruteForces = ammountOfBruteForces
+            ammountOfBruteForces = ammountOfBruteForces + 1
         )
 
-        return bruteForceResult?.let {
-            // Brute force was successful
-            score.add(bruteForceResult)
-            score
-        }
+        return bruteForceResult
     }
 
     private fun bruteForce(
@@ -481,8 +488,8 @@ class Hakyuu(
         actualValues: IntArray,
         foundSPT: MutableList<Int>,
         ammountOfBruteForces: Int
-    ): HakyuuScore? {
-        if (ammountOfBruteForces > maxAmmountOfBruteForces) return null
+    ): PopulateResult {
+        if (ammountOfBruteForces > maxAmmountOfBruteForces) return PopulateResult.maxBFOverpassed()
 
         val (position, minPossibleValues) = getRemainingPositions(actualValues)
             .map { it to possibleValues[it] }
@@ -490,56 +497,59 @@ class Hakyuu(
 
         val results = mutableListOf<BruteForceResult>()
         for(chosenValue in minPossibleValues.toList()) {
-            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues, foundSPT,ammountOfBruteForces)
-            if (result!= null) results.add(result)
+            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues.clone(), foundSPT.toMutableList(), ammountOfBruteForces)
+            // Filter contradictions
+            if (!result.gotContradiction()) {
+                results.add(result)
+
+                // Multiple not contradictory results
+                if (results.size > 1) return PopulateResult.boardNotUnique()
+            }
         }
 
-        if (results.size == 1) {
-            val (newPossibleValues, newActualValues, newFoundSPT, score) = results.first()
+        if (results.isEmpty()) return PopulateResult.contradiction()
+
+        //results must have 1 element only
+
+        val result = results.first()
+        if (result.gotSuccess()) {
+            // Got only 1 valid result
+            val (newPossibleValues, newActualValues, newFoundSPT, score) = result.get()!!
             Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
             Utils.replaceArray(thisArray = actualValues, with = newActualValues)
             foundSPT.clear()
             foundSPT.addAll(newFoundSPT)
-
             score.addScoreBruteForce()
-            return score
+            return PopulateResult.success(score)
+        } else {
+            // Propagate negative result
+            return result.errorToPopulateResult()
         }
-        //if (results.size > 1) println("Not a unique board")
-
-        //If results > 2 -> Not a unique board
-        //If results == 0 -> Brute force didn't solve the board
-        return null
     }
 
     private fun bruteForceAValue(
         chosenValue: Int,
         position: Int,
         possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        foundSPT: MutableList<Int>,
+        newActualValues: IntArray,
+        newFoundSPT: MutableList<Int>,
         ammountOfBruteForces: Int
-    ): BruteForceResult? {
+    ): BruteForceResult {
+        possibleValues[position].remove(chosenValue)
         val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
-            val ls = mutableListOf<Int>()
-            ls.addAll(possibleValues[it])
-            ls
+            possibleValues[it].toMutableList()
         }
-        possibleValues[position].removeAt(0)
-        newPossibleValues[position].clear()
-
-        val newActualValues = actualValues.clone()
-        newActualValues[position] = chosenValue
-
-        val newFoundSPT = foundSPT.toMutableList()
+        newPossibleValues[position] = mutableListOf(chosenValue)
 
         val result = populatePositions(
             possibleValues = newPossibleValues,
             actualValues = newActualValues,
             foundSPT = newFoundSPT,
-            ammountOfBruteForces = ammountOfBruteForces + 1
+            ammountOfBruteForces = ammountOfBruteForces
         )
-        return if (result == null) null
-            else BruteForceResult(newPossibleValues, newActualValues, newFoundSPT, result)
+
+        return if (result.gotSuccess()) BruteForceResult.success(BruteForceValues(newPossibleValues, newActualValues, newFoundSPT, result.get()!!))
+            else result.errorToBruteForceResult()
     }
 
     internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
