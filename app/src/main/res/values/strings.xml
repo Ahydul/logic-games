@@ -115,4 +115,5 @@
     <string name="confirm">Confirm</string>
     <string name="solve_the_board">Solve the board</string>
     <string name="title_activity_licenses_menu">LicensesMenuActivity</string>
+    <string name="give_clue">Give clue</string>
 </resources>
