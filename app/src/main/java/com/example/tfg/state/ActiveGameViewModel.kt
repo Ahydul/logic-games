@@ -1069,6 +1069,8 @@ class ActiveGameViewModel(
         return getNumClues() == maxCluesAllowed
     }
 
+    /*
+    //For debug
     fun giveClue() {
         val almostCompleted = getRealGameType().solveBoard2(cellsToIntArray())
         almostCompleted.forEachIndexed { index, value ->
@@ -1076,8 +1078,8 @@ class ActiveGameViewModel(
             if (!prev.readOnly) setCell(index = index, newCell = prev.copy(value = value))
         }
     }
+     */
 
-/*
     fun giveClue() {
         //If only one value left refuse to allow player to "win"
         if (noCluesLeft() || oneOrNoCellsLeft()) return
@@ -1095,8 +1097,6 @@ class ActiveGameViewModel(
         // We don't create a move to now avoid repeating clues
 
     }
-
- */
 
     fun buttonShouldBeEnabled(): Boolean {
         return !timerPaused() && gameIsNotCompleted()
