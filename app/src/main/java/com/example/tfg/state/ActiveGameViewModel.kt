@@ -389,6 +389,8 @@ class ActiveGameViewModel(
 
     fun getNumClues() = numClues.value
 
+    fun getScoreValue() = getGameType().score.get().toString()
+
     fun getMaxNumCluesAllowed() = maxCluesAllowed
 
     fun getDifficulty() = getGame().difficulty
@@ -893,12 +895,14 @@ class ActiveGameViewModel(
     Game Actions
      */
 
+    private fun cellsToIntArray() = getCells().map { if (it.value.isError) 0 else it.value.value }.toIntArray()
+
     private fun checkValue(position: Int, value: Int): Set<Int> {
         return if (isError(position, value))
             getRealGameType().checkValue(
                 position = position,
                 value = value,
-                actualValues = getCells().map { if (it.value.isError) 0 else it.value.value }.toIntArray()
+                actualValues = cellsToIntArray()
             )
         else emptySet()
     }
@@ -1003,15 +1007,14 @@ class ActiveGameViewModel(
         val valueErrors = mutableListOf<Int>()
 
         getPositions().forEach { position ->
-            val cell = getCell(position)
-            val errors = checkValue(position = position, value = cell.value)
+            val value = getCellValue(position)
+            val errors = checkValue(position = position, value = value)
+            backgroundErrors.addAll(errors)
 
             //Has error
-            if (errors.isNotEmpty()) {
+            if (isError(position, value)) {
                 valueErrors.add(position)
             }
-
-            backgroundErrors.addAll(errors)
         }
 
         val previousCells = mutableListOf<Cell>()
@@ -1040,8 +1043,11 @@ class ActiveGameViewModel(
             }
         }
 
-        val newCells = getCells2(coordinates)
+        if (valueErrors.isEmpty()) {
+            gameCompletedFun(true)
+        }
 
+        val newCells = getCells2(coordinates)
         addMove(coordinates = coordinates.map { getCoordinate(it) }, newCells = newCells, previousCells = previousCells)
     }
 
@@ -1064,6 +1070,15 @@ class ActiveGameViewModel(
     }
 
     fun giveClue() {
+        val almostCompleted = getRealGameType().solveBoard2(cellsToIntArray())
+        almostCompleted.forEachIndexed { index, value ->
+            val prev = getCell(index)
+            if (!prev.readOnly) setCell(index = index, newCell = prev.copy(value = value))
+        }
+    }
+
+/*
+    fun giveClue() {
         //If only one value left refuse to allow player to "win"
         if (noCluesLeft() || oneOrNoCellsLeft()) return
 
@@ -1080,6 +1095,8 @@ class ActiveGameViewModel(
         // We don't create a move to now avoid repeating clues
 
     }
+
+ */
 
     fun buttonShouldBeEnabled(): Boolean {
         return !timerPaused() && gameIsNotCompleted()
