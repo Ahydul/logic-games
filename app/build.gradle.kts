@@ -7,6 +7,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            storeFile = file(project.property("RELEASE_STORE_FILE")!!)
+            keyAlias = project.property("RELEASE_KEY_ALIAS")!!.toString()
+            keyPassword = project.property("RELEASE_KEY_PASSWORD")!!.toString()
+            storePassword = project.property("RELEASE_STORE_PASSWORD")!!.toString()
+        }
+    }
     namespace = "com.example.tfg"
     compileSdk = 34
 
@@ -25,11 +33,12 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
