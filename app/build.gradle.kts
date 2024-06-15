@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -22,15 +24,21 @@ android {
         applicationId = "com.ahydul.logic_games"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5 //Check licenses before changing
-        versionName = "1.1.0"
+        versionCode = 6 //Check licenses before changing
+        versionName = "1.1.1"
+        //setProperty("archivesBaseName", "logic-games-$versionName")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
     }
-
+    applicationVariants.all{
+        outputs.all {
+            if(name.contains("release"))
+                (this as BaseVariantOutputImpl).outputFileName = "logic-games-$versionName.apk"
+        }
+    }
     buildTypes {
         release {
             //isDebuggable = true
