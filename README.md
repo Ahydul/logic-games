@@ -42,7 +42,13 @@ Some of its features are:
 
 -   Improve fluidity of the interface.
 
+-   More themes.
+
 Enventually:
+
+-   Zoom functionality.
+  
+-   Some way of telling the user that a new version is available (Not using the play store).
 
 -   More games.
 
@@ -53,4 +59,5 @@ Enventually:
 ## Requirements
 
 -   At least Android 8.0 (Oreo).
+
 -   There should be no screen limitations. Please make an issue if your screen is not compatible.
