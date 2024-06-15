@@ -37,14 +37,6 @@ open class GenericResult<T> private constructor(
     fun gotContradiction(): Boolean {
         return this.result == Result.CONTRADICTION
     }
-
-    fun successOrBoardNotUnique(): Boolean {
-        return this.result == Result.SUCCESS || this.result == Result.NOT_UNIQUE_SOLUTION
-    }
-
-    fun overpassedMaxBF(): Boolean {
-        return this.result == Result.MAX_BF_OVERPASSED
-    }
     
     fun errorToPopulateResult(): PopulateResult {
         return PopulateResult(null, this.result)
@@ -55,7 +47,7 @@ open class GenericResult<T> private constructor(
     }
     
     companion object {
-        fun <T> success(value: T) = GenericResult<T>(value, Result.SUCCESS)
+        fun <T> success(value: T) = GenericResult(value, Result.SUCCESS)
         fun <T> contradiction() = GenericResult<T>(null, Result.CONTRADICTION)
         fun <T> maxBFOverpassed() = GenericResult<T>(null, Result.MAX_BF_OVERPASSED)
         fun <T> boardNotUnique() = GenericResult<T>(null, Result.NOT_UNIQUE_SOLUTION)

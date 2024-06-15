@@ -5,10 +5,10 @@ import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.common.Score
 import com.example.tfg.games.common.ScoreDeserializer
 import com.example.tfg.games.common.ScoreSerializer
-import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import com.google.gson.reflect.TypeToken
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
