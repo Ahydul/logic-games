@@ -26,8 +26,6 @@ import com.example.tfg.data.DataStoreManager.dataStore
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.data.LimitedGameDao
 import com.example.tfg.state.CustomMainViewModelFactory
-import com.example.tfg.state.DarkTheme
-import com.example.tfg.state.LocalTheme
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.mainactivity.MainScreen
 import com.example.tfg.ui.theme.TFGTheme
