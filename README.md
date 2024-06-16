@@ -28,8 +28,6 @@ Some of its features are:
 
 ## Planned Features
 
--   Option to not show errors automatically.
-
 -   Option to mark all cells with the selected value.
 
 -   Option to mark the region the cell you selected is on.
@@ -39,8 +37,6 @@ Some of its features are:
 -   Option to disallow snapshots.
 
 -   Graphs in the statistics section.
-
--   Improve fluidity of the interface.
 
 -   More themes.
 
