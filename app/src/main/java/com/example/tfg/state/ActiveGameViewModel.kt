@@ -11,6 +11,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.runtime.toMutableStateMap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tfg.common.GameInstance
@@ -28,10 +30,14 @@ import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.common.utils.Quadruple
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.Converters
+import com.example.tfg.data.DataStorePreferences
 import com.example.tfg.data.GameDao
 import com.example.tfg.games.common.GameValue
+import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -42,8 +48,14 @@ import kotlin.math.floor
 class ActiveGameViewModel(
     private val gameInstance: GameInstance,
     private val gameDao: GameDao,
-    val snapshotsAllowed: Boolean
+    private val dataStore: DataStore<Preferences>?,
+    val snapshotsAllowed: Boolean = false
 ) : ViewModel() {
+
+    val themeUserSetting: Flow<Theme>? = dataStore?.let { it.data.map { preferences ->
+            Theme.from(preferences[DataStorePreferences.THEME])
+        }
+    }
 
     private var actualGameStatePosition = 0
     private val numErrors: MutableIntState
@@ -53,6 +65,7 @@ class ActiveGameViewModel(
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
     private val timer = Timer.create(getGame().timer, viewModelScope)
+    private var checkErrorsAutomatically = mutableStateOf(true)
 
     private var snapshot: (() -> Bitmap?)? = null
     private var snapshotTooEarly = false
@@ -72,7 +85,7 @@ class ActiveGameViewModel(
     fun gameIsNotCompleted() = !_gameCompleted.value
 
     private fun gameWasCompleted(): Boolean {
-        return !errorsDisabled() && getCells().all { it.value.value != 0 && !it.value.isError }
+        return !errorsAreCheckedManually() && getCells().all { it.value.value != 0 && !it.value.isError }
     }
 
     fun completeTheBoard() {
@@ -426,6 +439,8 @@ class ActiveGameViewModel(
 
     fun isNote() = isNote.value
 
+    fun getCheckErrorsAutomatically() = checkErrorsAutomatically.value
+
 
     /*
         GameState functions
@@ -594,10 +609,6 @@ class ActiveGameViewModel(
             numErrors.intValue++
             updateGameErrorsToDb(error)
         }
-    }
-
-    private fun errorsDisabled(): Boolean {
-        return getNumberOfGameStates() > 1
     }
 
     private fun addClue() {
@@ -929,10 +940,10 @@ class ActiveGameViewModel(
             val position = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
             val oldErrors = checkValue(position = position, value = getCellValue(position))
 
-            val isError = isError(position = position, value = value) && !errorsDisabled()
+            val isError = isError(position = position, value = value) && !errorsAreCheckedManually()
             gameCompleted = setCellValue(value = value, index = position, isError = isError)
 
-            if (!errorsDisabled()) {
+            if (!errorsAreCheckedManually()) {
                 // Paint positions that causes errors
                 val errors = mutableSetOf<Int>()
                 getCells().forEachIndexed { pos, ms ->
@@ -1108,6 +1119,15 @@ class ActiveGameViewModel(
     fun buttonShouldBeEnabled(): Boolean {
         return !timerPaused() && gameIsNotCompleted()
     }
+
+    fun errorsAreCheckedManually(): Boolean {
+        return getNumberOfGameStates() > 1 || !getCheckErrorsAutomatically()
+    }
+
+    fun setCheckErrorsAutomatically(status: Boolean) {
+        checkErrorsAutomatically.value = status
+    }
+
 
     private fun findRegionID(coordinate: Coordinate): Int? {
         for (entry in getRegions().entries)

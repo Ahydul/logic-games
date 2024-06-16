@@ -1,20 +1,26 @@
 package com.example.tfg.state
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.Bitmap
 import androidx.compose.runtime.mutableStateOf
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.GameLowerInfo
 import com.example.tfg.common.utils.Utils
+import com.example.tfg.data.DataStorePreferences
 import com.example.tfg.data.LimitedGameDao
 import com.example.tfg.data.StatsDao
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
@@ -23,12 +29,12 @@ class MainViewModel(
     private val gameDao: LimitedGameDao,
     private val statsDao: StatsDao,
     private val gameFactory: GameFactory,
-    private val configurationPrefs: SharedPreferences
+    private val dataStore: DataStore<Preferences>
 ) : ViewModel() {
 
-    private val themeUserSetting = mutableStateOf(
-        Theme.from(configurationPrefs.getString("theme", "LIGHT_MODE") ?: Theme.LIGHT_MODE.name)
-    )
+    val themeUserSetting: Flow<Theme> = dataStore.data.map { preferences ->
+        Theme.from(preferences[DataStorePreferences.THEME])
+    }
 
     private var lastPlayedGame = getLastPlayedGame()
 
@@ -36,23 +42,26 @@ class MainViewModel(
 
 //  Main functions
 
-    private fun getLastPlayedGame(): Long {
-        var lastPlayedGame = configurationPrefs.getLong("lastPlayedGame", -1L)
-        if (lastPlayedGame != -1L && runBlocking { !gameDao.existsOnGoingGameById(lastPlayedGame) }) {
+    private fun getLastPlayedGame(): Long? {
+        val lastPlayedGame = runBlocking {
+            dataStore.data.map { it[DataStorePreferences.LAST_PLAYED_GAME]}.first()
+        }
+        if (lastPlayedGame != null && runBlocking { !gameDao.existsOnGoingGameById(lastPlayedGame) }) {
             //Game was completed or doesn't exist
-            lastPlayedGame = -1L
-            with(configurationPrefs.edit()) {
-                putLong("lastPlayedGame", -1)
-                apply()
+            viewModelScope.launch {
+                dataStore.edit { preferences ->
+                    preferences.remove(DataStorePreferences.LAST_PLAYED_GAME)
+                }
             }
         }
         return lastPlayedGame
     }
 
     fun setLastPlayedGame(id: Long) {
-        with (configurationPrefs.edit()) {
-            putLong("lastPlayedGame", id)
-            apply() //asynchronous
+        viewModelScope.launch {
+            dataStore.edit { preferences ->
+                preferences[DataStorePreferences.LAST_PLAYED_GAME] = id
+            }
         }
     }
 
@@ -83,24 +92,14 @@ class MainViewModel(
         }
     }
 
-    fun getTheme() = themeUserSetting.value
-
-    private fun setConfigurationTheme(theme: Theme) {
-        with (configurationPrefs.edit()) {
-            putString("theme", theme.name)
-            apply()
-        }
-    }
-
     fun setTheme() {
-        when(getTheme()){
-            Theme.DARK_MODE -> {
-                themeUserSetting.value = Theme.LIGHT_MODE
-                setConfigurationTheme(Theme.LIGHT_MODE)
-            }
-            Theme.LIGHT_MODE -> {
-                themeUserSetting.value = Theme.DARK_MODE
-                setConfigurationTheme(Theme.DARK_MODE)
+        viewModelScope.launch {
+            dataStore.edit { preferences ->
+                val newTheme = when(Theme.from(preferences[DataStorePreferences.THEME])){
+                    Theme.DARK_MODE -> Theme.LIGHT_MODE.name
+                    Theme.LIGHT_MODE -> Theme.DARK_MODE.name
+                }
+                preferences[DataStorePreferences.THEME] = newTheme
             }
         }
     }
@@ -129,8 +128,7 @@ class MainViewModel(
     }
 
     fun getLastPlayedGameInfo(): GameLowerInfo? {
-        return if (lastPlayedGame == -1L) null
-        else getGameByIdFromBb(lastPlayedGame)
+        return lastPlayedGame?.let { getGameByIdFromBb(it) }
     }
 
 // Stats functions

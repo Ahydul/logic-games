@@ -1,31 +1,35 @@
 package com.example.tfg
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.datastore.preferences.core.edit
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tfg.common.GameInstance
 import com.example.tfg.common.IdGenerator
+import com.example.tfg.data.DataStoreManager.dataStore
+import com.example.tfg.data.DataStorePreferences
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
-import com.example.tfg.state.DarkTheme
-import com.example.tfg.state.LocalTheme
 import com.example.tfg.ui.components.activegame.ActiveGameScreen
 import com.example.tfg.ui.theme.TFGTheme
 import com.example.tfg.ui.theme.Theme
+import kotlinx.coroutines.launch
 
 class ActiveGameView : ComponentActivity() {
     private var viewModel: ActiveGameViewModel? = null
@@ -38,32 +42,27 @@ class ActiveGameView : ComponentActivity() {
         val database = GameDatabase.getDatabase(this)
         val dao = database.gameDao()
 
-        val sharedPref = getSharedPreferences("Configuration", Context.MODE_PRIVATE)
-        with (sharedPref.edit()) {
-            putLong("lastPlayedGame", gameId)
-            apply() //asynchronous
+        lifecycleScope.launch {
+            dataStore.edit { preferences ->
+                preferences[DataStorePreferences.LAST_PLAYED_GAME] = gameId
+            }
         }
-        val snapshotsAllowed = sharedPref.getBoolean("snapshot", false)
 
         val gameInstance = GameInstance.create(gameId, dao)
-        val vm: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao, snapshotsAllowed) }
+        val vm: ActiveGameViewModel by viewModels{ CustomGameViewModelFactory(gameInstance, dao, dataStore) }
         vm.setFilesDirectory(applicationContext.filesDir)
         viewModel = vm
 
         setContent {
-            val darkTheme = when (Theme.from(sharedPref.getString("theme", "LIGHT_MODE") ?: Theme.LIGHT_MODE.name)) {
-                Theme.LIGHT_MODE -> DarkTheme(false)
-                Theme.DARK_MODE -> DarkTheme(true)
-            }
-            CompositionLocalProvider(LocalTheme provides darkTheme) {
-                TFGTheme(darkTheme = LocalTheme.current.isDark) {
-                    ActiveGameScreen(
-                        viewModel = vm,
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.background)
-                            .fillMaxWidth()
-                    )
-                }
+            val initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE
+            val theme by vm.themeUserSetting!!.collectAsState(initial = initial)
+            TFGTheme(theme = theme) {
+                ActiveGameScreen(
+                    viewModel = vm,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxWidth()
+                )
             }
         }
     }

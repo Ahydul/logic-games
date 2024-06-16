@@ -136,4 +136,6 @@ dependencies {
     val aboutLib = "11.2.1"
     implementation("com.mikepenz:aboutlibraries:$aboutLib") // Add this line
     implementation("com.mikepenz:aboutlibraries-compose-m3:$aboutLib")
+
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
