@@ -27,6 +27,7 @@ import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.common.utils.Quadruple
 import com.example.tfg.common.utils.Utils
+import com.example.tfg.data.Converters
 import com.example.tfg.data.GameDao
 import com.example.tfg.games.common.GameValue
 import kotlinx.coroutines.Dispatchers
@@ -166,28 +167,28 @@ class ActiveGameViewModel(
         }
     }
 
-    private fun updateGameToDb() {
+    private fun updateGameErrorsToDb(error: Pair<Int, Int>) {
         viewModelScope.launch(Dispatchers.IO) {
-            gameDao.updateGame(getGame())
+            gameDao.updateGameErrors(gameId = getGameId(), newError = Converters.fromPair(error))
         }
     }
 
     private fun updateGameTimerToDB(timer: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            gameDao.updateGameTimer(timer = timer, gameId = getGame().gameId)
+            gameDao.updateGameTimer(timer = timer, gameId = getGameId())
         }
     }
 
     private fun updateGameToDB(timer: Int, playerWon: Boolean, endDate: LocalDateTime) {
         viewModelScope.launch(Dispatchers.IO) {
-            gameDao.updateGameTimerAndEndDate(timer = timer, endDate = endDate, playerWon = playerWon, gameId = getGame().gameId)
+            gameDao.updateGameTimerAndEndDate(timer = timer, endDate = endDate, playerWon = playerWon, gameId = getGameId())
         }
     }
 
 
     private fun addClueToGameDB() {
         viewModelScope.launch(Dispatchers.IO) {
-            gameDao.addClueToGame(getGame().gameId)
+            gameDao.addClueToGame(getGameId())
         }
     }
 
@@ -361,6 +362,8 @@ class ActiveGameViewModel(
 
     private fun getGame() = gameInstance.game
 
+    private fun getGameId() = getGame().gameId
+
     private fun getGameType() = getGame().gameTypeEntity
 
     private fun getRealGameType() = getGameType().toGameType()
@@ -475,9 +478,9 @@ class ActiveGameViewModel(
     fun newGameState() {
         Log.d("state", "Actual state: ${getActualState()}")
 
-        val newGameState = GameState.create(gameId = getGame().gameId, position = getNumberOfGameStates())
+        val newGameState = GameState.create(gameId = getGameId(), position = getNumberOfGameStates())
         val newBoard = Board.create(from = getBoard(), gameStateId = newGameState.gameStateId)
-        val newCells = getCells().mapIndexed { index, ms ->
+        val newCells = getCells().mapIndexed { _, ms ->
             ms.value.copyWithNewIndex()
         }
 
@@ -591,7 +594,7 @@ class ActiveGameViewModel(
         val res = getGame().addError(error)
         if (res) {
             numErrors.intValue++
-            updateGameToDb()
+            updateGameErrorsToDb(error)
         }
     }
 
@@ -1005,6 +1008,7 @@ class ActiveGameViewModel(
         val backgroundErrors = mutableSetOf<Int>()
         val coordinates = mutableSetOf<Int>()
         val valueErrors = mutableListOf<Int>()
+        var noEmptyValues = true
 
         getPositions().forEach { position ->
             val value = getCellValue(position)
@@ -1013,7 +1017,8 @@ class ActiveGameViewModel(
 
             //Has error
             if (isError(position, value)) {
-                valueErrors.add(position)
+                if (value == 0) noEmptyValues = false
+                else valueErrors.add(position)
             }
         }
 
@@ -1043,7 +1048,7 @@ class ActiveGameViewModel(
             }
         }
 
-        if (valueErrors.isEmpty()) {
+        if (noEmptyValues && valueErrors.isEmpty()) {
             gameCompletedFun(true)
         }
 

@@ -1,13 +1,11 @@
 package com.example.tfg.data
 
 import androidx.room.TypeConverter
-import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.common.Score
 import com.example.tfg.games.common.ScoreDeserializer
 import com.example.tfg.games.common.ScoreSerializer
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -30,21 +28,11 @@ object Converters {
     }
 
 
-    // List<Coordinate> converters
+    // Pair<Int, Int> converters
 
     @TypeConverter
-    @JvmStatic
-    fun fromCoordinateList(coordinates: List<Coordinate>?): String? {
-        return Gson().toJson(coordinates)
-    }
-
-    @TypeConverter
-    @JvmStatic
-    fun toCoordinateList(coordinatesString: String?): List<Coordinate>? {
-        return coordinatesString?.let {
-            val type = object : TypeToken<Set<Pair<Int, Int>>>() {}.type
-            Gson().fromJson(it, type)
-        }
+    fun fromPair(value: Pair<Int, Int>): String {
+        return Gson().toJson(value)
     }
 
 
@@ -62,6 +50,7 @@ object Converters {
             Gson().fromJson(it, type)
         }
     }
+
 
     // IntArray converters
 
@@ -93,12 +82,6 @@ object Converters {
             .create()
     }
 
-    fun toScore2(value: JsonElement): Score {
-        return value.let {
-            toScoreGson().fromJson(it, Score::class.java)
-        }
-    }
-
     @TypeConverter
     fun toScore(value: String): Score {
         return value.let {
@@ -106,38 +89,9 @@ object Converters {
         }
     }
 
-
     private fun toScoreGson(): Gson {
         return GsonBuilder()
             .registerTypeAdapter(Score::class.java, ScoreDeserializer())
             .create()
     }
-
-
-    // GameType converters
-
-    /*
-    @TypeConverter
-    fun fromGameType(gameType: GameType): String {
-        return fromGameTypeGson().toJson(gameType)
-    }
-
-    private fun fromGameTypeGson(): Gson {
-        return GsonBuilder()
-            .registerTypeAdapter(Score::class.java, ScoreSerializer())
-            .create()
-    }
-
-    @TypeConverter
-    fun toGameType(value: String): GameType {
-        val type = object : TypeToken<GameType>() {}.type
-        return toGameTypeGson().fromJson(value, type)
-    }
-
-    private fun toGameTypeGson(): Gson {
-        return GsonBuilder()
-            .registerTypeAdapter(GameType::class.java, GameTypeDeserializer())
-            .create()
-    }
-     */
 }

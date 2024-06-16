@@ -41,6 +41,19 @@ interface GameDao {
     suspend fun updateGameTimerAndEndDate(timer: Int, playerWon: Boolean, endDate: LocalDateTime, gameId: Long)
     @Query("UPDATE Game SET numClues = numClues + 1 WHERE gameId = :gameId")
     suspend fun addClueToGame(gameId: Long)
+    @Query("""
+        UPDATE Game 
+        SET numErrors = numErrors + 1,
+        errors = substr(errors, 1, length(errors) - 1) ||
+            CASE 
+                WHEN length(errors) = 2 THEN ''
+                ELSE ',' 
+            END ||
+            :newError || 
+            ']' 
+        WHERE gameId = :gameId
+    """)
+    suspend fun updateGameErrors(gameId: Long, newError: String)
 
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

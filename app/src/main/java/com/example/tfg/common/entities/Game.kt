@@ -19,7 +19,7 @@ data class Game(
     var endDate: LocalDateTime? = null,
     var playerWon: Boolean = false,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
-    var numErrors: Int = 0,
+    var numErrors: Int = errors.size,
     var numClues: Int = 0,
     var timer: Int = 0
 ) {
