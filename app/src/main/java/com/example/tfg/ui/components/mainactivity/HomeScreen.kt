@@ -1,5 +1,6 @@
 package com.example.tfg.ui.components.mainactivity
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,14 +24,16 @@ fun HomeScreen(
         .fillMaxHeight()
         .padding(top = 8.dp, start = 6.dp, end = 6.dp)
     ) {
-        MainHeader(viewModel = viewModel, modifier = modifier.weight(1.3f))
-        Spacer(modifier = mod.weight(8f))
+        Box(modifier = modifier.weight(3f)) {
+            MainHeader(viewModel = viewModel, modifier = modifier)
+        }
+        Spacer(modifier = mod.weight(16f))
         HomeButtons(
-            modifier = mod.weight(5f),
+            modifier = mod.weight(10f),
             viewModel = viewModel,
             goGamesScreen = goGamesScreen,
             goOnGoingGames = goOnGoingGames
         )
-        Spacer(modifier = mod.weight(4f))
+        Spacer(modifier = mod.weight(8f))
     }
 }
