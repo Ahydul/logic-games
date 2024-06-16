@@ -55,7 +55,7 @@ class ActiveGameViewModel(
     private val timer = Timer.create(getGame().timer, viewModelScope)
 
     private var snapshot: (() -> Bitmap?)? = null
-    private var lastSnapshotTaken = -10
+    private var snapshotTooEarly = false
     private var filesDirectory: File? = null
 
     private var _gameCompleted = mutableStateOf(false)
@@ -297,12 +297,8 @@ class ActiveGameViewModel(
         this.filesDirectory = filesDirectory
     }
 
-    private fun snapshotTooEarly(): Boolean {
-        return timer.passedSeconds.value - lastSnapshotTaken < 10
-    }
-
     fun takeSnapshotBlocking() {
-        if (!snapshotsAllowed || gameIsCompleted() || snapshotTooEarly() || timerPaused() ||
+        if (!snapshotsAllowed || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
             snapshot == null || filesDirectory == null) return
 
         Log.d("snapshot", "Taking snapshot")
@@ -323,14 +319,13 @@ class ActiveGameViewModel(
             if (bitmapFilePath != null) {
                 val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
                 insertGameStateSnapshotToDB(gameStateSnapshot)
+                snapshotTooEarly = true
             }
         }
-
-        lastSnapshotTaken = timer.passedSeconds.value
     }
 
     fun takeSnapshot() {
-        if (!snapshotsAllowed || gameIsCompleted() || snapshotTooEarly() || timerPaused() ||
+        if (!snapshotsAllowed || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
             snapshot == null || filesDirectory == null) return
 
         Log.d("snapshot", "Taking snapshot")
@@ -351,10 +346,9 @@ class ActiveGameViewModel(
             if (bitmapFilePath != null) {
                 val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
                 insertGameStateSnapshotToDB(gameStateSnapshot)
+                snapshotTooEarly = true
             }
         }
-
-        lastSnapshotTaken = timer.passedSeconds.value
     }
 
 
@@ -465,7 +459,7 @@ class ActiveGameViewModel(
     }
 
     private fun loadNewGameState(newGameState: GameState, newBoard: Board, newCells: List<Cell>) {
-        lastSnapshotTaken = -10
+        snapshotTooEarly = false
 
         getGameStateIds().add(newGameState.gameStateId)
         actualGameStatePosition = newGameState.position
@@ -577,6 +571,7 @@ class ActiveGameViewModel(
     // Setters
 
     private fun setCell(index: Int, newCell: Cell) {
+        snapshotTooEarly = false
         getCells()[index].value = newCell
         updateCellToDb(newCell)
     }
