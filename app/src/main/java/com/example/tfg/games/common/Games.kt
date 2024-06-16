@@ -1,8 +1,10 @@
 package com.example.tfg.games.common
 
+import android.content.Context
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.buildAnnotatedString
+import com.example.tfg.R
 import com.example.tfg.common.enums.Games2
+import com.example.tfg.common.utils.Utils
 
 enum class Games(val title: String) {
     HAKYUU("Hakyuu");
@@ -17,19 +19,20 @@ enum class Games(val title: String) {
         }
     }
 
-    fun getRules(): AnnotatedString {
+    fun getRules(context: Context): AnnotatedString {
         return when(this){
-            HAKYUU -> buildAnnotatedString {
-                    append("1. A number must be entered in each field of the diagram.\n\n")
-                    append("2. In every area of N fields, every number from the range 1~N must appear exactly once.\n\n")
-                    append("3. If two fields in a row or column contain the same number Z, there must be at least Z fields with different numbers between these two fields.\n\n")
-
-                    append("Rules from: ")
-
-                    pushStringAnnotation(tag = "web", annotation = "https://www.janko.at/Raetsel/Hakyuu/index.htm")
-                    append("https://www.janko.at/Raetsel/Hakyuu/index.htm")
-                    pop()
-                }
+            HAKYUU -> {
+                val jankoPage = context.getString(R.string.janko_page)
+                Utils.buildStringWithLink(
+                    context = context,
+                    link = jankoPage,
+                    linkName = jankoPage,
+                    text = context.getString(R.string.hakyuu_rule_1) + "\n\n" +
+                            context.getString(R.string.hakyuu_rule_2) + "\n\n" +
+                            context.getString(R.string.hakyuu_rule_3) + "\n\n" +
+                            context.getString(R.string.rules_from) + ":\n",
+                    )
+            }
         }
     }
 

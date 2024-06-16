@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,10 +24,10 @@ val defaultBitmap = {
 
 @Composable
 fun Divider(modifier: Modifier = Modifier) {
-    Divider (
-        color = MaterialTheme.colorScheme.outline,
+    HorizontalDivider(
         modifier = modifier
             .height(1.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        color = MaterialTheme.colorScheme.outline
     )
 }

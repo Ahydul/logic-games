@@ -116,4 +116,12 @@
     <string name="solve_the_board">Solve the board</string>
     <string name="title_activity_licenses_menu">LicensesMenuActivity</string>
     <string name="give_clue">Give clue</string>
+    <string name="app_built_by">App built by</string>
+    <string name="ahydul">Ahydul</string>
+    <string name="github_page">https://github.com/Ahydul/logic-games</string>
+    <string name="hakyuu_rule_1">1. A number must be entered in each field of the diagram.</string>
+    <string name="hakyuu_rule_2">2. In every area of N fields, every number from the range 1~N must appear exactly once.</string>
+    <string name="hakyuu_rule_3">3. If two fields in a row or column contain the same number Z, there must be at least Z fields with different numbers between these two fields.</string>
+    <string name="rules_from">Rules from</string>
+    <string name="janko_page">https://www.janko.at/Raetsel/Hakyuu/index.htm</string>
 </resources>

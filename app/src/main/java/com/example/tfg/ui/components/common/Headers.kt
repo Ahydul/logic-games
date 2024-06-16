@@ -11,8 +11,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.example.tfg.R
+import com.example.tfg.common.utils.Utils
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.theme.Theme
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
@@ -27,6 +30,15 @@ fun MainHeader(
     val theme by viewModel.themeUserSetting.collectAsState(initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE)
 
     Row(modifier = modifier) {
+        val context = LocalContext.current
+        val annotatedString = Utils.buildStringWithLink(
+            context = context,
+            text = stringResource(R.string.app_built_by) + " ",
+            link = stringResource(R.string.github_page),
+            linkName = stringResource(R.string.ahydul)
+        )
+        CustomClickableText(annotatedString = annotatedString, context = context)
+
         Spacer(modifier = Modifier.weight(1f))
         CustomIconButton(
             onClick = { viewModel.setTheme() },

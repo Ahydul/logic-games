@@ -1,5 +1,6 @@
 package com.example.tfg.ui.components.common
 
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +43,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.example.tfg.R
+import com.example.tfg.common.utils.Utils
 
 @Composable
 fun CustomIconButton(
@@ -343,6 +347,18 @@ fun CustomTextField(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CustomClickableText(
+    annotatedString: AnnotatedString,
+    context: Context
+) {
+    ClickableText(text = annotatedString, style = TextStyle(color = MaterialTheme.colorScheme.onPrimary) ) { offset ->
+        annotatedString.getStringAnnotations(tag = "web", start = offset, end = offset).firstOrNull()?.let {
+            Utils.goToWebPage(it.item, context = context)
         }
     }
 }

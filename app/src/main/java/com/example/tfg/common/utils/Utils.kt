@@ -7,15 +7,21 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import com.example.tfg.ActiveGameView
 import com.example.tfg.MainActivity
+import com.example.tfg.R
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.time.format.DateTimeFormatter
 
-val dateFormatter = DateTimeFormatter.ofPattern("dd MM yyyy HH:mm")
+val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MM yyyy HH:mm")
 
 abstract class Utils {
     companion object {
@@ -144,6 +150,17 @@ abstract class Utils {
             Handler(Looper.getMainLooper()).postDelayed({
                 function()
             }, delayMillis)
+        }
+
+        fun buildStringWithLink(context: Context, text: String, link: String, linkName: String): AnnotatedString {
+            return buildAnnotatedString {
+                append(text)
+                pushStringAnnotation(tag = "web", annotation = link)
+                withStyle(style = SpanStyle(color = Color(context.getColor(R.color.cell_value)))) {
+                    append(linkName)
+                }
+                pop()
+            }
         }
 
         fun goToWebPage(url: String, context: Context) {

@@ -57,6 +57,7 @@ import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2
+import com.example.tfg.ui.components.common.CustomClickableText
 import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.CustomText
 import com.example.tfg.ui.components.common.CustomTextField
@@ -185,13 +186,9 @@ private fun Rules(
 ) {
     Column(modifier.padding(15.dp)) {
 
-        val annotatedString = chosenGame.getRules()
         val context = LocalContext.current
-        ClickableText(text = annotatedString, style = TextStyle(color = MaterialTheme.colorScheme.onPrimary) ) { offset ->
-            annotatedString.getStringAnnotations(tag = "web", start = offset, end = offset).firstOrNull()?.let {
-                Utils.goToWebPage(it.item, context = context)
-            }
-        }
+        val annotatedString = chosenGame.getRules(context = context)
+        CustomClickableText(annotatedString = annotatedString, context = context)
     }
 }
 
