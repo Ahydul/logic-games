@@ -50,9 +50,14 @@ import kotlin.math.floor
 class ActiveGameViewModel(
     private val gameInstance: GameInstance,
     private val gameDao: GameDao,
-    private val dataStore: DataStore<Preferences>?,
-    val snapshotsAllowed: Boolean = false
+    private val dataStore: DataStore<Preferences>?
 ) : ViewModel() {
+
+    val snapshotsAllowed: Flow<Boolean>? = dataStore?.let {
+        it.data.map { preferences ->
+            preferences[DataStorePreferences.SNAPSHOTS_ALLOWED] ?: true
+        }
+    }
 
     val themeUserSetting: Flow<Theme>? = dataStore?.let {
         it.data.map { preferences ->
@@ -319,7 +324,7 @@ class ActiveGameViewModel(
     }
 
     fun takeSnapshotBlocking() {
-        if (!snapshotsAllowed || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
+        if (!snapshotAllowed() || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
             snapshot == null || filesDirectory == null) return
 
         Log.d("snapshot", "Taking snapshot")
@@ -345,8 +350,12 @@ class ActiveGameViewModel(
         }
     }
 
+    private fun snapshotAllowed(): Boolean {
+        return runBlocking { snapshotsAllowed?.first() } ?: true
+    }
+
     fun takeSnapshot() {
-        if (!snapshotsAllowed || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
+        if (!snapshotAllowed() || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
             snapshot == null || filesDirectory == null) return
 
         Log.d("snapshot", "Taking snapshot")
