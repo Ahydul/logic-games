@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -156,6 +157,26 @@ fun CustomButton2(
 }
 
 @Composable
+fun CustomSwitchButton(
+    modifier: Modifier = Modifier,
+    onCheckedChange: (Boolean) -> Unit,
+    checked: Boolean,
+    enabled: Boolean = true,
+    label: @Composable RowScope.() -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        label()
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = modifier.width(IntrinsicSize.Min).padding(start = 10.dp),
+            enabled = enabled
+        )
+    }
+}
+
+
+@Composable
 fun CustomFilledButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
@@ -284,7 +305,9 @@ fun CustomTextField(
 
             val pointer = remember { mutableIntStateOf(i) }
             Column(
-                modifier = modifier.align(Alignment.CenterEnd).height(54.dp),
+                modifier = modifier
+                    .align(Alignment.CenterEnd)
+                    .height(54.dp),
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {

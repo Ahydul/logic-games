@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -36,13 +38,13 @@ fun TopSection(
         ) {
             CustomIconButton(
                 onClick = {
-                    //viewModel.setSnapshotNull() // To avoid snapshot
                     Utils.startHomeActivity(context)
                 },
                 painter = painterResource(id = R.drawable.back_arrow),
                 contentDescription = stringResource(id = R.string.go_back)
             )
-            val shouldBeVisible = viewModel.getNumberOfGameStates() > 1
+            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically!!.collectAsState(initial = true)
+            val shouldBeVisible = viewModel.hasMoreThanOneGameState() || !checkErrorsAutomatically
             if (shouldBeVisible) {
                 CustomIconButton(
                     onClick = { viewModel.checkErrors() },

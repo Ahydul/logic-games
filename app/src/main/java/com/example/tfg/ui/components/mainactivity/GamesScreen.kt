@@ -5,6 +5,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -99,7 +101,8 @@ fun GamesScreen(
         MainHeader(viewModel = viewModel, modifier = modifier)
         val mod = Modifier.padding(vertical = 10.dp)
         val gameHakyuu = Games.HAKYUU
-        val imageID = if (viewModel.getTheme().equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
+        val theme by viewModel.themeUserSetting.collectAsState(initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE)
+        val imageID = if (theme.equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
         else R.drawable.hakyuu_light
         ChooseGameButton(
             game = gameHakyuu,

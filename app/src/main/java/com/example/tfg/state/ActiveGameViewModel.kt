@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tfg.common.GameInstance
@@ -37,6 +40,7 @@ import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -52,8 +56,15 @@ class ActiveGameViewModel(
     val snapshotsAllowed: Boolean = false
 ) : ViewModel() {
 
-    val themeUserSetting: Flow<Theme>? = dataStore?.let { it.data.map { preferences ->
+    val themeUserSetting: Flow<Theme>? = dataStore?.let {
+        it.data.map { preferences ->
             Theme.from(preferences[DataStorePreferences.THEME])
+        }
+    }
+
+    val checkErrorsAutomatically: Flow<Boolean>? = dataStore?.let {
+        it.data.map { preferences ->
+           preferences[DataStorePreferences.CHECK_ERRORS_AUTOMATICALLY] ?: true
         }
     }
 
@@ -65,7 +76,6 @@ class ActiveGameViewModel(
     private val isPaint = mutableStateOf(false)
     private val selectedTiles = mutableStateListOf<Coordinate>()
     private val timer = Timer.create(getGame().timer, viewModelScope)
-    private var checkErrorsAutomatically = mutableStateOf(true)
 
     private var snapshot: (() -> Bitmap?)? = null
     private var snapshotTooEarly = false
@@ -438,8 +448,6 @@ class ActiveGameViewModel(
     fun isPaint() = isPaint.value
 
     fun isNote() = isNote.value
-
-    fun getCheckErrorsAutomatically() = checkErrorsAutomatically.value
 
 
     /*
@@ -1120,12 +1128,20 @@ class ActiveGameViewModel(
         return !timerPaused() && gameIsNotCompleted()
     }
 
-    fun errorsAreCheckedManually(): Boolean {
-        return getNumberOfGameStates() > 1 || !getCheckErrorsAutomatically()
+    private fun errorsAreCheckedManually(): Boolean {
+        return getNumberOfGameStates() > 1 || !runBlocking { checkErrorsAutomatically?.first() ?: true }
     }
 
+    fun hasMoreThanOneGameState() = getNumberOfGameStates() > 1
+
     fun setCheckErrorsAutomatically(status: Boolean) {
-        checkErrorsAutomatically.value = status
+        viewModelScope.launch {
+            dataStore?.edit { preferences ->
+                preferences[DataStorePreferences.CHECK_ERRORS_AUTOMATICALLY] = status
+            }
+        }
+        // To check possible errors that weren't manually checked
+        if (status) checkErrors()
     }
 
 

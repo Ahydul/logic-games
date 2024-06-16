@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +27,8 @@ import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomButton2
 import com.example.tfg.ui.components.common.CustomPopup
+import com.example.tfg.ui.components.common.CustomSwitchButton
+import com.example.tfg.ui.components.common.CustomText
 
 
 @Composable
@@ -69,9 +72,18 @@ fun ConfigurationPopup(
                 textColor = textColor,
                 expandedStates = expandedStates
             )
+            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically!!.collectAsState(initial = true)
+
+            CustomSwitchButton(
+                checked = checkErrorsAutomatically,
+                onCheckedChange = { status: Boolean ->
+                    viewModel.setCheckErrorsAutomatically(status)
+                }
+            ){
+                CustomText(mainText = "Check errors Automatically")
+            }
 
             Text(text = "More configuration options coming soon...", color = textColor)
-            //Switch(checked = , onCheckedChange = )
         }
 
     }
@@ -85,7 +97,7 @@ private fun solveBoardButton(
     expandedStates: MutableTransitionState<Boolean>
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    CustomButton2(onClick = { showDialog = true }) {
+    CustomButton2(modifier = modifier, onClick = { showDialog = true }) {
         Text(
             text = stringResource(R.string.solve_the_board),
             color = textColor,
