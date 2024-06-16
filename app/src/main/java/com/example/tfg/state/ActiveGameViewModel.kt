@@ -551,7 +551,7 @@ class ActiveGameViewModel(
     // Getters
     private fun getCell(index: Int): Cell = getCells()[index].value
 
-    fun getCell(coordinate: Coordinate) = getCell(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
+    fun getCell(coordinate: Coordinate) = getCell(getPosition(coordinate))
 
     private fun getCells(coordinates: Collection<Coordinate>) = coordinates.map { getCell(it) }
 
@@ -559,13 +559,15 @@ class ActiveGameViewModel(
 
     private fun isReadOnly(index: Int) = getCell(index).readOnly
 
-    private fun isReadOnly(coordinate: Coordinate) = isReadOnly(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
+    private fun isReadOnly(coordinate: Coordinate) = isReadOnly(getPosition(coordinate))
 
     private fun getCellColor(index: Int) = getCell(index).backgroundColor
 
     private fun getCellValue(index: Int) = getCell(index).value
 
-    fun getCellColor(coordinate: Coordinate) = getCellColor(coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!)
+    private fun getCellValue(coordinate: Coordinate) = getCellValue(getPosition(coordinate))
+
+    fun getCellColor(coordinate: Coordinate) = getCellColor(getPosition(coordinate))
 
 
     // Setters
@@ -698,7 +700,7 @@ class ActiveGameViewModel(
 
     private fun setCellsBackgroundColor(color: Int, coordinates: List<Coordinate>) {
         coordinates.forEach { coordinate ->
-            val index = coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+            val index = getPosition(coordinate)
             setCellBackgroundColor(color = color, index = index)
         }
     }
@@ -915,7 +917,7 @@ class ActiveGameViewModel(
 
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
         var gameCompleted = false
-        val coordinates = selectedTiles.filter { !isReadOnly(it) }.toMutableList()
+        val coordinates = selectedTiles.filter { !isReadOnly(it) && (!isNote() || getCellValue(it) == 0) }.toMutableList()
         if (coordinates.isEmpty()) return
 
         var previousCells = getCells(coordinates).toMutableList()
@@ -1054,6 +1056,10 @@ class ActiveGameViewModel(
 
     private fun getCoordinate(position: Int): Coordinate {
         return Coordinate.fromIndex(position, numColumns = getNumColumns(), numRows = getNumRows())
+    }
+
+    private fun getPosition(coordinate: Coordinate): Int {
+        return coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
     }
 
     private fun getPositions() = (0..< getNumCells())
