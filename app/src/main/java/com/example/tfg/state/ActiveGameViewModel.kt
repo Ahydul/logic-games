@@ -504,12 +504,13 @@ class ActiveGameViewModel(
 
             deleteGameStateFromDb(getGameStateIds()[position])
 
+            val actualGameStateId = getActualGameStateId()
             getGameStateIds().removeAt(position)
             if (getNumberOfGameStates() > position) {
-                (position..getNumberOfGameStates()).forEach { otherPointer ->
+                (position..< getNumberOfGameStates()).forEach { otherPointer ->
                     val otherGameStateId = getGameStateIds()[otherPointer]
                     updateGameStatePositionLeftInDb(otherGameStateId)
-                    if (getActualGameStateId() == otherGameStateId)
+                    if (actualGameStateId == otherGameStateId)
                         getActualState().movePositionLeft()
                 }
             }
