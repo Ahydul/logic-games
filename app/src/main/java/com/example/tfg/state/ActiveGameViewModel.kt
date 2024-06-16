@@ -4,8 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -633,15 +631,10 @@ class ActiveGameViewModel(
             value = if (previousCell.value == value) 0 else value,
             notes = Cell.emptyNotes(),
             isError = isError
-            /*
-            // If more than one state errors are disabled: only solved errors are shown
-            isError = if (errorsDisabled() && !previousCell.isError) false
-                else isError
-             */
         )
         setCell(index = index, newCell = newCell)
 
-        if (isError /*&& !errorsDisabled()*/) addError(index = index, value = value)
+        if (isError) addError(index = index, value = value)
         else return gameWasCompleted()
 
         return false
@@ -943,47 +936,24 @@ class ActiveGameViewModel(
 
         if (isNote()) {
             setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
+            val newCells = getCells(coordinates)
+            addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
         }
         else if (coordinates.size == 1) {
             val position = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
-            val oldErrors = checkValue(position = position, value = getCellValue(position))
 
-            val isError = isError(position = position, value = value) && !errorsAreCheckedManually()
-            gameCompleted = setCellValue(value = value, index = position, isError = isError)
+            gameCompleted = setCellValue(value = value, index = position)
 
             if (!errorsAreCheckedManually()) {
                 // Paint positions that causes errors
-                val errors = mutableSetOf<Int>()
-                getCells().forEachIndexed { pos, ms ->
-                    val cell = ms.value
-                    if (cell.isError) errors.addAll(checkValue(position = pos, value = cell.value))
-                }
-                errors.forEach { pos ->
-                    val cell = getCell(pos)
-                    if (cell.backgroundColor != Cell.ERROR_CELL_BACKGROUND_COLOR) {
-                        if (pos != position) {
-                            previousCells.add(cell)
-                            coordinates.add(getCoordinate(pos))
-                        }
-                        setCellBackgroundColor(pos, Cell.ERROR_CELL_BACKGROUND_COLOR)
-                    }
-                }
-
-                oldErrors.filter { !errors.contains(it) }.forEach { pos ->
-                    val cell = getCell(pos)
-                    if (pos != position) {
-                        previousCells.add(cell)
-                        coordinates.add(getCoordinate(pos))
-                    }
-                    setCellBackgroundColor(pos, 0) // This gets rid of the error color
-                }
+                checkErrors(coordinates = coordinates, previousCells = previousCells) // This creates the move
             }
             removeSelections()
         }
         else return
 
-        val newCells = getCells(coordinates)
-        addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
+        //val newCells = getCells(coordinates)
+        //addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
 
         if (gameCompleted) gameCompletedFun(playerWon = true)
     }
@@ -1001,17 +971,23 @@ class ActiveGameViewModel(
     }
 
     fun eraseAction() {
-        val coordinates = selectedTiles.filter { !isReadOnly(it) }
+        val coordinates = selectedTiles.filter { !isReadOnly(it) }.toMutableList()
         if (coordinates.isEmpty()) return
 
-        val previousCells = getCells(coordinates)
+        val previousCells = getCells(coordinates).toMutableList()
 
         eraseCells(coordinates)
+
+        if (!errorsAreCheckedManually()) {
+            // Paint positions that causes errors
+            checkErrors(coordinates = coordinates, previousCells = previousCells) // This creates the move
+        }
+        else {
+            val newCells = getCells(coordinates)
+            addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
+        }
+
         removeSelections()
-
-        val newCells = getCells(coordinates)
-
-        addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
     }
 
 
@@ -1021,9 +997,11 @@ class ActiveGameViewModel(
      */
 
     // For when more than one state
-    fun checkErrors() {
+    fun checkErrors(
+        coordinates: MutableList<Coordinate> = mutableListOf(),
+        previousCells: MutableList<Cell> = mutableListOf()
+    ) {
         val backgroundErrors = mutableSetOf<Int>()
-        val coordinates = mutableSetOf<Int>()
         val valueErrors = mutableListOf<Int>()
         var noEmptyValues = true
 
@@ -1039,38 +1017,40 @@ class ActiveGameViewModel(
             }
         }
 
-        val previousCells = mutableListOf<Cell>()
-
         getPositions().forEach { position ->
-            val cell2 = getCell(position)
-            val hadBGError = cell2.hasErrorBackground()
-            val hasBGError = backgroundErrors.contains(position)
+            val cell = getCell(position)
+            val coordinate = getCoordinate(position)
 
+            if (!previousCells.any { it.cellId == cell.cellId }) {
+                previousCells.add(cell)
+                coordinates.add(coordinate)
+            }
+
+            val hadBGError = cell.hasErrorBackground()
+            val hasBGError = backgroundErrors.contains(position)
             val setBackground = hasBGError != hadBGError
 
-            val wasError = cell2.isError
+            val wasError = cell.isError
             val isError = valueErrors.contains(position)
-            if (wasError != isError) {
+            val setError = wasError != isError
+
+            if (setError) {
                 setCellError(position, isError,
-                    if (setBackground)
-                        Cell.ERROR_CELL_BACKGROUND_COLOR
+                    if (setBackground) Cell.ERROR_CELL_BACKGROUND_COLOR
                     else null
                 )
-                previousCells.add(cell2)
-                coordinates.add(position)
             } else if (setBackground) {
                 setCellBackgroundColor(position, Cell.ERROR_CELL_BACKGROUND_COLOR)
-                previousCells.add(cell2)
-                coordinates.add(position)
             }
         }
 
         if (noEmptyValues && valueErrors.isEmpty()) {
             gameCompletedFun(true)
         }
-
-        val newCells = getCells2(coordinates)
-        addMove(coordinates = coordinates.map { getCoordinate(it) }, newCells = newCells, previousCells = previousCells)
+        else {
+            val newCells = getCells(coordinates)
+            addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
+        }
     }
 
     private fun getCoordinate(position: Int): Coordinate {

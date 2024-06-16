@@ -41,7 +41,7 @@ android {
     }
     buildTypes {
         release {
-            //isDebuggable = true
+            isDebuggable = true
             isShrinkResources = true
             isMinifyEnabled = true
             proguardFiles(
