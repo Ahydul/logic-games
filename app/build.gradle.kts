@@ -24,8 +24,8 @@ android {
         applicationId = "com.ahydul.logic_games"
         minSdk = 26
         targetSdk = 34
-        versionCode = 6 //Check licenses before changing
-        versionName = "1.1.1"
+        versionCode = 7 //Check licenses before changing
+        versionName = "1.1.2"
         //setProperty("archivesBaseName", "logic-games-$versionName")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
