@@ -69,7 +69,7 @@ data class Cell(
     }
 
     fun copyWithNewIndex(): Cell {
-        return Cell(cellId = generateId(), value = this.value, notes = this.notes.clone(), backgroundColor = this.backgroundColor, isError = this.isError)
+        return Cell(cellId = generateId(), value = this.value, notes = this.notes.clone(), backgroundColor = this.backgroundColor, isError = this.isError, readOnly = this.readOnly)
     }
 
     fun copy(noteIndex: Int, noteValue: Int): Cell {
