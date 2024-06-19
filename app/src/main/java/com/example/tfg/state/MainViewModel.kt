@@ -238,22 +238,25 @@ class MainViewModel(
         }
     }
 
-    fun getHighestWinningStreak(type: Games?, startDate: LocalDateTime?): Int? {
+    fun getHighestWinningStreak(type: Games?, startDate: LocalDateTime?, difficulty: Difficulty?): Int? {
         return runBlocking {
             if (type == null) statsDao.getHighestGeneralWinningStreakValue(
+                difficulty = difficulty,
                 startDate = startDate
             )
             else statsDao.getHighestWinningStreakValue(
                 startDate = startDate,
+                difficulty = difficulty,
                 gameEnum = type
             )
         }
     }
 
-    fun getActualWinningStreak(type: Games?): Int? {
+    fun getActualWinningStreak(type: Games?, difficulty: Difficulty?): Int? {
         return runBlocking {
-            if (type == null) statsDao.getActualGeneralWinningStreak()
+            if (type == null) statsDao.getActualGeneralWinningStreak(difficulty)
             else statsDao.getActualWinningStreak(
+                difficulty = difficulty,
                 gameEnum = type
             )
         }

@@ -1,0 +1,607 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "fc1a131e92861bb95b8d18f939d345a3",
+    "entities": [
+      {
+        "tableName": "Game",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`gameId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `difficulty` TEXT NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `playerWon` INTEGER NOT NULL, `errors` TEXT NOT NULL, `numErrors` INTEGER NOT NULL, `numClues` INTEGER NOT NULL, `timer` INTEGER NOT NULL, `type` TEXT NOT NULL, `numColumns` INTEGER NOT NULL, `numRows` INTEGER NOT NULL, `seed` INTEGER NOT NULL, `score` TEXT NOT NULL, `completedBoard` TEXT NOT NULL, `boardRegions` TEXT NOT NULL, `startBoard` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "gameId",
+            "columnName": "gameId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "difficulty",
+            "columnName": "difficulty",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "playerWon",
+            "columnName": "playerWon",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errors",
+            "columnName": "errors",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numErrors",
+            "columnName": "numErrors",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numClues",
+            "columnName": "numClues",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timer",
+            "columnName": "timer",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.numColumns",
+            "columnName": "numColumns",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.numRows",
+            "columnName": "numRows",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.seed",
+            "columnName": "seed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.score",
+            "columnName": "score",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.completedBoard",
+            "columnName": "completedBoard",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.boardRegions",
+            "columnName": "boardRegions",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameTypeEntity.startBoard",
+            "columnName": "startBoard",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "gameId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "GameState",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`gameStateId` INTEGER NOT NULL, `pointer` INTEGER NOT NULL, `position` INTEGER NOT NULL, `gameId` INTEGER NOT NULL, PRIMARY KEY(`gameStateId`), FOREIGN KEY(`gameId`) REFERENCES `Game`(`gameId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "gameStateId",
+            "columnName": "gameStateId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pointer",
+            "columnName": "pointer",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameId",
+            "columnName": "gameId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "gameStateId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_GameState_gameId",
+            "unique": false,
+            "columnNames": [
+              "gameId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_GameState_gameId` ON `${TABLE_NAME}` (`gameId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Game",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "gameId"
+            ],
+            "referencedColumns": [
+              "gameId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Move",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`moveId` INTEGER NOT NULL, `position` INTEGER NOT NULL, `gameStateId` INTEGER NOT NULL, PRIMARY KEY(`moveId`), FOREIGN KEY(`gameStateId`) REFERENCES `GameState`(`gameStateId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "moveId",
+            "columnName": "moveId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameStateId",
+            "columnName": "gameStateId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "moveId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Move_gameStateId",
+            "unique": false,
+            "columnNames": [
+              "gameStateId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Move_gameStateId` ON `${TABLE_NAME}` (`gameStateId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "GameState",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "gameStateId"
+            ],
+            "referencedColumns": [
+              "gameStateId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Action",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cellIndex` INTEGER NOT NULL, `moveId` INTEGER NOT NULL, `new_cellId` INTEGER NOT NULL, `new_value` INTEGER NOT NULL, `new_notes` TEXT NOT NULL, `new_readOnly` INTEGER NOT NULL, `new_backgroundColor` INTEGER NOT NULL, `new_isError` INTEGER NOT NULL, `previous_cellId` INTEGER NOT NULL, `previous_value` INTEGER NOT NULL, `previous_notes` TEXT NOT NULL, `previous_readOnly` INTEGER NOT NULL, `previous_backgroundColor` INTEGER NOT NULL, `previous_isError` INTEGER NOT NULL, PRIMARY KEY(`moveId`, `cellIndex`), FOREIGN KEY(`moveId`) REFERENCES `Move`(`moveId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "cellIndex",
+            "columnName": "cellIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "moveId",
+            "columnName": "moveId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newCell.cellId",
+            "columnName": "new_cellId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newCell.value",
+            "columnName": "new_value",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newCell.notes",
+            "columnName": "new_notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newCell.readOnly",
+            "columnName": "new_readOnly",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newCell.backgroundColor",
+            "columnName": "new_backgroundColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newCell.isError",
+            "columnName": "new_isError",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousCell.cellId",
+            "columnName": "previous_cellId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousCell.value",
+            "columnName": "previous_value",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousCell.notes",
+            "columnName": "previous_notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousCell.readOnly",
+            "columnName": "previous_readOnly",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousCell.backgroundColor",
+            "columnName": "previous_backgroundColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousCell.isError",
+            "columnName": "previous_isError",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "moveId",
+            "cellIndex"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "Move",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "moveId"
+            ],
+            "referencedColumns": [
+              "moveId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Board",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`boardId` INTEGER NOT NULL, `numColumns` INTEGER NOT NULL, `numRows` INTEGER NOT NULL, `gameStateId` INTEGER NOT NULL, PRIMARY KEY(`boardId`), FOREIGN KEY(`gameStateId`) REFERENCES `GameState`(`gameStateId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "boardId",
+            "columnName": "boardId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numColumns",
+            "columnName": "numColumns",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numRows",
+            "columnName": "numRows",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameStateId",
+            "columnName": "gameStateId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "boardId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Board_gameStateId",
+            "unique": false,
+            "columnNames": [
+              "gameStateId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Board_gameStateId` ON `${TABLE_NAME}` (`gameStateId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "GameState",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "gameStateId"
+            ],
+            "referencedColumns": [
+              "gameStateId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Cell",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cellId` INTEGER NOT NULL, `value` INTEGER NOT NULL, `notes` TEXT NOT NULL, `readOnly` INTEGER NOT NULL, `backgroundColor` INTEGER NOT NULL, `isError` INTEGER NOT NULL, PRIMARY KEY(`cellId`))",
+        "fields": [
+          {
+            "fieldPath": "cellId",
+            "columnName": "cellId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "readOnly",
+            "columnName": "readOnly",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "backgroundColor",
+            "columnName": "backgroundColor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isError",
+            "columnName": "isError",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cellId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "BoardCellCrossRef",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`boardId` INTEGER NOT NULL, `cellId` INTEGER NOT NULL, `cellPosition` INTEGER NOT NULL, PRIMARY KEY(`boardId`, `cellId`), FOREIGN KEY(`boardId`) REFERENCES `Board`(`boardId`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`cellId`) REFERENCES `Cell`(`cellId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "boardId",
+            "columnName": "boardId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cellId",
+            "columnName": "cellId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cellPosition",
+            "columnName": "cellPosition",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "boardId",
+            "cellId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_BoardCellCrossRef_cellId",
+            "unique": false,
+            "columnNames": [
+              "cellId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_BoardCellCrossRef_cellId` ON `${TABLE_NAME}` (`cellId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Board",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "boardId"
+            ],
+            "referencedColumns": [
+              "boardId"
+            ]
+          },
+          {
+            "table": "Cell",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cellId"
+            ],
+            "referencedColumns": [
+              "cellId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "GameStateSnapshot",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`gameStateId` INTEGER NOT NULL, `snapshotFilePath` TEXT NOT NULL, PRIMARY KEY(`gameStateId`), FOREIGN KEY(`gameStateId`) REFERENCES `GameState`(`gameStateId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "gameStateId",
+            "columnName": "gameStateId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "snapshotFilePath",
+            "columnName": "snapshotFilePath",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "gameStateId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "GameState",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "gameStateId"
+            ],
+            "referencedColumns": [
+              "gameStateId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "WinningStreak",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`startDate` TEXT NOT NULL, `endDate` TEXT, `gameEnum` TEXT, `wins` INTEGER NOT NULL, PRIMARY KEY(`startDate`))",
+        "fields": [
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "gameEnum",
+            "columnName": "gameEnum",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "wins",
+            "columnName": "wins",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "startDate"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fc1a131e92861bb95b8d18f939d345a3')"
+    ]
+  }
+}

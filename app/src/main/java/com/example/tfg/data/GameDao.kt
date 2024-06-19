@@ -17,6 +17,7 @@ import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
+import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import java.time.LocalDateTime
 
@@ -130,14 +131,13 @@ interface GameDao {
 
     @Insert
     suspend fun insertWinningStreak(winningStreak: WinningStreak)
-    @Query("UPDATE winningstreak SET wins = wins + 1 WHERE endDate IS NULL AND gameEnum = :gameEnum")
-    suspend fun addOneToActualWinningStreak(gameEnum: Games?): Int
-    @Query("UPDATE winningstreak SET endDate = :endDate WHERE endDate IS NULL AND gameEnum = :gameEnum")
-    suspend fun endActualWinningStreak(endDate: LocalDateTime, gameEnum: Games)
+    @Query("UPDATE winningstreak SET wins = wins + 1 WHERE endDate IS NULL AND gameEnum = :gameEnum AND difficulty = :difficulty")
+    suspend fun addOneToActualWinningStreak(gameEnum: Games?, difficulty: Difficulty): Int
+    @Query("UPDATE winningstreak SET endDate = :endDate WHERE endDate IS NULL AND gameEnum = :gameEnum AND difficulty = :difficulty")
+    suspend fun endActualWinningStreak(endDate: LocalDateTime, gameEnum: Games, difficulty: Difficulty)
 
-    @Query("UPDATE winningstreak SET wins = wins + 1 WHERE endDate IS NULL AND gameEnum IS NULL")
-    suspend fun addOneToActualGeneralWinningStreak(): Int
-    @Query("UPDATE winningstreak SET endDate = :endDate WHERE endDate IS NULL AND gameEnum IS NULL")
-    suspend fun endActualGeneralWinningStreak(endDate: LocalDateTime)
-
+    @Query("UPDATE winningstreak SET wins = wins + 1 WHERE endDate IS NULL AND gameEnum IS NULL AND ((:difficulty IS NULL AND difficulty IS NULL) OR difficulty = :difficulty)")
+    suspend fun addOneToActualGeneralWinningStreak(difficulty: Difficulty?): Int
+    @Query("UPDATE winningstreak SET endDate = :endDate WHERE endDate IS NULL AND gameEnum IS NULL AND ((:difficulty IS NULL AND difficulty IS NULL) OR difficulty = :difficulty)")
+    suspend fun endActualGeneralWinningStreak(endDate: LocalDateTime, difficulty: Difficulty?)
 }

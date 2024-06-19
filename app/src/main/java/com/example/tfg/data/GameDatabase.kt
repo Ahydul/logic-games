@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.tfg.common.entities.Action
 import com.example.tfg.common.entities.Board
@@ -16,7 +17,11 @@ import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 
-@Database(entities = [Game::class, GameState::class, Move::class, Action::class, Board::class, Cell::class, BoardCellCrossRef::class, GameStateSnapshot::class, WinningStreak::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Game::class, GameState::class, Move::class, Action::class, Board::class, Cell::class, BoardCellCrossRef::class, GameStateSnapshot::class, WinningStreak::class],
+    version = 2,
+    exportSchema = true
+)
 @TypeConverters(Converters::class)
 abstract class GameDatabase : RoomDatabase() {
 
@@ -28,15 +33,24 @@ abstract class GameDatabase : RoomDatabase() {
         @Volatile
         private var Instance: GameDatabase? = null
 
+        // Add difficulty to WinningStreak. Previous WinningStreaks are deleted
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                //Delete all records
+                db.execSQL("DELETE FROM WinningStreak")
+                //Change table
+                db.execSQL("ALTER TABLE WinningStreak ADD COLUMN difficulty TEXT DEFAULT 0 NOT NULL")
+            }
+        }
+
         fun getDatabase(context: Context): GameDatabase {
             // synchronized to avoid possible race conditions
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, GameDatabase::class.java, "game_database")
                     // Destroys the database if Game Entity is changed (schema changes)
                     // To change this behaviour investigate Migration
-                    .fallbackToDestructiveMigration()
                     .allowMainThreadQueries()
-                    .addCallback(object : RoomDatabase.Callback() {
+                    .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
                             db.execSQL(
@@ -49,6 +63,7 @@ abstract class GameDatabase : RoomDatabase() {
                             )
                         }
                     })
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                     .also { Instance = it }
             }

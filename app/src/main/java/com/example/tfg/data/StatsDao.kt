@@ -127,30 +127,34 @@ interface StatsDao {
         SELECT wins from WinningStreak
         WHERE endDate IS NULL 
         AND gameEnum = :gameEnum
+        AND (:difficulty IS NULL OR difficulty = :difficulty)
 """)
-    suspend fun getActualWinningStreak(gameEnum: Games) : Int?
+    suspend fun getActualWinningStreak(gameEnum: Games, difficulty: Difficulty?) : Int?
 
     @Query("""
         SELECT wins from WinningStreak
         WHERE endDate IS NULL 
         AND gameEnum IS NULL
+        AND ((:difficulty IS NULL AND difficulty IS NULL) OR difficulty = :difficulty)
 """)
-    suspend fun getActualGeneralWinningStreak() : Int?
+    suspend fun getActualGeneralWinningStreak(difficulty: Difficulty?) : Int?
 
     @Query("""
         SELECT wins from WinningStreak
         WHERE gameEnum = :gameEnum
         AND (:startDate IS NULL OR startDate >= :startDate)
+        AND ((:difficulty IS NULL AND difficulty IS NULL) OR difficulty = :difficulty)
         ORDER BY wins DESC LIMIT 1
 """)
-    suspend fun getHighestWinningStreakValue(gameEnum: Games, startDate: LocalDateTime?) : Int?
+    suspend fun getHighestWinningStreakValue(gameEnum: Games, startDate: LocalDateTime?, difficulty: Difficulty?) : Int?
 
     @Query("""
         SELECT wins from WinningStreak
         WHERE gameEnum IS NULL
         AND (:startDate IS NULL OR startDate >= :startDate)
+        AND ((:difficulty IS NULL AND difficulty IS NULL) OR difficulty = :difficulty)
         ORDER BY wins DESC LIMIT 1
 """)
-    suspend fun getHighestGeneralWinningStreakValue(startDate: LocalDateTime?) : Int?
+    suspend fun getHighestGeneralWinningStreakValue(startDate: LocalDateTime?, difficulty: Difficulty?) : Int?
 
 }

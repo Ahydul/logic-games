@@ -123,8 +123,8 @@ private fun Stats(
         val errorCount = viewModel.getErrorCount(type = type, difficulty = difficulty, startDate = startDate)
         Errors(modifier = mod, buttonModifier = modifier, color = color, errorCount = errorCount, errorMean = errorMean)
 
-        val actualWinningStreak = viewModel.getActualWinningStreak(type = type)
-        val bestWinningStreak = viewModel.getHighestWinningStreak(type = type, startDate = startDate)
+        val actualWinningStreak = viewModel.getActualWinningStreak(type = type, difficulty = difficulty)
+        val bestWinningStreak = viewModel.getHighestWinningStreak(type = type, difficulty = difficulty, startDate = startDate)
         Streak(modifier = mod, buttonModifier = modifier, color = color, actualWinningStreak = actualWinningStreak, bestWinningStreak = bestWinningStreak)
     }
 }

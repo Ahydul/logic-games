@@ -144,19 +144,22 @@ class ActiveGameViewModel(
 
     private fun endActualWinningStreak(endDate: LocalDateTime) {
         viewModelScope.launch(Dispatchers.IO) {
-            gameDao.endActualWinningStreak(endDate = endDate, gameEnum = getGameEnum())
-            gameDao.endActualGeneralWinningStreak(endDate = endDate)
+            gameDao.endActualWinningStreak(endDate = endDate, difficulty = getDifficulty(), gameEnum = getGameEnum())
+            gameDao.endActualGeneralWinningStreak(endDate = endDate, difficulty = getDifficulty())
+            gameDao.endActualGeneralWinningStreak(endDate = endDate, difficulty = null)
         }
     }
 
     private fun addOneToActualWinningStreak() {
         viewModelScope.launch(Dispatchers.IO) {
-            var rowsUpdated = gameDao.addOneToActualWinningStreak(getGameEnum())
-            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = getGameEnum()))
+            var rowsUpdated = gameDao.addOneToActualWinningStreak(gameEnum = getGameEnum(), difficulty = getDifficulty())
+            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = getGameEnum(), difficulty = getDifficulty()))
 
-            rowsUpdated = gameDao.addOneToActualGeneralWinningStreak()
-            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = null))
+            rowsUpdated = gameDao.addOneToActualGeneralWinningStreak(difficulty = getDifficulty())
+            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = null, difficulty = getDifficulty()))
 
+            rowsUpdated = gameDao.addOneToActualGeneralWinningStreak(difficulty = null)
+            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = null, difficulty = null))
         }
     }
 
@@ -634,7 +637,7 @@ class ActiveGameViewModel(
 
 
     // Returns if setting this value completes the game
-    private fun setCellValue(index: Int, value: Int, isError: Boolean = false): Boolean {
+    private fun setCellValue(index: Int, value: Int, isError: Boolean = false) {
         val previousCell = getCell(index)
         val newCell = previousCell.copy(
             value = if (previousCell.value == value) 0 else value,
@@ -644,9 +647,6 @@ class ActiveGameViewModel(
         setCell(index = index, newCell = newCell)
 
         if (isError) addError(index = index, value = value)
-        else return gameWasCompleted()
-
-        return false
     }
 
     private fun setCellError(index: Int, isError: Boolean, color: Int? = null) {
@@ -937,7 +937,6 @@ class ActiveGameViewModel(
     }
 
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
-        var gameCompleted = false
         val coordinates = selectedTiles.filter { !isReadOnly(it) && (!isNote() || getCellValue(it) == 0) }.toMutableList()
         if (coordinates.isEmpty()) return
 
@@ -951,7 +950,7 @@ class ActiveGameViewModel(
         else if (coordinates.size == 1) {
             val position = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
 
-            gameCompleted = setCellValue(value = value, index = position)
+            setCellValue(value = value, index = position)
 
             if (!errorsAreCheckedManually()) {
                 // Paint positions that causes errors
@@ -960,11 +959,6 @@ class ActiveGameViewModel(
             removeSelections()
         }
         else return
-
-        //val newCells = getCells(coordinates)
-        //addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
-
-        if (gameCompleted) gameCompletedFun(playerWon = true)
     }
 
     fun paintAction(colorInt: Int) {
