@@ -9,7 +9,8 @@ class GameLowerInfo(
     val type: Games,
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
-    var numErrors: Int,
-    var numClues: Int,
-    var timer: Int
+    val numErrors: Int,
+    val numClues: Int,
+    val timer: Int,
+    val seed: Long
 )

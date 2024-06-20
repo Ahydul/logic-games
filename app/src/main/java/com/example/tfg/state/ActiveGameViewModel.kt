@@ -50,7 +50,8 @@ import kotlin.math.floor
 class ActiveGameViewModel(
     private val gameInstance: GameInstance,
     private val gameDao: GameDao,
-    private val dataStore: DataStore<Preferences>?
+    private val dataStore: DataStore<Preferences>?,
+    private val filesDirectory: File?
 ) : ViewModel() {
 
     val snapshotsAllowed: Flow<Boolean>? = dataStore?.let {
@@ -82,7 +83,6 @@ class ActiveGameViewModel(
 
     private var snapshot: (() -> Bitmap?)? = null
     private var snapshotTooEarly = false
-    private var filesDirectory: File? = null
 
     private var _gameCompleted = mutableStateOf(false)
 
@@ -130,6 +130,8 @@ class ActiveGameViewModel(
         // Update winning streak
         if (playerWon) addOneToActualWinningStreak()
         else endActualWinningStreak(endDate)
+
+        takeFinalSnapshot()
 
         _gameCompleted.value = true
     }
@@ -322,37 +324,6 @@ class ActiveGameViewModel(
         this.snapshot = snapshot
     }
 
-    fun setFilesDirectory(filesDirectory: File) {
-        this.filesDirectory = filesDirectory
-    }
-
-    fun takeSnapshotBlocking() {
-        if (!snapshotAllowed() || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
-            snapshot == null || filesDirectory == null) return
-
-        Log.d("snapshot", "Taking snapshot")
-        val bitmap = snapshot!!.invoke()
-
-        if (bitmap == null) {
-            Log.d("snapshot", "Failed")
-            return
-        }
-
-        runBlocking {
-            val bitmapFilePath = Utils.saveBitmapToFile(
-                bitmap = bitmap,
-                filesDir = filesDirectory!!,
-                fileName = "gameStateId-${getActualGameStateId()}",
-                directory = getGameEnum().name.lowercase()
-            )
-            if (bitmapFilePath != null) {
-                val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
-                insertGameStateSnapshotToDB(gameStateSnapshot)
-                snapshotTooEarly = true
-            }
-        }
-    }
-
     private fun snapshotAllowed(): Boolean {
         return runBlocking { snapshotsAllowed?.first() } ?: true
     }
@@ -361,18 +332,13 @@ class ActiveGameViewModel(
         if (!snapshotAllowed() || gameIsCompleted() || snapshotTooEarly || timerPaused() ||
             snapshot == null || filesDirectory == null) return
 
-        Log.d("snapshot", "Taking snapshot")
-        val bitmap = snapshot!!.invoke()
-
-        if (bitmap == null) {
-            Log.d("snapshot", "Failed")
-            return
-        }
+        val bitmap = snapshot?.invoke()
+        if (bitmap == null) return
 
         MainScope().launch {
             val bitmapFilePath = Utils.saveBitmapToFile(
                 bitmap = bitmap,
-                filesDir = filesDirectory!!,
+                filesDir = filesDirectory,
                 fileName = "gameStateId-${getActualGameStateId()}",
                 directory = getGameEnum().name.lowercase()
             )
@@ -381,6 +347,22 @@ class ActiveGameViewModel(
                 insertGameStateSnapshotToDB(gameStateSnapshot)
                 snapshotTooEarly = true
             }
+        }
+    }
+
+    private fun takeFinalSnapshot() {
+        if (!snapshotAllowed() || snapshot == null || filesDirectory == null) return
+
+        val bitmap = snapshot?.invoke()
+        if (bitmap == null) return
+
+        MainScope().launch {
+            Utils.saveBitmapToFile(
+                bitmap = bitmap,
+                filesDir = filesDirectory,
+                fileName = "final-${getGameId()}",
+                directory = getGameEnum().name.lowercase()
+            )
         }
     }
 

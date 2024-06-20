@@ -124,4 +124,5 @@
     <string name="hakyuu_rule_3">3. If two fields in a row or column contain the same number Z, there must be at least Z fields with different numbers between these two fields.</string>
     <string name="rules_from">Rules from</string>
     <string name="janko_page">https://www.janko.at/Raetsel/Hakyuu/index.htm</string>
+    <string name="completed">Completed</string>
 </resources>

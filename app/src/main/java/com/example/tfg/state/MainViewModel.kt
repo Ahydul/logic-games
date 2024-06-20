@@ -23,13 +23,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.io.File
 import java.time.LocalDateTime
 
 class MainViewModel(
     private val gameDao: LimitedGameDao,
     private val statsDao: StatsDao,
     private val gameFactory: GameFactory,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val filesDir: File
 ) : ViewModel() {
 
     val themeUserSetting: Flow<Theme> = dataStore.data.map { preferences ->
@@ -104,12 +106,12 @@ class MainViewModel(
         }
     }
 
-    fun getOnGoingGamesByType(type: Games): List<GameLowerInfo> {
-        return runBlocking { gameDao.getOnGoingGamesByType(type) }
+    fun getOnGoingGamesByType(type: Games): Flow<List<GameLowerInfo>> {
+        return gameDao.getOnGoingGamesByType(type)
     }
 
-    fun getOnGoingGames(): List<GameLowerInfo> {
-        return runBlocking { gameDao.getOnGoingGames() }
+    fun getOnGoingGames(): Flow<List<GameLowerInfo>> {
+        return gameDao.getOnGoingGames()
     }
 
 
@@ -118,6 +120,17 @@ class MainViewModel(
             Utils.getBitmapFromFile(gameDao.getMainSnapshotFileByGameId(gameId))
         }
     }
+
+    fun getFinalSnapshotFile(gameId: Long, game: Games): Bitmap? {
+        return runBlocking {
+            Utils.getFinalBitmapFromFile(
+                filesDir = filesDir,
+                gameId = gameId,
+                game = game
+            )
+        }
+    }
+
 
     fun noActiveGames(): Boolean {
         return !runBlocking { gameDao.existsOnGoingGame() }
@@ -129,6 +142,10 @@ class MainViewModel(
 
     fun getLastPlayedGameInfo(): GameLowerInfo? {
         return lastPlayedGame?.let { getGameByIdFromBb(it) }
+    }
+
+    fun getCompletedGames(gameType: Games): Flow<List<GameLowerInfo>> {
+        return gameDao.getCompletedGamesByType(type = gameType)
     }
 
 // Stats functions

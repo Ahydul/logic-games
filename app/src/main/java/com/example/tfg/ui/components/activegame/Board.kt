@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.state.ActiveGameViewModel
-import com.example.tfg.ui.components.common.HorizontalGrid
+import com.example.tfg.ui.components.common.GridLayout
 
 @Composable
 fun Board(
@@ -80,7 +80,7 @@ fun Board(
         val numColumns = viewModel.getNumColumns()
         val numRows = viewModel.getNumRows()
 
-        HorizontalGrid(
+        GridLayout(
             numRows = numRows,
             horizontalSpreadFactor = 0f,
             verticalSpreadFactor = 0f

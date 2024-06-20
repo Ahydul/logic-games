@@ -6,7 +6,7 @@ import androidx.compose.ui.layout.Layout
 import kotlin.math.min
 
 @Composable
-fun HorizontalGrid(
+fun GridLayout(
     modifier: Modifier = Modifier,
     numRows: Int = 2,
     placement: GridPlacement = GridPlacement.HORIZONTAL,

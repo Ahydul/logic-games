@@ -16,12 +16,13 @@ import com.example.tfg.ActiveGameView
 import com.example.tfg.MainActivity
 import com.example.tfg.R
 import com.example.tfg.common.entities.relations.GameStateSnapshot
+import com.example.tfg.games.common.Games
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.time.format.DateTimeFormatter
 
-val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MM yyyy HH:mm")
+val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
 
 abstract class Utils {
     companion object {
@@ -140,6 +141,17 @@ abstract class Utils {
         fun getBitmapFromFile(snapshot: GameStateSnapshot?): Bitmap? {
             return getBitmapFromFile(snapshot?.snapshotFilePath)
         }
+
+        fun getFinalBitmapFromFile(
+            filesDir: File,
+            gameId: Long,
+            game: Games
+        ): Bitmap? {
+            return getBitmapFromFile(
+                filePath = "${filesDir.absolutePath}/snapshots/${game.name.lowercase()}/final-$gameId"
+            )
+        }
+
 
         fun deleteFile(filePath: String?): Boolean {
             val file = filePath?.let { File(it) }

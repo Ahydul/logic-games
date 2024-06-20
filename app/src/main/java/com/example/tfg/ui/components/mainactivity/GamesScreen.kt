@@ -1,10 +1,12 @@
 package com.example.tfg.ui.components.mainactivity
 
 import android.graphics.Bitmap
+import android.text.style.ClickableSpan
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,9 +21,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -38,11 +41,11 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,7 +56,6 @@ import com.example.tfg.common.utils.Timer
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.common.utils.dateFormatter
 import com.example.tfg.games.common.Games
-import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2
@@ -61,8 +63,10 @@ import com.example.tfg.ui.components.common.CustomClickableText
 import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.CustomText
 import com.example.tfg.ui.components.common.CustomTextField
+import com.example.tfg.ui.components.common.GridLayout
 import com.example.tfg.ui.components.common.LabeledIconButton
 import com.example.tfg.ui.components.common.MainHeader
+import com.example.tfg.ui.components.common.addDebugBorder
 import com.example.tfg.ui.components.common.animateBlur
 import com.example.tfg.ui.components.common.defaultBitmap
 import com.example.tfg.ui.theme.Theme
@@ -70,6 +74,7 @@ import com.example.tfg.ui.theme.Theme
 private enum class Action {
     RULES,
     CREATE,
+    COMPLETED,
     IN_PROGRESS,
     IN_PROGRESS_NO_GAME
 }
@@ -106,22 +111,12 @@ fun GamesScreen(
         val imageID = if (theme.equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
         else R.drawable.hakyuu_light
         ChooseGameButton(
-            game = gameHakyuu,
+            game = gameHakyuu.title,
             imageID = imageID,
-            goStatsScreen = goStatsScreen,
-            onClickRules = {
+            goStatsScreen = { goStatsScreen(gameHakyuu) },
+            onClickButton = { action: Action ->
                 chosenGame = gameHakyuu
-                chosenGameAction.value = Action.RULES
-                expandedStates.targetState = true
-            },
-            onClickInProgress = {
-                chosenGame = gameHakyuu
-                chosenGameAction.value = Action.IN_PROGRESS
-                expandedStates.targetState = true
-            },
-            onChooseGame = {
-                chosenGame = gameHakyuu
-                chosenGameAction.value = Action.CREATE
+                chosenGameAction.value = action
                 expandedStates.targetState = true
             },
             modifier = mod
@@ -170,9 +165,10 @@ private fun ChosenGame(
                     )
                 }
                 //TODO: Someday implement LazyColumn somehow
-                Action.IN_PROGRESS -> InProgress(modifier = modifier, chosenGame = chosenGame, viewModel = viewModel)
-                Action.IN_PROGRESS_NO_GAME -> InProgress(modifier = modifier, viewModel = viewModel)
+                Action.IN_PROGRESS -> BoardsInfo(modifier = modifier, chosenGame = chosenGame, viewModel = viewModel)
+                Action.IN_PROGRESS_NO_GAME -> BoardsInfo(modifier = modifier, viewModel = viewModel)
                 Action.RULES -> Rules(modifier = modifier, chosenGame = chosenGame)
+                Action.COMPLETED -> BoardsInfo(modifier = modifier, isCompleted = true, chosenGame = chosenGame, viewModel = viewModel)
             }
 
         }
@@ -192,59 +188,66 @@ private fun Rules(
     }
 }
 
-
 @Composable
-private fun InProgress(
+private fun BoardsInfo(
     modifier: Modifier = Modifier,
     chosenGame: Games? = null,
+    isCompleted: Boolean = false,
     viewModel: MainViewModel
 ) {
     val scrollState = rememberScrollState()
-    Column(
-        modifier = modifier
+
+    val items = if (chosenGame == null) viewModel.getOnGoingGames().collectAsState(initial = emptyList())
+    else if (isCompleted) viewModel.getCompletedGames(chosenGame).collectAsState(initial = emptyList())
+    else viewModel.getOnGoingGamesByType(chosenGame).collectAsState(initial = emptyList())
+
+    LazyColumn(
+        modifier
             .fillMaxHeight(0.7f)
-            .verticalScroll(scrollState)
+            .padding(15.dp)
+            .horizontalScroll(scrollState)
     ) {
-        if (chosenGame != null) {
-            viewModel.getOnGoingGamesByType(chosenGame).forEach { game ->
-                val bitmap = viewModel.getMainSnapshotFileByGameId(game.gameId)
-                OnGoingBoard(game = game, bitmap = bitmap, modifier = modifier)
-            }
-        }
-        else {
-            viewModel.getOnGoingGames().forEach { game ->
-                val bitmap = viewModel.getMainSnapshotFileByGameId(game.gameId)
-                OnGoingBoard(game = game, bitmap = bitmap, modifier = modifier)
-            }
+        items(items.value) {game ->
+            val bitmap = if (isCompleted) viewModel.getFinalSnapshotFile(game = chosenGame!!, gameId = game.gameId)
+                else viewModel.getMainSnapshotFileByGameId(game.gameId)
+            BoardInfo(game = game, isCompleted = isCompleted, bitmap = bitmap, modifier = modifier)
         }
     }
 }
 
 @Composable
-private fun OnGoingBoard(
+private fun BoardInfo(
     game: GameLowerInfo,
+    isCompleted: Boolean,
     bitmap: Bitmap?,
     modifier: Modifier,
     textColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     val bitmap = (bitmap ?: defaultBitmap()).asImageBitmap()
     val context = LocalContext.current
+    val onClick = if (isCompleted) {
+        { }
+    } else {
+        { Utils.startActiveGameActivity(context, game.gameId) }
+    }
 
     Row(
         horizontalArrangement = Arrangement.End,
         modifier = modifier.padding(vertical = 15.dp)
     ) {
-        CustomButton(
-            onClick = { Utils.startActiveGameActivity(context, game.gameId) },
-        ) {
-            Image(
-                bitmap = bitmap,
-                contentDescription = "game",
-                modifier = modifier.size(120.dp)
-            )
+        Column {
+            Text(color = textColor ,text = "${game.startDate.format(dateFormatter)}")
+            CustomButton(
+                onClick = onClick,
+            ) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = "game",
+                    modifier = modifier.size(120.dp)
+                )
+            }
         }
         Column(modifier = Modifier.padding(start = 18.dp)) {
-            Text(color = textColor ,text = "${game.startDate.format(dateFormatter)}")
             Text(color = textColor,
                 text = "${stringResource(id = R.string.type)}: " +
                         "${game.type}")
@@ -259,12 +262,14 @@ private fun OnGoingBoard(
                     "${game.numErrors}")
             Text(color = textColor,
                 text = "${stringResource(id = R.string.clues)}: " +
-                    "${game.numClues}")
+                        "${game.numClues}")
+            Text(color = textColor,
+                text = "${stringResource(id = R.string.seed)}: " +
+                        "${game.seed}"
+            )
         }
     }
-
 }
-
 
 @Composable
 private fun TextFields(
@@ -375,14 +380,12 @@ private fun LoadingIcon(viewModel: MainViewModel, modifier: Modifier) {
 private fun ChooseGameButton(
     modifier: Modifier = Modifier,
     imageID: Int,
-    game: Games,
-    onClickRules: () -> Unit,
-    onClickInProgress: () -> Unit,
-    goStatsScreen: (Games) -> Unit,
-    onChooseGame: () -> Unit,
+    game: String,
+    onClickButton: (Action) -> Unit,
+    goStatsScreen: () -> Unit,
 ) {
     CustomButton(
-        onClick = onChooseGame,
+        onClick = { onClickButton(Action.CREATE) },
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
         shape = RoundedCornerShape(8.dp),
         borderStroke = BorderStroke(0.5.dp, color = MaterialTheme.colorScheme.outline),
@@ -400,50 +403,63 @@ private fun ChooseGameButton(
                 .weight(4f)
                 .fillMaxHeight()
         ) {
-            Text(text = "${game.title}", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
+            Text(text = "${game}", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
+            val rowModifier = Modifier.fillMaxWidth(0.7f)
+            val mod = Modifier
+                .weight(1f)
+                .aspectRatio(1f)
+            val fontSize = 11.sp
+
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = rowModifier,
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                val mod = Modifier
-                    .weight(1f)
-                    .aspectRatio(1f)
-                val fontSize = 11.sp
-                val iconPadding = 14.dp
-
                 val rulesLabel = stringResource(id = R.string.rules)
                 LabeledIconButton(
-                    onClick = onClickRules,
+                    onClick = { onClickButton(Action.RULES) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.question_mark),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = rulesLabel,
                     labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
-                    iconPadding = iconPadding,
                     modifier = mod
                 )
 
                 val inProgressLabel = stringResource(id = R.string.in_progress2)
                 LabeledIconButton(
-                    onClick = onClickInProgress,
+                    onClick = { onClickButton(Action.IN_PROGRESS) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = inProgressLabel,
                     labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
-                    iconPadding = iconPadding,
+                    modifier = mod
+                )
+            }
+
+            Row(
+                modifier = rowModifier,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                val completedLabel = stringResource(R.string.completed)
+                LabeledIconButton(
+                    onClick = { onClickButton(Action.COMPLETED) },
+                    imageVector = ImageVector.vectorResource(id = R.drawable.checks_list),
+                    iconColor = MaterialTheme.colorScheme.onPrimary,
+                    label = completedLabel,
+                    labelColor = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = fontSize,
                     modifier = mod
                 )
 
                 val statsLabel = stringResource(id = R.string.stats)
                 LabeledIconButton(
-                    onClick = { goStatsScreen(game) },
+                    onClick = goStatsScreen,
                     imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
                     label = statsLabel,
                     labelColor = MaterialTheme.colorScheme.onPrimary,
                     fontSize = fontSize,
-                    iconPadding = iconPadding,
                     modifier = mod
                 )
             }

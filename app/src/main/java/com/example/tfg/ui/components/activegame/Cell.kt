@@ -20,7 +20,7 @@ import com.example.tfg.R
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.hakyuu.NumberValue
 import com.example.tfg.state.ActiveGameViewModel
-import com.example.tfg.ui.components.common.HorizontalGrid
+import com.example.tfg.ui.components.common.GridLayout
 
 
 @Composable
@@ -58,7 +58,7 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
                 )
             }
             //Notes
-            HorizontalGrid(numRows = 3, modifier = modifier.padding(2.dp)) {
+            GridLayout(numRows = 3, modifier = modifier.padding(2.dp)) {
                 cell.notes.forEach {
                     if (it != 0) {
                         Icon(

@@ -21,7 +21,7 @@ import com.example.tfg.R
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.CustomFilledIconButton
 import com.example.tfg.ui.components.common.CustomIconButton
-import com.example.tfg.ui.components.common.HorizontalGrid
+import com.example.tfg.ui.components.common.GridLayout
 
 @Composable
 fun BottomSection(
@@ -65,7 +65,7 @@ fun BottomActionRow(
 
     val backgroundColors = integerArrayResource(id = R.array.cell_background_color_ints)
     val numValues = viewModel.getMaxValue()+1
-    HorizontalGrid(
+    GridLayout(
         numRows = if (numValues > 10) 3 else if (numValues > 4) 2 else 1,
         verticalSpreadFactor = 0.3f,
         horizontalSpreadFactor = 0.7f,
@@ -120,7 +120,7 @@ fun TopActionRow(
     modifier: Modifier
 ){
     val actionModifier = Modifier
-    HorizontalGrid(
+    GridLayout(
         numRows = 1,
         horizontalSpreadFactor = 0.85f,
         componentsScale = 0.5f,
