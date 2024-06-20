@@ -121,6 +121,9 @@ class ActiveGameViewModel(
 
         stopGame()
 
+        // Take screenshot of finished board
+        Utils.runFunctionWithDelay(delayMillis = 100) { takeFinalSnapshot() }
+
         // Delete all game states with timeout to avoid race conditions
         // as last cell is updating and the game may be deleted before the cell
         getGameStateIds().forEach {
@@ -130,8 +133,6 @@ class ActiveGameViewModel(
         // Update winning streak
         if (playerWon) addOneToActualWinningStreak()
         else endActualWinningStreak(endDate)
-
-        takeFinalSnapshot()
 
         _gameCompleted.value = true
     }
