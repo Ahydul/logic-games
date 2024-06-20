@@ -39,7 +39,7 @@ abstract class GameDatabase : RoomDatabase() {
                 //Delete all records
                 db.execSQL("DELETE FROM WinningStreak")
                 //Change table
-                db.execSQL("ALTER TABLE WinningStreak ADD COLUMN difficulty TEXT DEFAULT 0 NOT NULL")
+                db.execSQL("ALTER TABLE WinningStreak ADD COLUMN difficulty TEXT DEFAULT 0")
             }
         }
 
