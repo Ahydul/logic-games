@@ -25,7 +25,7 @@ interface LimitedGameDao {
     @Query("SELECT gameId, type, difficulty, startDate, numClues, timer, numErrors, seed FROM Game WHERE endDate IS NULL ORDER BY startDate DESC")
     fun getOnGoingGames(): Flow<List<GameLowerInfo>>
 
-    @Query("SELECT gameId, type, difficulty, startDate, numClues, timer, numErrors, seed FROM Game WHERE endDate IS NOT NULL and type = :type ORDER BY startDate DESC")
+    @Query("SELECT gameId, type, difficulty, startDate, numClues, timer, numErrors, seed FROM Game WHERE endDate IS NOT NULL and type = :type ORDER BY endDate DESC")
     fun getCompletedGamesByType(type: Games): Flow<List<GameLowerInfo>>
 
     @Transaction
