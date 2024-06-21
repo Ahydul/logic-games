@@ -86,7 +86,7 @@ fun ChooseState(
             ChooseStateButton(
                 onClick = {
                     expandedStates.targetState = false
-                    viewModel.newGameState()
+                    viewModel.cloneGameState(position = selectedPosition)
                     viewModel.resumeGame()
                 },
                 text = stringResource(id = R.string.clone),

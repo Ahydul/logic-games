@@ -485,26 +485,22 @@ class ActiveGameViewModel(
         loadCells(newCells)
     }
 
-    fun newGameState() {
-        Log.d("state", "Actual state: ${getActualState()}")
-
+    fun cloneGameState(position: Int) {
         val newGameState = GameState.create(gameId = getGameId(), position = getNumberOfGameStates())
-        val newBoard = Board.create(from = getBoard(), gameStateId = newGameState.gameStateId)
-        val newCells = getCells().mapIndexed { _, ms ->
-            ms.value.copyWithNewIndex()
+        val previousGameStateId = getGameStateIds()[position]
+        val previousBoard = getBoardFromDb(previousGameStateId)
+        val newBoard = Board.create(from = previousBoard, gameStateId = newGameState.gameStateId)
+        val newCells = getCellsFromDb(boardId = previousBoard.boardId).mapIndexed { _, cell ->
+            cell.copyWithNewIndex()
         }
 
         insertGameStateToDB(newGameState, newBoard, newCells)
         loadNewGameState(newGameState, newBoard, newCells)
-
-        Log.d("state", "New state: ${getActualState()}")
     }
 
     fun setActualState(position: Int) {
-        Log.d("state", "Actual state: ${getActualState()}")
         if (position < getNumberOfGameStates() && position != getActualGameStatePosition()){
             loadGameState(position)
-            Log.d("state", "Changed to state: ${getActualState()}")
         }
         removeSelections()
     }
