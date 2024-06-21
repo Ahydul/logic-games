@@ -358,6 +358,7 @@ private fun TextFields(
                 val diff = Difficulty.get(difficulty.value)
                 viewModel.createGame(chosenGame, rows, cols, diff, seed.value, context)
             },
+            enabled = !viewModel.isLoading(),
             modifier = mod
         ){
             CustomText(mainText = createText, textColor = textColor, modifier = modifier)

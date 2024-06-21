@@ -88,7 +88,7 @@ class MainViewModel(
                 difficulty = difficulty,
                 seed = seed
             )
-            hideLoading()
+            //hideLoading()
 
             Utils.startActiveGameActivity(context, gameId)
         }
