@@ -520,12 +520,15 @@ class ActiveGameViewModel(
                 (position..< getNumberOfGameStates()).forEach { otherPointer ->
                     val otherGameStateId = getGameStateIds()[otherPointer]
                     updateGameStatePositionLeftInDb(otherGameStateId)
-                    if (actualGameStateId == otherGameStateId)
+                    if (actualGameStateId == otherGameStateId) {
                         getActualState().movePositionLeft()
+                        actualGameStatePosition -= 1
+                    }
                 }
             }
 
-            checkErrors()
+            if (getNumberOfGameStates() == 1) checkErrors()
+
             Log.d("state", "Changed to state: ${getActualState()}")
         }
     }
@@ -938,6 +941,10 @@ class ActiveGameViewModel(
             if (!errorsAreCheckedManually()) {
                 // Paint positions that causes errors
                 checkErrors(coordinates = coordinates, previousCells = previousCells) // This creates the move
+            }
+            else {
+                val newCells = getCells(coordinates)
+                addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
             }
             removeSelections()
         }

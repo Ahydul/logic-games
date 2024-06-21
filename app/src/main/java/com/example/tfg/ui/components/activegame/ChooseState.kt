@@ -40,8 +40,8 @@ fun ChooseState(
     modifier: Modifier = Modifier
 ) {
     val textColor = MaterialTheme.colorScheme.onPrimary
-    val actualGameStateID = viewModel.getActualGameStatePosition()
-    val selectedGameState = remember { mutableIntStateOf(actualGameStateID) }
+    val actualGameStatePosition = viewModel.getActualGameStatePosition()
+    val selectedGameState = remember { mutableIntStateOf(actualGameStatePosition) }
     val states = viewModel.getGameStatesBitmapFromDB()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -66,21 +66,21 @@ fun ChooseState(
             val buttonModifier = modifier
                 .weight(1f)
                 .padding(2.5.dp)
-            val position = selectedGameState.intValue
-            val selectedIsActual = position == actualGameStateID
+            val selectedPosition = selectedGameState.intValue
+            val selectedIsActual = selectedPosition == actualGameStatePosition
             ChooseStateButton(
                 onClick = {
                     if (selectedIsActual) {
                         viewModel.setActualState(0)
                         selectedGameState.intValue = 0
                     }
-                    viewModel.deleteGameState(position)
-                    states.remove(position)
+                    viewModel.deleteGameState(selectedPosition)
+                    states.remove(selectedPosition)
                 },
                 color = MaterialTheme.colorScheme.error,
                 text = stringResource(id = R.string.delete),
                 modifier = buttonModifier,
-                enabled = position != 0
+                enabled = selectedPosition != 0
             )
 
             ChooseStateButton(
@@ -96,7 +96,7 @@ fun ChooseState(
                 onClick = {
                     if (!selectedIsActual) {
                         expandedStates.targetState = false
-                        viewModel.setActualState(position)
+                        viewModel.setActualState(selectedPosition)
                         viewModel.resumeGame()
                     }
                 },
