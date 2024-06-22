@@ -11,6 +11,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -105,7 +107,7 @@ fun GamesScreen(
             .padding(top = 8.dp, start = 6.dp, end = 6.dp)
     ) {
         MainHeader(viewModel = viewModel, modifier = modifier)
-        val mod = Modifier.padding(vertical = 10.dp)
+        val mod = Modifier
         val gameHakyuu = Games.HAKYUU
         val theme by viewModel.themeUserSetting.collectAsState(initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE)
         val imageID = if (theme.equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
@@ -122,7 +124,7 @@ fun GamesScreen(
             modifier = mod
         )
 
-        Spacer(modifier = mod.height(10.dp))
+        Spacer(modifier = mod.height(20.dp))
 
     }
 
@@ -395,73 +397,70 @@ private fun ChooseGameButton(
         Image(
             painter = painterResource(id = imageID),
             contentDescription = "",
-            modifier = Modifier.weight(3f)
+            modifier = modifier
+                .weight(3f)
+                .padding(vertical = 10.dp)
         )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier
-                .weight(4f)
-                .fillMaxHeight()
+            verticalArrangement = Arrangement.Center,
+            modifier = modifier.weight(4f)
         ) {
             Text(text = "${game}", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
-            val rowModifier = Modifier.fillMaxWidth(0.7f)
-            val mod = Modifier
-                .weight(1f)
-                .aspectRatio(1f)
-            val fontSize = 11.sp
+            val rowModifier = modifier
+                .fillMaxWidth(0.8f)
+                .height(IntrinsicSize.Min)
+            val buttonModifier = modifier
+                .weight(3f)
+                .height(40.dp)
+            val spacerModifier = modifier.weight(1f)
+            val iconTextHeightProportion = 0.6f
 
-            Row(
-                modifier = rowModifier,
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                val rulesLabel = stringResource(id = R.string.rules)
+            Row(modifier = rowModifier.padding(bottom = 10.dp)) {
                 LabeledIconButton(
                     onClick = { onClickButton(Action.RULES) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.question_mark),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
-                    label = rulesLabel,
+                    label = stringResource(id = R.string.rules),
                     labelColor = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = fontSize,
-                    modifier = mod
+                    iconTextHeightProportion = iconTextHeightProportion,
+                    modifier = buttonModifier
                 )
 
-                val inProgressLabel = stringResource(id = R.string.in_progress2)
+                Spacer(modifier = spacerModifier)
+
                 LabeledIconButton(
                     onClick = { onClickButton(Action.IN_PROGRESS) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.hourglass),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
-                    label = inProgressLabel,
+                    label = stringResource(id = R.string.in_progress2),
                     labelColor = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = fontSize,
-                    modifier = mod
+                    iconTextHeightProportion = iconTextHeightProportion,
+                    modifier = buttonModifier
                 )
             }
 
-            Row(
-                modifier = rowModifier,
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                val completedLabel = stringResource(R.string.completed)
+            Row(modifier = rowModifier) {
                 LabeledIconButton(
                     onClick = { onClickButton(Action.COMPLETED) },
                     imageVector = ImageVector.vectorResource(id = R.drawable.checks_list),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
-                    label = completedLabel,
+                    label = stringResource(R.string.completed),
                     labelColor = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = fontSize,
-                    modifier = mod
+                    iconTextHeightProportion = iconTextHeightProportion,
+                    modifier = buttonModifier
                 )
 
-                val statsLabel = stringResource(id = R.string.stats)
+                Spacer(modifier = spacerModifier)
+
                 LabeledIconButton(
                     onClick = goStatsScreen,
                     imageVector = ImageVector.vectorResource(id = R.drawable.graphs),
                     iconColor = MaterialTheme.colorScheme.onPrimary,
-                    label = statsLabel,
+                    label = stringResource(id = R.string.stats),
                     labelColor = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = fontSize,
-                    modifier = mod
+                    iconTextHeightProportion = iconTextHeightProportion,
+                    modifier = buttonModifier
                 )
             }
         }

@@ -2,7 +2,6 @@ package com.example.tfg.ui.components.common
 
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,19 +9,18 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -50,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.tfg.R
 import com.example.tfg.common.utils.Utils
 
@@ -173,41 +172,14 @@ fun CustomSwitchButton(
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            modifier = modifier.width(IntrinsicSize.Min).padding(start = 10.dp),
+            modifier = modifier
+                .width(IntrinsicSize.Min)
+                .padding(start = 10.dp),
             enabled = enabled
         )
     }
 }
 
-
-@Composable
-fun CustomFilledButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    mainText: String,
-    secondaryText: String? = null,
-    color: Color,
-    borderColor: Color = MaterialTheme.colorScheme.outline,
-    textColor: Color = MaterialTheme.colorScheme.onPrimary,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    enabled: Boolean = true,
-    textModifier: Modifier = Modifier
-) {
-    FilledTonalButton(
-        modifier = modifier.border(width = 0.5.dp, color = borderColor, shape = CircleShape),
-        onClick = onClick,
-        enabled = enabled,
-        colors = ButtonDefaults.filledTonalButtonColors(containerColor = color)
-    ) {
-        CustomText(
-            mainText = mainText,
-            secondaryText = secondaryText,
-            textColor = textColor,
-            mainFontSize = fontSize,
-            modifier = textModifier
-        )
-    }
-}
 
 @Composable
 fun LabeledIconButton(
@@ -217,15 +189,14 @@ fun LabeledIconButton(
     iconColor: Color = MaterialTheme.colorScheme.onPrimary,
     label: String,
     labelColor: Color = MaterialTheme.colorScheme.onPrimary,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    shape: Shape = RectangleShape,
+    fontSize: TextUnit = 11.sp,
+    iconTextHeightProportion: Float = 0.7f,
     borderStroke: BorderStroke? = null,
     iconPadding: Dp = 0.dp
 ) {
     CustomButton(
         onClick = onClick,
         modifier = modifier,
-        shape = shape,
         borderStroke = borderStroke
     ) {
         Column(
@@ -238,15 +209,15 @@ fun LabeledIconButton(
                 imageVector = imageVector,
                 contentDescription = label,
                 modifier = Modifier
-                    .weight(5f)
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .fillMaxHeight(iconTextHeightProportion)
                     .padding(iconPadding, iconPadding, iconPadding, 0.dp)
             )
             Text(
                 text = label,
                 color = labelColor,
                 fontSize = fontSize,
-                modifier = Modifier.weight(2f)
+                softWrap = false
             )
         }
     }
