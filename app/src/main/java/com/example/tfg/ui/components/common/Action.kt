@@ -1,6 +1,7 @@
 package com.example.tfg.ui.components.common
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -330,6 +331,18 @@ fun CustomClickableText(
     ClickableText(text = annotatedString, style = TextStyle(color = MaterialTheme.colorScheme.onPrimary) ) { offset ->
         annotatedString.getStringAnnotations(tag = "web", start = offset, end = offset).firstOrNull()?.let {
             Utils.goToWebPage(it.item, context = context)
+        }
+    }
+}
+
+@Composable
+fun CopyableText(text: String, description: String, context: Context) {
+    val annotatedString = Utils.buildCopyableString(text, context = context)
+    ClickableText(text = annotatedString, style = TextStyle(color = MaterialTheme.colorScheme.onPrimary) ) { offset ->
+        annotatedString.getStringAnnotations(tag = "copy", start = offset, end = offset).firstOrNull()?.let {
+            Utils.copyText(text = text, description = description, context = context)
+            Toast.makeText(context,
+                context.getString(R.string.text_copied_to_clipboard), Toast.LENGTH_SHORT).show()
         }
     }
 }

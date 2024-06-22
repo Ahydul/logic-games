@@ -59,6 +59,7 @@ import com.example.tfg.common.utils.Utils
 import com.example.tfg.common.utils.dateFormatter
 import com.example.tfg.games.common.Games
 import com.example.tfg.state.MainViewModel
+import com.example.tfg.ui.components.common.CopyableText
 import com.example.tfg.ui.components.common.CustomButton
 import com.example.tfg.ui.components.common.CustomButton2
 import com.example.tfg.ui.components.common.CustomClickableText
@@ -265,10 +266,11 @@ private fun BoardInfo(
             Text(color = textColor,
                 text = "${stringResource(id = R.string.clues)}: " +
                         "${game.numClues}")
-            Text(color = textColor,
-                text = "${stringResource(id = R.string.seed)}: " +
-                        "${game.seed}"
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(color = textColor,
+                    text = "${stringResource(id = R.string.seed)}: ")
+                CopyableText(text = "${game.seed}", description = "Copy board seed: ${game.seed}", context = context)
+            }
         }
     }
 }

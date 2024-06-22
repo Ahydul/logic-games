@@ -125,4 +125,5 @@
     <string name="rules_from">Rules from</string>
     <string name="janko_page">https://www.janko.at/Raetsel/Hakyuu/index.htm</string>
     <string name="completed">Completed</string>
+    <string name="text_copied_to_clipboard">Text copied to clipboard</string>
 </resources>

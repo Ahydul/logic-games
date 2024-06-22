@@ -1,5 +1,7 @@
 package com.example.tfg.common.utils
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -173,6 +175,21 @@ abstract class Utils {
                 }
                 pop()
             }
+        }
+
+        fun buildCopyableString(text: String, context: Context): AnnotatedString {
+            return buildAnnotatedString {
+                pushStringAnnotation(tag = "copy", annotation = text)
+                withStyle(style = SpanStyle(color = Color(context.getColor(R.color.cell_value)))) {
+                    append(text)
+                }
+                pop()
+            }
+        }
+
+        fun copyText(text: String, description: String, context: Context) {
+            val manager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            manager.setPrimaryClip(ClipData.newPlainText(description, text))
         }
 
         fun goToWebPage(url: String, context: Context) {
