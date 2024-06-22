@@ -65,7 +65,7 @@ data class Cell(
     }
 
     fun copyOnlyIndex(value: Int): Cell {
-        return Cell(cellId = this.cellId, value = value, notes = emptyNotes(), backgroundColor = 0, isError = this.isError)
+        return Cell(cellId = this.cellId, value = value, notes = emptyNotes(), backgroundColor = 0, isError = false, readOnly = this.readOnly)
     }
 
     fun copyWithNewIndex(): Cell {

@@ -104,10 +104,10 @@ class ActiveGameViewModel(
     fun completeTheBoard() {
         getCompletedBoard().forEachIndexed { position, value ->
             val cell = getCell(position)
-            if (cell.value != value) {
-                val newCell = cell.copyOnlyIndex(value = value)
-                setCell(position, newCell)
-            }
+            val newCell = if (cell.value != value) cell.copyOnlyIndex(value = value)
+                else cell.copyOnlyIndex(value = value)
+
+            setCell(position, newCell)
         }
 
         gameCompletedFun(false)
