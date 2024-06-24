@@ -57,9 +57,9 @@ abstract class GameType(
         return printBoardHTML(startBoard, boardRegions)
     }
 
-    val colorMap = mutableMapOf<Int, String>()
-    protected fun printBoardHTML(board: IntArray, regions: IntArray): String {
-        //val colorMap = mutableMapOf<Int, String>()
+    private var colorMap = mutableMapOf<Int, String>()
+    protected fun printBoardHTML(board: IntArray, regions: IntArray, usePreviousColorMap: Boolean = false): String {
+        if (!usePreviousColorMap) colorMap = mutableMapOf()
 
         var htmlCode =
             """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""

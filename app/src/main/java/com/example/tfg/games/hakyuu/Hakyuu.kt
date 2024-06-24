@@ -262,7 +262,7 @@ class Hakyuu(
             for (position in possibleValuesPerPosition.keys) {
                 newRegions[position] = currentID + 1
                 newBoard[position] = valuesPerPosition[position] ?: -1
-                print(printBoardHTML(newBoard, newRegions))
+                print(printBoardHTML(newBoard, newRegions, true))
             }
         }
 
