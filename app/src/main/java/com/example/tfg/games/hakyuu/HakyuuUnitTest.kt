@@ -442,7 +442,7 @@ class HakyuuUnitTest {
 
         val getGameType = { _: Int ->
             val seed = (Math.random()*10000000000).toLong()
-            val res = Hakyuu.create(numColumns = numColumns, numRows = numColumns, seed = seed, difficulty = Difficulty.EASY)
+            val res = Hakyuu.create(numColumns = numColumns, numRows = numColumns, seed = seed, difficulty = Difficulty.MASTER)
             res
         }
         val getTest = { gameType: Hakyuu, _: Int ->
