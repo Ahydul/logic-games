@@ -94,8 +94,7 @@ class Hakyuu(
         score.add(actualScore)
     }
 
-    override fun solveBoard(board: IntArray): Score? {
-        val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
+    private fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): HakyuuScore {
         val scoreResult = HakyuuScore()
         for (position in (0..<numPositions())) {
             val size = getRegionSize(getRegionId(position))
@@ -105,14 +104,85 @@ class Hakyuu(
             }
             else if (board[position] == 0) possibleValues[position].addAll(1.. size)
         }
+        return scoreResult
+    }
 
-        val populateResult = populatePositions(possibleValues = possibleValues, actualValues = board)
+    override fun solveBoard(board: IntArray): Score? {
+        val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
+        val scoreResult = fillPossibleValues(possibleValues = possibleValues, board = board)
 
-        if (populateResult.gotSuccess()) {
-            scoreResult.add(populateResult.get())
-            return scoreResult
+        val result = solveBoard(possibleValues = possibleValues, actualValues = board)
+            .get() ?: return null
+
+        scoreResult.add(result)
+
+        return scoreResult
+    }
+
+    private fun solveBoard(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        foundSPT: MutableList<Int> = mutableListOf(),
+        ammountOfBruteForces: Int = 0
+    ): PopulateResult {
+        val score = HakyuuScore()
+
+        while (getRemainingPositions(actualValues).isNotEmpty())
+        {
+            val res = solveBoardOneStep(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                foundSPT = foundSPT,
+                ammountOfBruteForces = ammountOfBruteForces
+            ).let {
+                it.get() ?: return it // Found error -> can't populate
+            }
+
+            score.add(res)
         }
-        else return null
+
+        return PopulateResult.success(score)
+
+        /*
+        return if (boardMeetsRules(actualValues)) PopulateResult.success(score)
+        else {
+            PopulateResult.contradiction()
+        }
+         */
+    }
+
+    // For debug
+    val debugSPT = mutableListOf<Int>()
+    val debugAmmountOfBruteForces = 0
+    fun solveBoardOneStep(possibleValues: Array<MutableList<Int>>, actualValues: IntArray): PopulateResult {
+        if (possibleValues.all { it.size == 0 }) {
+            fillPossibleValues(possibleValues = possibleValues, board = actualValues)
+        }
+
+        return solveBoardOneStep(
+            possibleValues = possibleValues,
+            actualValues = actualValues,
+            foundSPT = debugSPT,
+            ammountOfBruteForces = debugAmmountOfBruteForces
+        )
+    }
+
+    private fun solveBoardOneStep(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        foundSPT: MutableList<Int> = mutableListOf(),
+        ammountOfBruteForces: Int = 0
+    ): PopulateResult {
+        val res = populateValues(
+            possibleValues = possibleValues,
+            actualValues = actualValues,
+            foundSPT = foundSPT,
+            ammountOfBruteForces = ammountOfBruteForces
+        ).let {
+            it.get() ?: return it //Found error -> can't populate
+        }
+
+        return PopulateResult.success(res)
     }
 
     override fun boardMeetsRulesStr(board: IntArray): String {
@@ -333,36 +403,6 @@ class Hakyuu(
         return false
     }
 
-    private fun populatePositions(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        foundSPT: MutableList<Int> = mutableListOf(),
-        ammountOfBruteForces: Int = 0
-    ): PopulateResult {
-        val score = HakyuuScore()
-
-        while (getRemainingPositions(actualValues).isNotEmpty())
-        {
-            //if (System.currentTimeMillis() - startTime > TIMEOUT_SOLVER) return null
-
-            val res = populateValues(
-                possibleValues = possibleValues,
-                actualValues = actualValues,
-                foundSPT = foundSPT,
-                ammountOfBruteForces = ammountOfBruteForces
-            ).let {
-                it.get() ?: return it // Found error -> can't populate
-            }
-
-            score.add(res)
-        }
-
-        return if (boardMeetsRules(actualValues)) {
-            PopulateResult.success(score)
-        } else {
-            PopulateResult.contradiction()
-        }
-    }
 
     private fun addValueToActualValues(
         values:  MutableList<Int>,
@@ -534,7 +574,7 @@ class Hakyuu(
         }
         newPossibleValues[position] = mutableListOf(chosenValue)
 
-        val result = populatePositions(
+        val result = solveBoard(
             possibleValues = newPossibleValues,
             actualValues = newActualValues,
             foundSPT = newFoundSPT,

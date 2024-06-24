@@ -34,6 +34,7 @@ import com.example.tfg.data.Converters
 import com.example.tfg.data.DataStorePreferences
 import com.example.tfg.data.GameDao
 import com.example.tfg.games.common.GameValue
+import com.example.tfg.games.hakyuu.Hakyuu
 import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -899,14 +900,21 @@ class ActiveGameViewModel(
     Game Actions
      */
 
-    private fun cellsToIntArray() = getCells().map { if (it.value.isError) 0 else it.value.value }.toIntArray()
+    private fun cellsToIntArrayValues() = getCells().map { if (it.value.isError) 0 else it.value.value }.toIntArray()
+
+    private fun cellsToPossibleValues(): Array<MutableList<Int>> {
+        return getCells().map {
+            if (it.value.hasNoNotes()) mutableListOf()
+            else it.value.notes.toMutableList()
+        }.toTypedArray()
+    }
 
     private fun checkValue(position: Int, value: Int): Set<Int> {
         return if (isError(position, value))
             getRealGameType().checkValue(
                 position = position,
                 value = value,
-                actualValues = cellsToIntArray()
+                actualValues = cellsToIntArrayValues()
             )
         else emptySet()
     }
@@ -980,10 +988,29 @@ class ActiveGameViewModel(
     }
 
 
-
     /*
     Other
      */
+
+    // For debug
+    fun solveBoardOneStep() {
+        val gameType = getRealGameType()
+        val possibleValues = cellsToPossibleValues()
+        val actualValues = cellsToIntArrayValues()
+        (gameType as Hakyuu).solveBoardOneStep(possibleValues = possibleValues, actualValues = actualValues)
+
+        actualValues.indices.forEach { position ->
+            val newCell = getCell(position).copy(
+                value = actualValues[position],
+                notes = possibleValues[position].toIntArray(),
+                isError = false,
+                backgroundColor = 0
+            )
+
+            setCell(index = position, newCell = newCell)
+        }
+    }
+
 
     // For when more than one state
     fun checkErrors(

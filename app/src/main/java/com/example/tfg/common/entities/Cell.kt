@@ -19,8 +19,10 @@ data class Cell(
     val isError: Boolean = false
 ) {
 
+    fun hasNoNotes() = notes.all { it == 0 }
+
     fun isEmpty(): Boolean {
-        return value == 0 && notes.all { it == 0 }
+        return value == 0 && hasNoNotes()
     }
 
     fun getNote(index: Int): Int {
