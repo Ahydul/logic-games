@@ -50,22 +50,23 @@ abstract class GameType(
     }
 
     fun printCompletedBoardHTML(): String {
-        return printBoardHTML(completedBoard)
+        return printBoardHTML(completedBoard, boardRegions)
     }
 
     fun printStartBoardHTML(): String {
-        return printBoardHTML(startBoard)
+        return printBoardHTML(startBoard, boardRegions)
     }
 
-    private fun printBoardHTML(board: IntArray): String {
-        val colorMap = mutableMapOf<Int, String>()
+    val colorMap = mutableMapOf<Int, String>()
+    protected fun printBoardHTML(board: IntArray, regions: IntArray): String {
+        //val colorMap = mutableMapOf<Int, String>()
 
         var htmlCode =
             """<table style="font-size: large; border-collapse: collapse; margin: 20px auto;"><tbody>"""
 
         (0..<numPositions()).forEach {
             val num = board[it]
-            val id = boardRegions[it]
+            val id = regions[it]
 
             if (!colorMap.containsKey(id)) {
                 val color = colors.newColor()

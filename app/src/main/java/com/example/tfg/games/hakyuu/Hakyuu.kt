@@ -19,6 +19,7 @@ class Hakyuu(
     startBoard: IntArray = IntArray(numColumns * numRows),
     regions: IntArray = IntArray(numColumns * numRows),
     var iterations: Int = 1,
+    var printEachBoardState: Boolean = false
 ): GameType(
     type = Games.HAKYUU,
     numColumns = numColumns,
@@ -205,8 +206,13 @@ class Hakyuu(
         val result = populateRegion(region)
 
         if (!result) {
-            if (iterations > 20) modifyNeighbouringRegions(seed)
-            propagateRandomRegion(numPropagations = numPropagations, iterations = iterations+1)
+            if (iterations > 10) {
+                modifyNeighbouringRegions(seed)
+                propagateRandomRegion(iterations = 5)
+            }
+            else {
+                propagateRandomRegion(iterations = iterations+1)
+            }
         }
         else {
             this.iterations += iterations
@@ -241,58 +247,66 @@ class Hakyuu(
     }
 
     private fun populateRegion(region: List<Int>): Boolean {
-        val values = Array(region.size) { emptyList<Int>() }
-        val positions = Array(region.size) { -1 }
-        region.map { position ->
+        val possibleValuesPerPosition = region.map { position ->
             position to (1..region.size)
                 .filter { value -> checkRule3(value = value, position = position, actualValues = completedBoard) }
-                .toList()
-        }
-            .sortedBy { it.second.size }
-            .forEachIndexed { index, pair ->
-                values[index] = pair.second
-                positions[index] = pair.first
+                .toMutableList()
+        }.sortedBy { it.second.size }.toMap()
+
+        val (valuesPerPosition, result) = assignValues(possibleValuesPerPosition = possibleValuesPerPosition)
+
+        if (printEachBoardState) {
+            val newRegions = boardRegions.clone()
+            val newBoard = completedBoard.clone()
+
+            for (position in possibleValuesPerPosition.keys) {
+                newRegions[position] = currentID + 1
+                newBoard[position] = valuesPerPosition[position] ?: -1
+                print(printBoardHTML(newBoard, newRegions))
             }
-
-        val res = tryPopulateRegion(possibleValuesPerPosition = values, index = 0, result = Array(region.size) { -1 })
-
-        return if (res == null){
-            false
-        } else{
-            finalizeRegion(positions = positions, values = res)
-            true
         }
+
+        if (result) finalizeRegion(valuesPerPosition = valuesPerPosition)
+
+        return result
     }
 
-    private fun finalizeRegion(positions: Array<Int>, values: Array<Int>) {
+    private fun finalizeRegion(valuesPerPosition: Map<Int, Int>) {
         currentID++
-        for (p in positions.withIndex()) {
-            val position = p.value
+        for ((position, value) in valuesPerPosition.entries) {
             boardRegions[position] = currentID
-            completedBoard[position] = values[p.index]
+            completedBoard[position] = value
             helperRemainingPositions.remove(position)
         }
     }
 
-    private fun tryPopulateRegion(possibleValuesPerPosition: Array<List<Int>>, index: Int, result: Array<Int>): Array<Int>? {
-        //Return condition
-        if (possibleValuesPerPosition.isEmpty()) return result
 
-        //Check first position
-        val possibleValues = possibleValuesPerPosition.first()
-        if (possibleValues.isEmpty()) return null //backtrack
+    fun assignValues(possibleValuesPerPosition: Map<Int, List<Int>>): Pair<Map<Int, Int>, Boolean> {
+        val positions = possibleValuesPerPosition.keys.toList()
+        val assignedValues = mutableMapOf<Int, Int>()
 
-        for (value in possibleValues.shuffled(random)) {
-            result[index] = value
-            val newPossibleValues = Array(possibleValuesPerPosition.size - 1) { it ->
-                possibleValuesPerPosition[it+1].filter { it != value }
+        fun backtrack(index: Int): Boolean {
+            // End condition
+            if (index == positions.size) return true
+
+            val position = positions[index]
+
+            for (value in possibleValuesPerPosition[position]!!) {
+                if (value in assignedValues.values) continue
+
+                assignedValues[position] = value
+
+                if (backtrack(index + 1)) return true
+
+                assignedValues.remove(position)
             }
-            val res = tryPopulateRegion(newPossibleValues, index + 1, result)
-            if (res != null) return res
+
+            // Coudn't populate value
+            return false
         }
 
-        // Populate failed
-        return null
+        return if (backtrack(0)) assignedValues to true
+            else assignedValues to false
     }
 
     // If two fields in a row or column contain the same number Z, there must be at least Z fields with different numbers between these two fields.
@@ -708,11 +722,12 @@ class Hakyuu(
         const val TIMEOUT_SOLVER = 500L
         const val TIMEOUT = 500L
 
-        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
+        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty, printEachBoardState: Boolean = false): Hakyuu {
             val hakyuu = Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
                 seed = seed,
+                printEachBoardState = printEachBoardState
             )
 
             hakyuu.createGame(difficulty)

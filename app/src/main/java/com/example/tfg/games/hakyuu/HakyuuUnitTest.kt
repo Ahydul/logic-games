@@ -247,6 +247,63 @@ class HakyuuUnitTest {
         testHakyuuBoard(getGameType)
     }
 
+    @Test
+    fun testCreateSeededHakyuuBoardPrintingEachBoardState() {
+        val size = 6
+        val seed = 234234242342L
+
+        val gameType = Hakyuu.create(
+            numColumns = size,
+            numRows = size,
+            seed = seed,
+            difficulty = Difficulty.EXPERT,
+            printEachBoardState = true
+        )
+
+        // Input this in the console in the browser to make the button work
+/*
+        const tables = document.getElementsByTagName('table');
+
+        for (var i = 0; i < tables.length; i++) {
+            tables[i].style = 'font-size: large; border-collapse: collapse; margin: 20px auto; display: none;'
+        }
+        tables[0].style = 'font-size: large; border-collapse: collapse; margin: 20px auto; display: revert'
+
+        function toggleTables() {
+            console.log('next')
+            for (var i = 0; i < tables.length; i++) {
+                const table = tables[i];
+                if(table.style.display === 'revert') {
+                    table.style = 'font-size: large; border-collapse: collapse; margin: 20px auto; display: none;'
+                    if((i+1) < tables.length){
+                        tables[i+1].style = 'font-size: large; border-collapse: collapse; margin: 20px auto; display: revert;'
+                    } else {
+                        tables[0].style = 'font-size: large; border-collapse: collapse; margin: 20px auto; display: revert;'
+                    }
+                    break;
+                }
+            }
+        }
+
+        function showEndTable() {
+            console.log('end')
+            for (var i = 0; i < tables.length; i++) {
+                const table = tables[i];
+                if(table.style.display === 'revert') {
+                    table.style = 'font-size: large; border-collapse: collapse; margin: 20px auto; display: none;'
+                    break;
+                }
+            }
+            tables[tables.length - 1].style = 'font-size: large; border-collapse: collapse; margin: 20px auto; display: revert;'
+        }
+ */
+
+        print("""<button onclick="toggleTables()">Next</button> """.trimIndent())
+        print("""<button onclick="showEndTable()">End</button> """.trimIndent())
+
+        assert(gameType.boardMeetsRules())
+    }
+
 
     @Test
     fun testCreateSeededHakyuuBoard() {
