@@ -40,7 +40,6 @@ class Hakyuu(
     private val helperRemainingPositions: MutableSet<Int> = initRemainingPositionsHelper()
     private var currentID = 0
     private var maxAmmountOfBruteForces = 20
-    private var startTime = 0L
 
     private fun initRemainingPositionsHelper():  MutableSet<Int> {
         return getPositions().toMutableSet()
@@ -55,25 +54,10 @@ class Hakyuu(
     }
 
     override fun createGame(difficulty: Difficulty) {
-        var timeout = 0
-        while (true) {
-            val noTimedout = createGame2(difficulty)
-            if (noTimedout) return
-            else {
-                timeout ++
-                random = Random((Math.random()*10000000000).toLong())
-                println("TIMEOUT $timeout creating regions")
-            }
-        }
-    }
-
-    fun createGame2(difficulty: Difficulty): Boolean {
         // Create completedBoard
 
         while (!boardCreated()) {
-            startTime = System.currentTimeMillis()
             propagateRandomRegion()
-            if (System.currentTimeMillis() - startTime > TIMEOUT)  return false
         }
 
         // Create startBoard
@@ -98,7 +82,6 @@ class Hakyuu(
             val res = solveBoard(tmpBoard)
 
             if (res == null || res.isTooHighForDifficulty(difficulty)) {
-                if (System.currentTimeMillis() - startTime > TIMEOUT_SOLVER) println("TIMEOUT solving board")
                 // Add the value back
                 startBoard[randomPosition] = completedBoard[randomPosition]
             }
@@ -109,13 +92,9 @@ class Hakyuu(
         }
 
         score.add(actualScore)
-
-        return true
     }
 
     override fun solveBoard(board: IntArray): Score? {
-        startTime = System.currentTimeMillis()
-
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
         val scoreResult = HakyuuScore()
         for (position in (0..<numPositions())) {
