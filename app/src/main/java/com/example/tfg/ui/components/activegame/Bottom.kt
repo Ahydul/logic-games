@@ -172,7 +172,7 @@ fun TopActionRow(
             enabled = viewModel.buttonShouldBeEnabled()
         )
         CustomIconButton( //Redo
-            onClick = { viewModel.solveBoardOneStep() },
+            onClick = { viewModel.redoMove() },
             iconColor = iconColor,
             painter =  painterResource(id = R.drawable.outline_redo_24),
             contentDescription = stringResource(id = R.string.redo_action),
