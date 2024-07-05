@@ -93,7 +93,8 @@ fun BottomActionRow(
             }
         }
         else {
-            for(v in 0..< numValues) {
+            for(v in -1..< numValues) {
+                if (v == 0) continue
                 val value = viewModel.getValue(v)
                 val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
                                 else MaterialTheme.colorScheme.onPrimary

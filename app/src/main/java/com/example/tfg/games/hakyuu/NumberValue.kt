@@ -5,6 +5,7 @@ import com.example.tfg.games.common.GameValue
 
 enum class NumberValue(override val value: Int, override val icon: Int): GameValue {
     EMPTY(0, R.drawable.outline_close_24),
+    ZERO(0, R.drawable.number_zero),
     ONE(1, R.drawable.number_1),
     TWO(2, R.drawable.number_2),
     THREE(3, R.drawable.number_3),
@@ -28,8 +29,18 @@ enum class NumberValue(override val value: Int, override val icon: Int): GameVal
 
     companion object {
         fun get(value: Int): NumberValue {
-            if (value < 21) return entries[value]
+            if (value < 21) return entries[value + 1]
             return EMPTY
+        }
+
+        fun getBigNumber(value: Int) : List<NumberValue> {
+            val res = mutableListOf<NumberValue>()
+            var value = value
+            while (value > 0) {
+                res.add(NumberValue.get(value % 10))
+                value /= 10
+            }
+            return res
         }
     }
 }

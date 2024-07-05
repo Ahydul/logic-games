@@ -2,14 +2,18 @@ package com.example.tfg.ui.components.activegame
 
 import android.util.Log
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -24,7 +28,11 @@ import com.example.tfg.ui.components.common.GridLayout
 
 
 @Composable
-fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
+fun Cell(
+    cornerNumber: Int? = null,
+    viewModel: ActiveGameViewModel,
+    coordinate: Coordinate
+) {
     val cell = viewModel.getCell(coordinate)
 
     Log.d("recomposition", "CELL recomposition $cell")
@@ -44,31 +52,50 @@ fun Cell(viewModel: ActiveGameViewModel, coordinate: Coordinate) {
         else colorResource(id = R.color.cell_value)
 
     val value = cell.value
+    val modifier = Modifier
 
-    Box {
-        val modifier = Modifier
-        //Main value
-        Surface(color = backgroundColor) {
-            if (value != 0) {
-                Icon(
-                    painter = painterResource(id = NumberValue.get(value).icon),
-                    tint = iconColor,
-                    contentDescription = "Value $value",
-                    modifier = modifier.padding(6.dp)
-                )
-            }
-            //Notes
-            GridLayout(numRows = 3, modifier = modifier.padding(2.dp)) {
-                cell.notes.forEach {
-                    if (it != 0) {
+    Box(modifier = modifier.background(backgroundColor)) {
+        Column {
+            if (cornerNumber != null) {
+                Row(modifier.weight(0.25f)) {
+                    for (value in NumberValue.getBigNumber(cornerNumber)) {
                         Icon(
-                            painter = painterResource(id = NumberValue.get(it).icon),
-                            tint = noteColor,
-                            contentDescription = "Value $it",
+                            painter = painterResource(id = value.icon),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            contentDescription = "Value $cornerNumber",
+                            modifier = modifier.padding(start = 1.dp, top = 1.dp)
                         )
                     }
-                    else {
-                        Spacer(modifier = modifier)
+                }
+            }
+            //Main value
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = modifier
+                    .weight(0.75f)
+                    .fillMaxSize()
+            ) {
+                if (value != 0) {
+                    Icon(
+                        painter = painterResource(id = NumberValue.get(value).icon),
+                        tint = iconColor,
+                        contentDescription = "Value $value",
+                        modifier = modifier.padding(if (cornerNumber != null) 2.dp else 6.dp)
+                    )
+                }
+                //Notes
+                GridLayout(numRows = 3, modifier = modifier.padding(2.dp)) {
+                    cell.notes.forEach {
+                        if (it != 0) {
+                            Icon(
+                                painter = painterResource(id = NumberValue.get(it).icon),
+                                tint = noteColor,
+                                contentDescription = "Value $it",
+                            )
+                        }
+                        else {
+                            Spacer(modifier = modifier)
+                        }
                     }
                 }
             }
