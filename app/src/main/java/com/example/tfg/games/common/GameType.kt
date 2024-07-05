@@ -25,7 +25,11 @@ abstract class GameType(
     protected var random: Random = Random(seed)
 
     protected fun numPositions(): Int = numColumns * numRows
-    fun maxRegionSize(): Int = max(numColumns, numRows)
+    open fun maxRegionSize(): Int = max(numColumns, numRows)
+
+    protected fun getPositions(): IntRange {
+        return (0..< numPositions())
+    }
 
     fun getScoreValue(): Int {
         return score.get()

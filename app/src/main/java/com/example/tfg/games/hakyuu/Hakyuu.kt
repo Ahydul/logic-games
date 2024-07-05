@@ -37,17 +37,8 @@ class Hakyuu(
     }
 
     // Helper variables
-    private val helperRemainingPositions: MutableSet<Int> = initRemainingPositionsHelper()
     private var currentID = 0
     private var maxAmmountOfBruteForces = 20
-
-    private fun initRemainingPositionsHelper():  MutableSet<Int> {
-        return getPositions().toMutableSet()
-    }
-
-    private fun getPositions(): IntRange {
-        return (0..< numPositions())
-    }
 
     private fun getRemainingPositions(actualValues: IntArray): List<Int> {
         return getPositions().filter { actualValues[it] == 0 }
@@ -56,13 +47,14 @@ class Hakyuu(
     override fun createGame(difficulty: Difficulty) {
         // Create completedBoard
 
-        while (!boardCreated()) {
-            propagateRandomRegion()
+        val remainingPositions = getPositions().toMutableSet()
+        while (!remainingPositions.isEmpty()) {
+            propagateRandomRegion(remainingPositions)
         }
 
         // Create startBoard
 
-        val remainingPositions = mutableSetOf<Int>()
+        remainingPositions.clear()
         startBoard.indices.forEach {
             startBoard[it] = completedBoard[it]
             remainingPositions.add(it) // Helper variable
@@ -240,27 +232,27 @@ class Hakyuu(
         return res
     }
 
-    private fun boardCreated(): Boolean {
-        return helperRemainingPositions.isEmpty()
-    }
-
-    private fun propagateRandomRegion(numPropagations: Int = randomPropagationNumber(), iterations: Int = 1) {
-        val seed = getRandomPosition()
+    private fun propagateRandomRegion(
+        remainingPositions: MutableSet<Int>,
+        numPropagations: Int = randomPropagationNumber(),
+        iterations: Int = 1
+    ) {
+        val seed = remainingPositions.random(random)
         val region = mutableListOf(seed)
 
         for (index in 1..numPropagations) {
-            propagateOnce(region)
+            propagateOnce(remainingPositions = remainingPositions, region = region)
         }
 
-        val result = populateRegion(region)
+        val result = populateRegion(remainingPositions = remainingPositions, region = region)
 
         if (!result) {
             if (iterations > 10) {
-                modifyNeighbouringRegions(seed)
-                propagateRandomRegion(iterations = 5)
+                modifyNeighbouringRegions(remainingPositions = remainingPositions, seed = seed)
+                propagateRandomRegion(remainingPositions = remainingPositions, iterations = 5)
             }
             else {
-                propagateRandomRegion(iterations = iterations+1)
+                propagateRandomRegion(remainingPositions = remainingPositions, iterations = iterations+1)
             }
         }
         else {
@@ -268,16 +260,12 @@ class Hakyuu(
         }
     }
 
-    private fun getRandomPosition(): Int {
-        return helperRemainingPositions.random(random)
-    }
-
     private fun randomPropagationNumber(): Int {
         //return random.nextInt(maxRegionSize() - 1) + 1
         return ((maxRegionSize() - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
     }
 
-    private fun modifyNeighbouringRegions(seed: Int) {
+    private fun modifyNeighbouringRegions(remainingPositions: MutableSet<Int>, seed: Int) {
         val position = Direction.entries.shuffled(random).mapNotNull { direction: Direction ->
             Coordinate.move(
                 direction = direction,
@@ -290,12 +278,12 @@ class Hakyuu(
         if (position != null) {
             val regionId = getRegionId(position)
             val region = getRegionPositions(regionId)
-            helperRemainingPositions.addAll(region)
+            remainingPositions.addAll(region)
             deleteRegion(regionId)
         }
     }
 
-    private fun populateRegion(region: List<Int>): Boolean {
+    private fun populateRegion(remainingPositions: MutableSet<Int>, region: List<Int>): Boolean {
         val possibleValuesPerPosition = region.map { position ->
             position to (1..region.size)
                 .filter { value -> checkRule3(value = value, position = position, actualValues = completedBoard) }
@@ -315,17 +303,17 @@ class Hakyuu(
             }
         }
 
-        if (result) finalizeRegion(valuesPerPosition = valuesPerPosition)
+        if (result) finalizeRegion(remainingPositions = remainingPositions, valuesPerPosition = valuesPerPosition)
 
         return result
     }
 
-    private fun finalizeRegion(valuesPerPosition: Map<Int, Int>) {
+    private fun finalizeRegion(remainingPositions: MutableSet<Int>, valuesPerPosition: Map<Int, Int>) {
         currentID++
         for ((position, value) in valuesPerPosition.entries) {
             boardRegions[position] = currentID
             completedBoard[position] = value
-            helperRemainingPositions.remove(position)
+            remainingPositions.remove(position)
         }
     }
 
@@ -380,13 +368,14 @@ class Hakyuu(
         return errorNotFound
     }
 
-    private fun propagateOnce(region: MutableList<Int>) {
+    private fun propagateOnce(remainingPositions: MutableSet<Int>, region: MutableList<Int>) {
         if (region.size == maxRegionSize()) return
 
         for (position in region.shuffled(random)) {
             for (direction in Direction.entries.shuffled(random)) {
                 val result = tryPropagate(
                     propagation = Coordinate.move(direction = direction, position = position, numColumns=numColumns, numRows = numRows),
+                    remainingPositions = remainingPositions,
                     region = region
                 )
                 if (result) return
@@ -395,8 +384,8 @@ class Hakyuu(
 
     }
 
-    private fun tryPropagate(propagation: Int?, region: MutableList<Int>): Boolean {
-        if (propagation != null && helperRemainingPositions.contains(propagation) && !region.contains(propagation)){
+    private fun tryPropagate(propagation: Int?, remainingPositions: MutableSet<Int>, region: MutableList<Int>): Boolean {
+        if (propagation != null && remainingPositions.contains(propagation) && !region.contains(propagation)){
             region.add(propagation)
             return true
         }
