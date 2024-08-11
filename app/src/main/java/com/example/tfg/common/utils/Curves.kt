@@ -68,6 +68,15 @@ abstract class Curves {
             return ((tan(value - 0.5) * a) + b) / (2*b)
         }
 
+        fun lowerValues(value: Double, upperLimitFactor: Double = 0.6): Double {
+            val p0 = Point(0.0, 0.0)
+            val p1 = Point(1.0, 0.0)
+            val p2 = Point(1.0, 0.0)
+            val p3 = Point(1.0, upperLimitFactor)
+
+            return bezierCurve(value, p0, p1, p2, p3)
+        }
+
         data class Point(val x: Double, val y: Double)
 
         private fun bezierCurve(x: Double, vararg controlPoints: Point): Double {
