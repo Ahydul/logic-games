@@ -34,7 +34,7 @@ class KendokuUnitTest {
         val seed = 234242242L
 
         val getGameType = {
-            Kendoku.create(size = size, seed = seed, difficulty = Difficulty.EXPERT, printEachBoardState = true)
+            Kendoku.create(size = size, seed = seed, difficulty = Difficulty.EXPERT)
         }
 
         testKendokuBoard(getGameType, getTest = {_: Kendoku -> true}, printHTML = true)
