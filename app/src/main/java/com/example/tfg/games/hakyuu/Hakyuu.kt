@@ -39,8 +39,8 @@ class Hakyuu(
         return getPositions().filter { actualValues[it] == 0 }
     }
 
-    fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
-        while (!remainingPositions.isEmpty()) {
+    private fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
+        while (remainingPositions.isNotEmpty()) {
             propagateRandomRegion(remainingPositions)
         }
     }
@@ -370,25 +370,15 @@ class Hakyuu(
 
         for (position in region.shuffled(random)) {
             for (direction in Direction.entries.shuffled(random)) {
-                val result = tryPropagate(
-                    propagation = Coordinate.move(direction = direction, position = position, numColumns=numColumns, numRows = numRows),
-                    remainingPositions = remainingPositions,
-                    region = region
-                )
-                if (result) return
+                val propagation = Coordinate.move(direction = direction, position = position, numColumns=numColumns, numRows = numRows)
+
+                if (propagation != null && remainingPositions.contains(propagation) && !region.contains(propagation)){
+                    region.add(propagation)
+                    return
+                }
             }
         }
-
     }
-
-    private fun tryPropagate(propagation: Int?, remainingPositions: MutableSet<Int>, region: MutableList<Int>): Boolean {
-        if (propagation != null && remainingPositions.contains(propagation) && !region.contains(propagation)){
-            region.add(propagation)
-            return true
-        }
-        return false
-    }
-
 
     private fun addValueToActualValues(
         values:  MutableList<Int>,
