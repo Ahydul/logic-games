@@ -7,15 +7,15 @@ import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.Score
-import com.example.tfg.games.hakyuu.HakyuuScore
 
 class Kendoku(
     size: Int,
     seed: Long,
-    score: HakyuuScore = HakyuuScore(),
+    score: KendokuScore = KendokuScore(),
     completedBoard: IntArray = IntArray(size * size),
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
+    var regionOperation: Map<Int, KendokuOperation> = mutableMapOf(),
     var printEachBoardState: Boolean = false
 ): GameType(
     type = Games.HAKYUU,
@@ -38,6 +38,9 @@ class Kendoku(
         createCompleteBoard(remainingPositions)
 
 
+        //Create score
+
+
     }
 
     private fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
@@ -54,6 +57,19 @@ class Kendoku(
                 completedBoard[row*numColumns + column] = value
             }
         }
+
+        // Create operations
+
+        regionOperation = boardRegions.groupBy { it }.map { (regionID, values) ->
+            val operation = KendokuOperation.entries
+                .filterNot {
+                    (it == KendokuOperation.DIVIDE && (values.size != 2 || (values.max() % values.min() != 0))) ||
+                    (it == KendokuOperation.MULTIPLY && (values.reduce { acc, num -> acc * num } > 1000))
+                }.random(random)
+            regionID to operation
+        }.toMap()
+
+        println(regionOperation)
     }
 
     private fun propagateRandomEmptyRegion(
@@ -61,8 +77,6 @@ class Kendoku(
         numPropagations: Int = randomPropagationNumber()
     ) {
         currentID++
-
-        println("$currentID -> ${numPropagations+1}")
 
         val seed = remainingPositions.random(random)
         boardRegions[seed] = currentID
@@ -77,7 +91,6 @@ class Kendoku(
         if (printEachBoardState) {
             print(printBoardHTML(completedBoard, boardRegions, true))
         }
-
     }
 
     private fun randomPropagationNumber(): Int {
