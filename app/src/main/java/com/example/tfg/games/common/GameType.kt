@@ -118,8 +118,6 @@ abstract class GameType(
     protected abstract fun createGame(difficulty: Difficulty)
     protected abstract fun solveBoard(board: IntArray): Score?
 
-    abstract fun solveBoard2(board: IntArray): IntArray
-
     protected fun deleteRegion(regionId: Int) {
         boardRegions.withIndex().filter { (_, id) -> id == regionId }
             .forEach { (position, _) ->

@@ -30,11 +30,6 @@ class Hakyuu(
     startBoard = startBoard,
     boardRegions = regions
 ) {
-    override fun solveBoard2(board: IntArray): IntArray {
-        maxAmmountOfBruteForces = 0
-        solveBoard(board)
-        return board
-    }
 
     // Helper variables
     private var currentID = 0
@@ -44,13 +39,16 @@ class Hakyuu(
         return getPositions().filter { actualValues[it] == 0 }
     }
 
-    override fun createGame(difficulty: Difficulty) {
-        // Create completedBoard
-
-        val remainingPositions = getPositions().toMutableSet()
+    fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
         while (!remainingPositions.isEmpty()) {
             propagateRandomRegion(remainingPositions)
         }
+    }
+
+    override fun createGame(difficulty: Difficulty) {
+
+        val remainingPositions = getPositions().toMutableSet()
+        createCompleteBoard(remainingPositions)
 
         // Create startBoard
 
@@ -77,7 +75,7 @@ class Hakyuu(
                 // Add the value back
                 startBoard[randomPosition] = completedBoard[randomPosition]
             }
-            else if (!res.isTooHighForDifficulty(difficulty)){
+            else {
                 actualScore = res
                 if (res.isTooLowForDifficulty(difficulty)) continue
             }
@@ -316,7 +314,6 @@ class Hakyuu(
             remainingPositions.remove(position)
         }
     }
-
 
     fun assignValues(possibleValuesPerPosition: Map<Int, List<Int>>): Pair<Map<Int, Int>, Boolean> {
         val positions = possibleValuesPerPosition.keys.toList()
@@ -727,8 +724,6 @@ class Hakyuu(
     }
 
     companion object {
-        const val TIMEOUT_SOLVER = 500L
-        const val TIMEOUT = 500L
 
         fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty, printEachBoardState: Boolean = false): Hakyuu {
             val hakyuu = Hakyuu(
