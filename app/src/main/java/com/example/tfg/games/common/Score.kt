@@ -27,6 +27,7 @@ abstract class Score(
 
     abstract fun isTooLowForDifficulty(difficulty: Difficulty): Boolean
     abstract fun isTooHighForDifficulty(difficulty: Difficulty): Boolean
+    abstract fun getMaxBruteForceValue(difficulty: Difficulty): Int
     abstract fun getDifficulty(): Difficulty
     abstract fun serialize(): JsonElement
 }

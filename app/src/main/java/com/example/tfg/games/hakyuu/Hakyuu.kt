@@ -5,8 +5,11 @@ import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Utils
+import com.example.tfg.games.common.BruteForceResult
+import com.example.tfg.games.common.BruteForceValues
 import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
+import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
 import kotlin.random.Random
 
@@ -33,58 +36,14 @@ class Hakyuu(
 
     // Helper variables
     private var currentID = 0
-    private var maxAmmountOfBruteForces = 20
 
-    private fun getRemainingPositions(actualValues: IntArray): List<Int> {
-        return getPositions().filter { actualValues[it] == 0 }
-    }
-
-    private fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
+    override fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
         while (remainingPositions.isNotEmpty()) {
             propagateRandomRegion(remainingPositions)
         }
     }
 
-    override fun createGame(difficulty: Difficulty) {
-
-        val remainingPositions = getPositions().toMutableSet()
-        createCompleteBoard(remainingPositions)
-
-        // Create startBoard
-
-        remainingPositions.clear()
-        startBoard.indices.forEach {
-            startBoard[it] = completedBoard[it]
-            remainingPositions.add(it) // Helper variable
-        }
-
-        maxAmmountOfBruteForces = HakyuuScore.getMaxBruteForceValue(difficulty)
-        var actualScore: Score? = null
-
-        while (!remainingPositions.isEmpty()) {
-            // Remove random value from startBoard
-            val randomPosition = remainingPositions.random(random)
-            remainingPositions.remove(randomPosition)
-            startBoard[randomPosition] = 0
-
-            val tmpBoard = startBoard.clone()
-
-            val res = solveBoard(tmpBoard)
-
-            if (res == null || res.isTooHighForDifficulty(difficulty)) {
-                // Add the value back
-                startBoard[randomPosition] = completedBoard[randomPosition]
-            }
-            else {
-                actualScore = res
-                if (res.isTooLowForDifficulty(difficulty)) continue
-            }
-        }
-
-        score.add(actualScore)
-    }
-
-    private fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): HakyuuScore {
+    override fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score {
         val scoreResult = HakyuuScore()
         for (position in (0..<numPositions())) {
             val size = getRegionSize(getRegionId(position))
@@ -95,78 +54,6 @@ class Hakyuu(
             else if (board[position] == 0) possibleValues[position].addAll(1.. size)
         }
         return scoreResult
-    }
-
-    override fun solveBoard(board: IntArray): Score? {
-        val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
-        val scoreResult = fillPossibleValues(possibleValues = possibleValues, board = board)
-
-        val result = solveBoard(possibleValues = possibleValues, actualValues = board)
-            .get() ?: return null
-
-        scoreResult.add(result)
-
-        return scoreResult
-    }
-
-    private fun solveBoard(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        ammountOfBruteForces: Int = 0
-    ): PopulateResult {
-        val score = HakyuuScore()
-
-        while (getRemainingPositions(actualValues).isNotEmpty())
-        {
-            val res = solveBoardOneStep(
-                possibleValues = possibleValues,
-                actualValues = actualValues,
-                ammountOfBruteForces = ammountOfBruteForces
-            ).let {
-                it.get() ?: return it // Found error -> can't populate
-            }
-
-            score.add(res)
-        }
-
-        return PopulateResult.success(score)
-
-        /*
-        return if (boardMeetsRules(actualValues)) PopulateResult.success(score)
-        else {
-            PopulateResult.contradiction()
-        }
-         */
-    }
-
-    // For debug
-    val debugAmmountOfBruteForces = 0
-    fun solveBoardOneStep(possibleValues: Array<MutableList<Int>>, actualValues: IntArray): PopulateResult {
-        if (possibleValues.all { it.size == 0 }) {
-            fillPossibleValues(possibleValues = possibleValues, board = actualValues)
-        }
-
-        return solveBoardOneStep(
-            possibleValues = possibleValues,
-            actualValues = actualValues,
-            ammountOfBruteForces = debugAmmountOfBruteForces
-        )
-    }
-
-    private fun solveBoardOneStep(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        ammountOfBruteForces: Int = 0
-    ): PopulateResult {
-        val res = populateValues(possibleValues = possibleValues, actualValues = actualValues)
-
-        return if (res.gotNoChangesFound())
-            bruteForce(
-                possibleValues = possibleValues,
-                actualValues = actualValues,
-                ammountOfBruteForces = ammountOfBruteForces + 1
-            )
-        else res
     }
 
     override fun boardMeetsRulesStr(board: IntArray): String {
@@ -253,7 +140,6 @@ class Hakyuu(
     }
 
     private fun randomPropagationNumber(): Int {
-        //return random.nextInt(maxRegionSize() - 1) + 1
         return ((maxRegionSize() - 1) * Curves.easierInOutSine(random.nextDouble(1.0))).toInt() + 1
     }
 
@@ -387,7 +273,7 @@ class Hakyuu(
 
     // Tries to populate values while there is no contradiction
     // Return if there wasnt a contradiction
-    private fun populateValues(
+    override fun populateValues(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
     ): PopulateResult {
@@ -476,69 +362,6 @@ class Hakyuu(
         return PopulateResult.noChangesFound()
     }
 
-    private fun bruteForce(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        ammountOfBruteForces: Int
-    ): PopulateResult {
-        if (ammountOfBruteForces > maxAmmountOfBruteForces) return PopulateResult.maxBFOverpassed()
-
-        val (position, minPossibleValues) = getRemainingPositions(actualValues)
-            .map { it to possibleValues[it] }
-            .minBy { (_, values) -> values.size }
-
-        val results = mutableListOf<BruteForceResult>()
-        for(chosenValue in minPossibleValues.toList()) {
-            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues.clone(), ammountOfBruteForces)
-            // Filter contradictions
-            if (!result.gotContradiction()) {
-                results.add(result)
-
-                // Multiple not contradictory results
-                if (results.size > 1) return PopulateResult.boardNotUnique()
-            }
-        }
-
-        if (results.isEmpty()) return PopulateResult.contradiction()
-
-        //results must have 1 element only
-
-        val result = results.first()
-        if (result.gotSuccess()) {
-            // Got only 1 valid result
-            val (newPossibleValues, newActualValues, score) = result.get()!!
-            Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
-            Utils.replaceArray(thisArray = actualValues, with = newActualValues)
-            score.addScoreBruteForce()
-            return PopulateResult.success(score)
-        } else {
-            // Propagate negative result
-            return result.errorToPopulateResult()
-        }
-    }
-
-    private fun bruteForceAValue(
-        chosenValue: Int,
-        position: Int,
-        possibleValues: Array<MutableList<Int>>,
-        newActualValues: IntArray,
-        ammountOfBruteForces: Int
-    ): BruteForceResult {
-        possibleValues[position].remove(chosenValue)
-        val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
-            possibleValues[it].toMutableList()
-        }
-        newPossibleValues[position] = mutableListOf(chosenValue)
-
-        val result = solveBoard(
-            possibleValues = newPossibleValues,
-            actualValues = newActualValues,
-            ammountOfBruteForces = ammountOfBruteForces
-        )
-
-        return if (result.gotSuccess()) BruteForceResult.success(BruteForceValues(newPossibleValues, newActualValues, result.get()!!))
-            else result.errorToBruteForceResult()
-    }
 
     internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
         val filteredRegions = region.filter { position -> possibleValues[position].size == 2 }

@@ -18,6 +18,10 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         TODO("Not yet implemented")
     }
 
+    override fun getMaxBruteForceValue(difficulty: Difficulty): Int {
+        TODO("Not yet implemented")
+    }
+
     override fun getDifficulty(): Difficulty {
         TODO("Not yet implemented")
     }

@@ -6,6 +6,7 @@ import com.example.tfg.common.utils.Curves
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
+import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
 
 class Kendoku(
@@ -32,18 +33,18 @@ class Kendoku(
 
     override fun maxRegionSize(): Int = numColumns
 
+    /*
     override fun createGame(difficulty: Difficulty) {
 
         val remainingPositions = getPositions().toMutableSet()
         createCompleteBoard(remainingPositions)
 
 
-        //Create score
-
-
+        //Create start board
     }
+     */
 
-    private fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
+    override fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
         // Create regions
 
         while (remainingPositions.isNotEmpty()) {
@@ -148,8 +149,17 @@ class Kendoku(
         return latinSquare
     }
 
+    override fun fillPossibleValues(
+        possibleValues: Array<MutableList<Int>>,
+        board: IntArray
+    ): Score {
+        TODO("Not yet implemented")
+    }
 
-    override fun solveBoard(board: IntArray): Score? {
+    override fun populateValues(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray
+    ): PopulateResult {
         TODO("Not yet implemented")
     }
 
