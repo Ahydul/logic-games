@@ -21,6 +21,7 @@ open class GenericResult<T> private constructor(
 
     enum class Result {
         SUCCESS,
+        NO_CHANGES,
         CONTRADICTION,
         NOT_UNIQUE_SOLUTION,
         MAX_BF_OVERPASSED
@@ -37,7 +38,11 @@ open class GenericResult<T> private constructor(
     fun gotContradiction(): Boolean {
         return this.result == Result.CONTRADICTION
     }
-    
+
+    fun gotNoChangesFound(): Boolean {
+        return this.result == Result.NO_CHANGES
+    }
+
     fun errorToPopulateResult(): PopulateResult {
         return PopulateResult(null, this.result)
     }
@@ -51,6 +56,7 @@ open class GenericResult<T> private constructor(
         fun <T> contradiction() = GenericResult<T>(null, Result.CONTRADICTION)
         fun <T> maxBFOverpassed() = GenericResult<T>(null, Result.MAX_BF_OVERPASSED)
         fun <T> boardNotUnique() = GenericResult<T>(null, Result.NOT_UNIQUE_SOLUTION)
+        fun <T> noChangesFound() = GenericResult<T>(null, Result.NO_CHANGES)
     }
 }
 

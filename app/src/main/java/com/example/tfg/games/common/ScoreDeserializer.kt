@@ -15,6 +15,7 @@ class ScoreDeserializer : JsonDeserializer<Score> {
         val jsonObject = json.asJsonObject
         return when (Games.valueOf(jsonObject.get("game").asString)) {
             Games.HAKYUU -> {
+                /*
                 val newValue = jsonObject.get("newValue").asInt
                 val rule2 = jsonObject.get("rule2").asInt
                 val rule3 = jsonObject.get("rule3").asInt
@@ -22,20 +23,13 @@ class ScoreDeserializer : JsonDeserializer<Score> {
                 val hiddenPair = jsonObject.get("hiddenPair").asInt
                 val hiddenTriple = jsonObject.get("hiddenTriple").asInt
                 val obviousPair = jsonObject.get("obviousPair").asInt
-                val obviousTriple = jsonObject.get("obviousTriple").asInt
+                 */
+
+                val score = jsonObject.get("score").asInt
                 val bruteForce = jsonObject.get("bruteForce").asInt
 
-                HakyuuScore(
-                    newValue = newValue,
-                    rule2 = rule2,
-                    rule3 = rule3,
-                    hiddenSingle = hiddenSingle,
-                    hiddenPair = hiddenPair,
-                    hiddenTriple = hiddenTriple,
-                    obviousPair = obviousPair,
-                    obviousTriple = obviousTriple,
-                    bruteForce = bruteForce
-                )
+
+                HakyuuScore(score = score, bruteForce = bruteForce)
             }
         }
     }
