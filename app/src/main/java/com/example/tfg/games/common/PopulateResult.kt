@@ -1,6 +1,4 @@
-package com.example.tfg.games.hakyuu
-
-import com.example.tfg.games.common.Score
+package com.example.tfg.games.common
 
 class BruteForceValues(
     private val newPossibleValues: Array<MutableList<Int>>,

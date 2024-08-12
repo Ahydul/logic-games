@@ -3,6 +3,8 @@ package com.example.tfg.games.common
 import androidx.room.Ignore
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
+import com.example.tfg.common.utils.Utils
+import com.example.tfg.games.hakyuu.HakyuuScore
 import com.example.tfg.games.hakyuu.NumberValue
 import kotlin.math.max
 import kotlin.random.Random
@@ -19,10 +21,13 @@ abstract class GameType(
     var startBoard: IntArray = IntArray(numColumns * numRows)
 ) {
 
+    // Helper variables
     @Ignore
     private val colors: Colors = Colors()
     @Ignore
     protected var random: Random = Random(seed)
+    @Ignore
+    var maxAmountOfBruteForces = 20
 
     protected fun numPositions(): Int = numColumns * numRows
     open fun maxRegionSize(): Int = max(numColumns, numRows)
@@ -115,8 +120,188 @@ abstract class GameType(
         return res
     }
 
-    protected abstract fun createGame(difficulty: Difficulty)
-    protected abstract fun solveBoard(board: IntArray): Score?
+    abstract fun createCompleteBoard(remainingPositions: MutableSet<Int>)
+
+    protected open fun createGame(difficulty: Difficulty) {
+
+        val remainingPositions = getPositions().toMutableSet()
+        createCompleteBoard(remainingPositions)
+
+        // Create startBoard
+
+        remainingPositions.clear()
+        startBoard.indices.forEach {
+            startBoard[it] = completedBoard[it]
+            remainingPositions.add(it) // Helper variable
+        }
+
+        maxAmountOfBruteForces = score.getMaxBruteForceValue(difficulty)
+        var actualScore: Score? = null
+
+        while (remainingPositions.isNotEmpty()) {
+            // Remove random value from startBoard
+            val randomPosition = remainingPositions.random(random)
+            remainingPositions.remove(randomPosition)
+            startBoard[randomPosition] = 0
+
+            val tmpBoard = startBoard.clone()
+
+            val res = solveBoard(tmpBoard)
+
+            if (res == null || res.isTooHighForDifficulty(difficulty)) {
+                // Add the value back
+                startBoard[randomPosition] = completedBoard[randomPosition]
+            }
+            else {
+                actualScore = res
+                if (res.isTooLowForDifficulty(difficulty)) continue
+            }
+        }
+
+        score.add(actualScore)
+    }
+
+    protected abstract fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score
+
+    fun solveBoard(board: IntArray): Score? {
+        val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
+        val scoreResult = fillPossibleValues(possibleValues = possibleValues, board = board)
+
+        val result = solveBoard(possibleValues = possibleValues, actualValues = board)
+            .get() ?: return null
+
+        scoreResult.add(result)
+
+        return scoreResult
+    }
+
+    private fun solveBoard(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        amountOfBruteForces: Int = 0
+    ): PopulateResult {
+        val score = HakyuuScore()
+
+        while (getRemainingPositions(actualValues).isNotEmpty())
+        {
+            val res = solveBoardOneStep(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                amountOfBruteForces = amountOfBruteForces
+            ).let {
+                it.get() ?: return it // Found error -> can't populate
+            }
+
+            score.add(res)
+        }
+
+        return PopulateResult.success(score)
+    }
+
+    private fun solveBoardOneStep(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        amountOfBruteForces: Int = 0
+    ): PopulateResult {
+        val res = populateValues(possibleValues = possibleValues, actualValues = actualValues)
+
+        return if (res.gotNoChangesFound())
+            bruteForce(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                amountOfBruteForces = amountOfBruteForces + 1
+            )
+        else res
+    }
+
+    protected abstract fun populateValues(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+    ): PopulateResult
+
+    fun getRemainingPositions(actualValues: IntArray): List<Int> {
+        return getPositions().filter { actualValues[it] == 0 }
+    }
+
+    // For debug
+    private val debugAmountOfBruteForces = 0
+    fun solveBoardOneStep(possibleValues: Array<MutableList<Int>>, actualValues: IntArray): PopulateResult {
+        if (possibleValues.all { it.size == 0 }) {
+            fillPossibleValues(possibleValues = possibleValues, board = actualValues)
+        }
+
+        return solveBoardOneStep(
+            possibleValues = possibleValues,
+            actualValues = actualValues,
+            amountOfBruteForces = debugAmountOfBruteForces
+        )
+    }
+
+    private fun bruteForceAValue(
+        chosenValue: Int,
+        position: Int,
+        possibleValues: Array<MutableList<Int>>,
+        newActualValues: IntArray,
+        amountOfBruteForces: Int
+    ): BruteForceResult {
+        possibleValues[position].remove(chosenValue)
+        val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
+            possibleValues[it].toMutableList()
+        }
+        newPossibleValues[position] = mutableListOf(chosenValue)
+
+        val result = solveBoard(
+            possibleValues = newPossibleValues,
+            actualValues = newActualValues,
+            amountOfBruteForces = amountOfBruteForces
+        )
+
+        return if (result.gotSuccess()) BruteForceResult.success(BruteForceValues(newPossibleValues, newActualValues, result.get()!!))
+        else result.errorToBruteForceResult()
+    }
+
+    private fun bruteForce(
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray,
+        amountOfBruteForces: Int
+    ): PopulateResult {
+        if (amountOfBruteForces > maxAmountOfBruteForces) return PopulateResult.maxBFOverpassed()
+
+        val (position, minPossibleValues) = getRemainingPositions(actualValues)
+            .map { it to possibleValues[it] }
+            .minBy { (_, values) -> values.size }
+
+        val results = mutableListOf<BruteForceResult>()
+        for(chosenValue in minPossibleValues.toList()) {
+            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues.clone(), amountOfBruteForces)
+            // Filter contradictions
+            if (!result.gotContradiction()) {
+                results.add(result)
+
+                // Multiple not contradictory results
+                if (results.size > 1) return PopulateResult.boardNotUnique()
+            }
+        }
+
+        if (results.isEmpty()) return PopulateResult.contradiction()
+
+        //results must have 1 element only
+
+        val result = results.first()
+        return if (result.gotSuccess()) {
+            // Got only 1 valid result
+            val (newPossibleValues, newActualValues, score) = result.get()!!
+            Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
+            Utils.replaceArray(thisArray = actualValues, with = newActualValues)
+            score.addScoreBruteForce()
+            PopulateResult.success(score)
+        } else {
+            // Propagate negative result
+            result.errorToPopulateResult()
+        }
+    }
+
+
 
     protected fun deleteRegion(regionId: Int) {
         boardRegions.withIndex().filter { (_, id) -> id == regionId }

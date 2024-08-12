@@ -24,6 +24,14 @@ class HakyuuScore(score: Int = 0, bruteForce: Int = 0) : Score(Games.HAKYUU, sco
         }
     }
 
+    override fun getMaxBruteForceValue(difficulty: Difficulty): Int {
+        return when(difficulty) {
+            Difficulty.EXPERT -> MAX_EXPERT_BRUTE_FORCES
+            Difficulty.MASTER -> MAX_MASTER_BRUTE_FORCES
+            else -> 0
+        }
+    }
+
     override fun getDifficulty(): Difficulty {
         return when (this.get()) {
             in (MIN_BEGINNER..MAX_BEGINNER) -> Difficulty.BEGINNER
