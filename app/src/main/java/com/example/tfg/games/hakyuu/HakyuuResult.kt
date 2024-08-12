@@ -3,13 +3,11 @@ package com.example.tfg.games.hakyuu
 class BruteForceValues(
     private val newPossibleValues: Array<MutableList<Int>>,
     private val newActualValues: IntArray,
-    private val newFoundSPT: MutableList<Int>,
     private val score: HakyuuScore
 ) {
     operator fun component1() = newPossibleValues
     operator fun component2() = newActualValues
-    operator fun component3() = newFoundSPT
-    operator fun component4() = score
+    operator fun component3() = score
 }
 
 open class GenericResult<T> private constructor(

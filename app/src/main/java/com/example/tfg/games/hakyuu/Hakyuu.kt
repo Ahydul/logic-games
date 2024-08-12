@@ -112,7 +112,6 @@ class Hakyuu(
     private fun solveBoard(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        foundSPT: MutableList<Int> = mutableListOf(),
         ammountOfBruteForces: Int = 0
     ): PopulateResult {
         val score = HakyuuScore()
@@ -122,7 +121,6 @@ class Hakyuu(
             val res = solveBoardOneStep(
                 possibleValues = possibleValues,
                 actualValues = actualValues,
-                foundSPT = foundSPT,
                 ammountOfBruteForces = ammountOfBruteForces
             ).let {
                 it.get() ?: return it // Found error -> can't populate
@@ -142,7 +140,6 @@ class Hakyuu(
     }
 
     // For debug
-    val debugSPT = mutableListOf<Int>()
     val debugAmmountOfBruteForces = 0
     fun solveBoardOneStep(possibleValues: Array<MutableList<Int>>, actualValues: IntArray): PopulateResult {
         if (possibleValues.all { it.size == 0 }) {
@@ -152,7 +149,6 @@ class Hakyuu(
         return solveBoardOneStep(
             possibleValues = possibleValues,
             actualValues = actualValues,
-            foundSPT = debugSPT,
             ammountOfBruteForces = debugAmmountOfBruteForces
         )
     }
@@ -160,13 +156,11 @@ class Hakyuu(
     private fun solveBoardOneStep(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        foundSPT: MutableList<Int> = mutableListOf(),
         ammountOfBruteForces: Int = 0
     ): PopulateResult {
         val res = populateValues(
             possibleValues = possibleValues,
             actualValues = actualValues,
-            foundSPT = foundSPT,
             ammountOfBruteForces = ammountOfBruteForces
         ).let {
             it.get() ?: return it //Found error -> can't populate
@@ -396,7 +390,6 @@ class Hakyuu(
     private fun populateValues(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        foundSPT: MutableList<Int>,
         ammountOfBruteForces: Int
     ): PopulateResult {
         val score = HakyuuScore()
@@ -454,19 +447,19 @@ class Hakyuu(
             val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
 
             //Everytime a SPT is found AND the possible values change the score is properly changed.
-            val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
+            val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues)
             score.addScoreHiddenSingle(singles.size)
 
-            var pairs = cleanHiddenPairs(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
+            var pairs = cleanHiddenPairs(positionsPerValue = positionsPerValue, possibleValues = possibleValues)
             score.addScoreHiddenPairs(pairs.size/2)
 
-            var triples = cleanHiddenTriples(positionsPerValue = positionsPerValue, possibleValues = possibleValues, foundSPT = foundSPT)
+            var triples = cleanHiddenTriples(positionsPerValue = positionsPerValue, possibleValues = possibleValues)
             score.addScoreHiddenTriples(triples.size/3)
 
-            pairs = cleanObviousPairs(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
+            pairs = cleanObviousPairs(region = region, possibleValues = possibleValues)
             score.addScoreObviousPairs(pairs.size/2)
 
-            triples = cleanObviousTriples(region = region, possibleValues = possibleValues, foundSPT = foundSPT)
+            triples = cleanObviousTriples(region = region, possibleValues = possibleValues)
             score.addScoreObviousTriples(triples.size/3)
         }
 
@@ -485,7 +478,6 @@ class Hakyuu(
         val bruteForceResult = bruteForce(
             possibleValues = possibleValues,
             actualValues = actualValues,
-            foundSPT = foundSPT,
             ammountOfBruteForces = ammountOfBruteForces + 1
         )
 
@@ -495,7 +487,6 @@ class Hakyuu(
     private fun bruteForce(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        foundSPT: MutableList<Int>,
         ammountOfBruteForces: Int
     ): PopulateResult {
         if (ammountOfBruteForces > maxAmmountOfBruteForces) return PopulateResult.maxBFOverpassed()
@@ -506,7 +497,7 @@ class Hakyuu(
 
         val results = mutableListOf<BruteForceResult>()
         for(chosenValue in minPossibleValues.toList()) {
-            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues.clone(), foundSPT.toMutableList(), ammountOfBruteForces)
+            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues.clone(), ammountOfBruteForces)
             // Filter contradictions
             if (!result.gotContradiction()) {
                 results.add(result)
@@ -523,11 +514,9 @@ class Hakyuu(
         val result = results.first()
         if (result.gotSuccess()) {
             // Got only 1 valid result
-            val (newPossibleValues, newActualValues, newFoundSPT, score) = result.get()!!
+            val (newPossibleValues, newActualValues, score) = result.get()!!
             Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
             Utils.replaceArray(thisArray = actualValues, with = newActualValues)
-            foundSPT.clear()
-            foundSPT.addAll(newFoundSPT)
             score.addScoreBruteForce()
             return PopulateResult.success(score)
         } else {
@@ -541,7 +530,6 @@ class Hakyuu(
         position: Int,
         possibleValues: Array<MutableList<Int>>,
         newActualValues: IntArray,
-        newFoundSPT: MutableList<Int>,
         ammountOfBruteForces: Int
     ): BruteForceResult {
         possibleValues[position].remove(chosenValue)
@@ -553,24 +541,21 @@ class Hakyuu(
         val result = solveBoard(
             possibleValues = newPossibleValues,
             actualValues = newActualValues,
-            foundSPT = newFoundSPT,
             ammountOfBruteForces = ammountOfBruteForces
         )
 
-        return if (result.gotSuccess()) BruteForceResult.success(BruteForceValues(newPossibleValues, newActualValues, newFoundSPT, result.get()!!))
+        return if (result.gotSuccess()) BruteForceResult.success(BruteForceValues(newPossibleValues, newActualValues, result.get()!!))
             else result.errorToBruteForceResult()
     }
 
-    internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
-        val filteredRegions = region.filter { position -> possibleValues[position].size == 2 && !foundSPT.contains(position) }
+    internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
+        val filteredRegions = region.filter { position -> possibleValues[position].size == 2 }
 
         val res = mutableListOf<Int>()
         filteredRegions.forEachIndexed { index, position1 ->
             val position2 = filteredRegions.drop(index + 1)
                 .find { position2 -> possibleValues[position2] == possibleValues[position1] }
             if (position2 != null) {
-                foundSPT.add(position1)
-                foundSPT.add(position2)
 
                 var possibleValuesChanged = false
                 val values = possibleValues[position1]
@@ -588,10 +573,10 @@ class Hakyuu(
         return res
     }
 
-    internal fun cleanObviousTriples(region: List<Int>, possibleValues: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
+    internal fun cleanObviousTriples(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
         // Obvious triples can only have size 2 or 3
         val filteredRegions = region.filter { position ->
-            ((possibleValues[position].size == 2 || possibleValues[position].size == 3) && !foundSPT.contains(position))
+            (possibleValues[position].size == 2 || possibleValues[position].size == 3)
         }
 
         val res = mutableListOf<Int>()
@@ -609,10 +594,6 @@ class Hakyuu(
             if (otherTriples.size == 2) {
                 val position2 = otherTriples[0].first
                 val position3 = otherTriples[1].first
-
-                foundSPT.add(position1)
-                foundSPT.add(position2)
-                foundSPT.add(position3)
 
                 var possibleValuesChanged = false
                 val values = possibleValues[position1].union(possibleValues[position2]).union(possibleValues[position3])
@@ -641,23 +622,21 @@ class Hakyuu(
     }
 
     // Delete values to reveal hidden singles
-    internal fun cleanHiddenSingles(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
+    internal fun cleanHiddenSingles(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>): List<Int> {
         val res = mutableListOf<Int>()
-        positionsPerValue.withIndex().filter { (_,positions) -> positions.size == 1 && !foundSPT.contains(positions.first())}
+        positionsPerValue.withIndex().filter { (_,positions) -> positions.size == 1 }
             .forEach { (value, positions) ->
                 // Remove all the possible values but the hidden single
                 val position = positions.first()
                 val possibleValuesChanged = possibleValues[position].removeIf { it != value + 1 }
                 if (possibleValuesChanged) res.add(position)
-                foundSPT.add(position)
             }
         return res
     }
 
     // Delete values to reveal hidden pairs
-    internal fun cleanHiddenPairs(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
-        val filteredPossiblePairs = positionsPerValue.withIndex()
-            .filter { (_, positions) -> positions.size == 2 && !positions.any { position -> foundSPT.contains(position) } }
+    internal fun cleanHiddenPairs(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>): List<Int> {
+        val filteredPossiblePairs = positionsPerValue.withIndex().filter { (_, positions) -> positions.size == 2 }
 
         val res = mutableListOf<Int>()
         var drop = 0
@@ -674,7 +653,6 @@ class Hakyuu(
                     val possibleValuesChanged = possibleValues[position]
                         .removeIf { it != index1+1 && it != index2+1 }
                     if (possibleValuesChanged) res.add(position)
-                    foundSPT.add(position)
                 }
             }
         }
@@ -682,9 +660,9 @@ class Hakyuu(
     }
 
     // Delete values to reveal hidden triples
-    internal fun cleanHiddenTriples(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>, foundSPT: MutableList<Int> = mutableListOf()): List<Int> {
+    internal fun cleanHiddenTriples(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>): List<Int> {
         val filteredPossibleTriples = positionsPerValue.withIndex().filter { it.value.size == 2 || it.value.size == 3 }
-            .filter { (_, positions) -> (positions.size == 2 || positions.size == 3) && !positions.any { position -> foundSPT.contains(position) } }
+            .filter { (_, positions) -> (positions.size == 2 || positions.size == 3) }
 
         val res = mutableListOf<Int>()
         var drop = 0
@@ -706,7 +684,6 @@ class Hakyuu(
                     val possibleValuesChanged = possibleValues[position]
                         .removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
                     if (possibleValuesChanged) res.add(position)
-                    foundSPT.add(position)
                 }
             }
         }
