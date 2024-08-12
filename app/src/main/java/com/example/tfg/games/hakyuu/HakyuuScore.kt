@@ -6,10 +6,7 @@ import com.example.tfg.games.common.Score
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 
-class HakyuuScore(
-    game: Games = Games.HAKYUU,
-    bruteForce: Int = 0
-) : Score(game, bruteForce) {
+class HakyuuScore(score: Int = 0, bruteForce: Int = 0) : Score(Games.HAKYUU, score, bruteForce) {
 
     override fun add(s: Score?) {
         super.add(s)

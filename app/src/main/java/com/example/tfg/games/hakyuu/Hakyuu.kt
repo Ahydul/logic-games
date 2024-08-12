@@ -158,15 +158,15 @@ class Hakyuu(
         actualValues: IntArray,
         ammountOfBruteForces: Int = 0
     ): PopulateResult {
-        val res = populateValues(
-            possibleValues = possibleValues,
-            actualValues = actualValues,
-            ammountOfBruteForces = ammountOfBruteForces
-        ).let {
-            it.get() ?: return it //Found error -> can't populate
-        }
+        val res = populateValues(possibleValues = possibleValues, actualValues = actualValues)
 
-        return PopulateResult.success(res)
+        return if (res.gotNoChangesFound())
+            bruteForce(
+                possibleValues = possibleValues,
+                actualValues = actualValues,
+                ammountOfBruteForces = ammountOfBruteForces + 1
+            )
+        else res
     }
 
     override fun boardMeetsRulesStr(board: IntArray): String {
@@ -390,7 +390,6 @@ class Hakyuu(
     private fun populateValues(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
-        ammountOfBruteForces: Int
     ): PopulateResult {
         val score = HakyuuScore()
 
@@ -474,14 +473,7 @@ class Hakyuu(
                 else PopulateResult.contradiction()
         }
 
-        // If the possible values didn't change: Brute force a value
-        val bruteForceResult = bruteForce(
-            possibleValues = possibleValues,
-            actualValues = actualValues,
-            ammountOfBruteForces = ammountOfBruteForces + 1
-        )
-
-        return bruteForceResult
+        return PopulateResult.noChangesFound()
     }
 
     private fun bruteForce(
