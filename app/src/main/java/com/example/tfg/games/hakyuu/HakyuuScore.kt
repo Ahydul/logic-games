@@ -8,50 +8,13 @@ import com.google.gson.JsonElement
 
 class HakyuuScore(
     game: Games = Games.HAKYUU,
-    private var newValue: Int = 0,
-    private var rule2: Int = 0,
-    private var rule3: Int = 0,
-    private var hiddenSingle: Int = 0,
-    private var hiddenPair: Int = 0,
-    private var hiddenTriple: Int = 0,
-    private var obviousPair: Int = 0,
-    private var obviousTriple: Int = 0,
-    private var bruteForce: Int = 0
-) : Score(game) {
-
-
-    override fun get(): Int {
-        return newValue + (rule2+rule3)*2 + obviousPair*5 + obviousTriple*10 +
-                hiddenSingle*20 + hiddenPair*25 + hiddenTriple*30 + bruteForce*1000
-    }
-
-    override fun reset() {
-        this.newValue = 0
-        this.rule2 = 0
-        this.rule3 = 0
-        this.hiddenSingle = 0
-        this.hiddenPair = 0
-        this.hiddenTriple = 0
-        this.obviousPair = 0
-        this.obviousTriple = 0
-        this.bruteForce = 0
-    }
+    bruteForce: Int = 0
+) : Score(game, bruteForce) {
 
     override fun add(s: Score?) {
-        if (s == null) return
-
-        val other = s as HakyuuScore
-        this.newValue += other.newValue
-        this.rule2 += other.rule2
-        this.rule3 += other.rule3
-        this.hiddenSingle += other.hiddenSingle
-        this.hiddenPair += other.hiddenPair
-        this.hiddenTriple += other.hiddenTriple
-        this.obviousPair += other.obviousPair
-        this.obviousTriple += other.obviousTriple
-        this.bruteForce += other.bruteForce
+        super.add(s)
+        bruteForce += (s as HakyuuScore).bruteForce
     }
-
 
     override fun isTooHighForDifficulty(difficulty: Difficulty): Boolean {
         return when(difficulty){
@@ -91,45 +54,38 @@ class HakyuuScore(
         }
     }
 
-    fun getBruteForceValue(): Int {
-        return bruteForce
-    }
-
     fun addScoreNewValue() {
-        newValue += 1
+        score += 1
     }
 
     fun addScoreRule3() {
-        rule3 += 2
+        score += 4
     }
 
     fun addScoreRule2() {
-        rule2 += 2
+        score += 4
     }
 
     fun addScoreHiddenSingle(numFound: Int) {
-        hiddenSingle += numFound
+        score += numFound*20
     }
 
     fun addScoreHiddenPairs(numFound: Int) {
-        hiddenPair += numFound
+        score += numFound*25
     }
 
     fun addScoreHiddenTriples(numFound: Int) {
-        hiddenTriple += numFound
+        score += numFound*30
     }
 
     fun addScoreObviousPairs(numFound: Int) {
-        obviousPair += numFound
+        score += numFound*5
     }
 
     fun addScoreObviousTriples(numFound: Int) {
-        obviousTriple += numFound
+        score += numFound*10
     }
 
-    fun addScoreBruteForce() {
-        bruteForce++
-    }
 
     companion object {
         const val MIN_BEGINNER = 1

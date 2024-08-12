@@ -1,9 +1,11 @@
 package com.example.tfg.games.hakyuu
 
+import com.example.tfg.games.common.Score
+
 class BruteForceValues(
     private val newPossibleValues: Array<MutableList<Int>>,
     private val newActualValues: IntArray,
-    private val score: HakyuuScore
+    private val score: Score
 ) {
     operator fun component1() = newPossibleValues
     operator fun component2() = newActualValues
@@ -52,5 +54,5 @@ open class GenericResult<T> private constructor(
     }
 }
 
-typealias PopulateResult = GenericResult<HakyuuScore>
+typealias PopulateResult = GenericResult<Score>
 typealias BruteForceResult = GenericResult<BruteForceValues>
