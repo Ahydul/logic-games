@@ -64,7 +64,11 @@ class Kendoku(
         regionOperation = boardRegions.groupBy { it }.map { (regionID, values) ->
             val operation = KendokuOperation.entries
                 .filterNot {
+                        // Subtractions can't have more than 2 operands
+                    (it == KendokuOperation.SUBTRACT && values.size != 2) ||
+                        // Divisions can't have more than 2 operands and must result in integers
                     (it == KendokuOperation.DIVIDE && (values.size != 2 || (values.max() % values.min() != 0))) ||
+                        // Multiplications can't be result in numbers higher than 1000
                     (it == KendokuOperation.MULTIPLY && (values.reduce { acc, num -> acc * num } > 1000))
                 }.random(random)
             regionID to operation
