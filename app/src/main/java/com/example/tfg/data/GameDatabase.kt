@@ -17,6 +17,7 @@ import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 
+//TODO: Update schema with refactor changes
 @Database(
     entities = [Game::class, GameState::class, Move::class, Action::class, Board::class, Cell::class, BoardCellCrossRef::class, GameStateSnapshot::class, WinningStreak::class],
     version = 2,
