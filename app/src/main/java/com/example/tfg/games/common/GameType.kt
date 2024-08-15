@@ -324,6 +324,11 @@ abstract class GameType(
         return boardRegions.count { id -> id == regionId }
     }
 
+    protected fun regionIsOneCell(regionId: Int, position: Int): Boolean {
+        return boardRegions.withIndex().any { (pos, id) -> id == regionId && position != pos }
+    }
+
+
     protected fun boardPopulated(board: IntArray): Boolean {
         return !board.any { it == 0 }
     }

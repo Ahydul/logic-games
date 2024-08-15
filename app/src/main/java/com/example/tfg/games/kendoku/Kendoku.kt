@@ -16,7 +16,7 @@ class Kendoku(
     completedBoard: IntArray = IntArray(size * size),
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
-    var regionOperation: Map<Int, KendokuOperation> = mutableMapOf(),
+    private var operationPerRegion: Map<Int, KendokuOperation> = mutableMapOf(),
     private val allowedOperations: Array<KendokuOperation> = KendokuOperation.entries
         .filterNot { it == KendokuOperation.ANY }
         .toTypedArray(),
@@ -33,8 +33,12 @@ class Kendoku(
 ) {
     // Helper variables
     private var currentID = 0
+    private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf()
 
-    override fun maxRegionSize(): Int = numColumns
+    // Use this instead of numColumns or numRows
+    private val size = numColumns
+
+    override fun maxRegionSize(): Int = size
 
     override fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
         // Create regions
@@ -45,15 +49,15 @@ class Kendoku(
 
         // Populate cells
 
-        latinSquare(numColumns).forEachIndexed { row, values ->
+        latinSquare(size).forEachIndexed { row, values ->
             values.forEachIndexed { column, value ->
-                completedBoard[row*numColumns + column] = value
+                completedBoard[row*size + column] = value
             }
         }
 
         // Create operations
 
-        regionOperation = boardRegions.groupBy { it }.map { (regionID, values) ->
+        operationPerRegion = boardRegions.groupBy { it }.map { (regionID, values) ->
             val operation = if (values.size == 1) KendokuOperation.ANY
                 else allowedOperations.filterNot {
                         // Subtractions can't have more than 2 operands
@@ -63,10 +67,13 @@ class Kendoku(
                         // Multiplications can't be result in numbers higher than 1000
                     (it == KendokuOperation.MULTIPLY && (values.reduce { acc, num -> acc * num } > 1000))
                 }.random(random)
+
+            operationResultPerRegion[regionID] = operation.operate(values)
+
             regionID to operation
         }.toMap()
 
-        println(regionOperation)
+        println(operationPerRegion)
     }
 
     private fun propagateRandomEmptyRegion(
@@ -99,7 +106,7 @@ class Kendoku(
 
         for (position in region.shuffled(random)) {
             for (direction in Direction.entries.shuffled(random)) {
-                val propagation = Coordinate.move(direction = direction, position = position, numColumns=numColumns, numRows = numRows)
+                val propagation = Coordinate.move(direction = direction, position = position, numColumns=size, numRows = size)
 
                 if (propagation != null && remainingPositions.contains(propagation)){
                     region.add(propagation)
@@ -145,11 +152,17 @@ class Kendoku(
         return latinSquare
     }
 
-    override fun fillPossibleValues(
-        possibleValues: Array<MutableList<Int>>,
-        board: IntArray
-    ): Score {
-        TODO("Not yet implemented")
+    override fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score {
+        val scoreResult = KendokuScore()
+        for (position in (0..<numPositions())) {
+            val regionId = getRegionId(position)
+            if (regionIsOneCell(regionId, position) && board[position] == 0) {
+                board[position] = operationResultPerRegion[regionId]!!
+                scoreResult.addScoreNewValue()
+            }
+            else if (board[position] == 0) possibleValues[position].addAll(1.. size)
+        }
+        return scoreResult
     }
 
     override fun populateValues(
