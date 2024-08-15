@@ -6,8 +6,9 @@ import com.example.tfg.games.common.Score
 import com.google.gson.JsonElement
 
 class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
-    override fun add(s: Score?) {
-        TODO("Not yet implemented")
+
+    fun addScoreNewValue() {
+        score += 1
     }
 
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
