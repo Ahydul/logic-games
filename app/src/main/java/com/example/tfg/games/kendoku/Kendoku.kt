@@ -17,7 +17,10 @@ class Kendoku(
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
     var regionOperation: Map<Int, KendokuOperation> = mutableMapOf(),
-    var printEachBoardState: Boolean = false
+    private val allowedOperations: Array<KendokuOperation> = KendokuOperation.entries
+        .filterNot { it == KendokuOperation.ANY }
+        .toTypedArray(),
+    private var printEachBoardState: Boolean = false
 ): GameType(
     type = Games.HAKYUU,
     numColumns = size,
@@ -32,17 +35,6 @@ class Kendoku(
     private var currentID = 0
 
     override fun maxRegionSize(): Int = numColumns
-
-    /*
-    override fun createGame(difficulty: Difficulty) {
-
-        val remainingPositions = getPositions().toMutableSet()
-        createCompleteBoard(remainingPositions)
-
-
-        //Create start board
-    }
-     */
 
     override fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
         // Create regions
@@ -62,8 +54,8 @@ class Kendoku(
         // Create operations
 
         regionOperation = boardRegions.groupBy { it }.map { (regionID, values) ->
-            val operation = KendokuOperation.entries
-                .filterNot {
+            val operation = if (values.size == 1) KendokuOperation.ANY
+                else allowedOperations.filterNot {
                         // Subtractions can't have more than 2 operands
                     (it == KendokuOperation.SUBTRACT && values.size != 2) ||
                         // Divisions can't have more than 2 operands and must result in integers
