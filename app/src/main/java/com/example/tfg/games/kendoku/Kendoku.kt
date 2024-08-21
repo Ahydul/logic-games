@@ -39,6 +39,37 @@ class Kendoku(
 
     override fun maxRegionSize(): Int = size
 
+    override fun createGame(difficulty: Difficulty) {
+        super.createGame(difficulty)
+        score.reset()
+
+        //TODO
+
+        var actualScore: Score? = null
+        val remainingOperationsPerRegion = operationPerRegion.filterValues { !it.isUnknown() }
+        while (remainingOperationsPerRegion.isNotEmpty()) {
+            // Remove random value from startBoard
+            val randomPosition = remainingOperationsPerRegion.random(random)
+            remainingOperationsPerRegion.remove(randomPosition)
+            startBoard[randomPosition] = 0
+
+            val tmpBoard = startBoard.clone()
+
+            val res = solveBoard(tmpBoard)
+
+            if (res == null || res.isTooHighForDifficulty(difficulty)) {
+                // Add the value back
+                startBoard[randomPosition] = completedBoard[randomPosition]
+            }
+            else {
+                actualScore = res
+                if (res.isTooLowForDifficulty(difficulty)) continue
+            }
+        }
+
+        score.add(actualScore)
+    }
+
     override fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
         // Create regions
 

@@ -29,6 +29,11 @@ abstract class Score(
         score += 1000
     }
 
+    open fun reset() {
+        score = 0
+        bruteForce = 0
+    }
+
     abstract fun isTooLowForDifficulty(difficulty: Difficulty): Boolean
     abstract fun isTooHighForDifficulty(difficulty: Difficulty): Boolean
     abstract fun getMaxBruteForceValue(difficulty: Difficulty): Int
