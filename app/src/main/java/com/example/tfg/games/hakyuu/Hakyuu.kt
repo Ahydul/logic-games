@@ -260,17 +260,6 @@ class Hakyuu(
         }
     }
 
-    private fun addValueToActualValues(
-        values:  MutableList<Int>,
-        actualValues: IntArray,
-        position: Int,
-        score: HakyuuScore
-    ) {
-        actualValues[position] = values.first()
-        values.clear()
-        score.addScoreNewValue()
-    }
-
     // Tries to populate values while there is no contradiction
     // Return if there wasnt a contradiction
     override fun populateValues(
@@ -279,21 +268,12 @@ class Hakyuu(
     ): PopulateResult {
         val score = HakyuuScore()
 
-        val addToRegions = { regionID: Int, position: Int, regions: MutableMap<Int, MutableList<Int>> ->
-            if (regions.containsKey(regionID)) regions[regionID]!!.add(position)
-            else regions[regionID] = mutableListOf(position)
-        }
-
-        val removeFromRegions = { regionID: Int, position: Int, regions: MutableMap<Int, MutableList<Int>> ->
-            if (regions.containsKey(regionID)) regions[regionID]!!.remove(position)
-        }
-
         val filteredRegions = mutableMapOf<Int, MutableList<Int>>()
         val remainingRegions = mutableMapOf<Int, MutableList<Int>>()
         getPositions().forEach { position ->
             val regionID = getRegionId(position)
-            if (actualValues[position] != 0) addToRegions(regionID, position, filteredRegions)
-            else addToRegions(regionID, position, remainingRegions)
+            if (actualValues[position] != 0) Utils.addToMapList(regionID, position, filteredRegions)
+            else Utils.addToMapList(regionID, position, remainingRegions)
         }
 
         for (position in getRemainingPositions(actualValues)) {
@@ -319,8 +299,8 @@ class Hakyuu(
 
             if (possibleValuesInPosition.size == 1) {
                 addValueToActualValues(possibleValuesInPosition, actualValues, position, score)
-                addToRegions(regionID, position, filteredRegions)
-                removeFromRegions(regionID, position, remainingRegions)
+                Utils.addToMapList(regionID, position, filteredRegions)
+                Utils.removeFromMapList(regionID, position, remainingRegions)
             }
             else if(possibleValuesInPosition.size == 0) return PopulateResult.contradiction()
         }

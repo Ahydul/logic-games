@@ -20,6 +20,10 @@ abstract class Score(
         score += s?.score ?: 0
     }
 
+    fun addScoreNewValue() {
+        score += 1
+    }
+
     fun addScoreBruteForce() {
         bruteForce += 1
         score += 1000
