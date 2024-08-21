@@ -7,8 +7,8 @@ import com.google.gson.JsonElement
 
 class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
 
-    fun addScoreNewValue() {
-        score += 1
+    fun addScoreRule2() {
+        score += 4
     }
 
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {

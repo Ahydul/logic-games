@@ -197,5 +197,16 @@ abstract class Utils {
             i.data = Uri.parse(url)
             context.startActivity(i)
         }
+
+
+        fun addToMapList(key: Int, value: Int, map: MutableMap<Int, MutableList<Int>>) {
+            if (map.containsKey(key)) map[key]!!.add(value)
+            else map[key] = mutableListOf(value)
+        }
+
+        fun removeFromMapList(key: Int, value: Int, map: MutableMap<Int, MutableList<Int>>) {
+            if (map.containsKey(key)) map[key]!!.remove(value)
+        }
+
     }
 }

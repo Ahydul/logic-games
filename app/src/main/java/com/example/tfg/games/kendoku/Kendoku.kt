@@ -16,10 +16,8 @@ class Kendoku(
     completedBoard: IntArray = IntArray(size * size),
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
-    private var operationPerRegion: Map<Int, KendokuOperation> = mutableMapOf(),
-    private val allowedOperations: Array<KendokuOperation> = KendokuOperation.entries
-        .filterNot { it == KendokuOperation.ANY }
-        .toTypedArray(),
+    private var operationPerRegion: Map<Int, KendokuOperation> = mapOf(),
+    private val allowedOperations: Array<KendokuOperation> = KendokuOperation.allButOperationAny(),
     private var printEachBoardState: Boolean = false
 ): GameType(
     type = Games.HAKYUU,
@@ -34,6 +32,7 @@ class Kendoku(
     // Helper variables
     private var currentID = 0
     private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf()
+    private val bfHelper = BruteForceHelper(operationPerRegion)
 
     // Use this instead of numColumns or numRows
     private val size = numColumns
@@ -59,7 +58,9 @@ class Kendoku(
 
         operationPerRegion = boardRegions.groupBy { it }.map { (regionID, values) ->
             val operation = if (values.size == 1) KendokuOperation.ANY
-                else allowedOperations.filterNot {
+                else KendokuOperation.knownOperations().filterNot {
+                        // Filter out disallowed operations
+                    !allowedOperations.contains(it) ||
                         // Subtractions can't have more than 2 operands
                     (it == KendokuOperation.SUBTRACT && values.size != 2) ||
                         // Divisions can't have more than 2 operands and must result in integers
@@ -72,8 +73,6 @@ class Kendoku(
 
             regionID to operation
         }.toMap()
-
-        println(operationPerRegion)
     }
 
     private fun propagateRandomEmptyRegion(
@@ -153,23 +152,114 @@ class Kendoku(
     }
 
     override fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score {
+        val columnsPossibleValues = Array(size - 1){ (1..size).toMutableSet() }
+        val rowsPossibleValues = Array(size - 1){ (1..size).toMutableSet() }
         val scoreResult = KendokuScore()
+
         for (position in (0..<numPositions())) {
             val regionId = getRegionId(position)
-            if (regionIsOneCell(regionId, position) && board[position] == 0) {
-                board[position] = operationResultPerRegion[regionId]!!
+            val coordinate = Coordinate.fromIndex(index = position, size, size)
+
+            val values = rowsPossibleValues[coordinate.row].intersect(columnsPossibleValues[coordinate.column])
+            val value = if (values.size == 1) values.first() else operationResultPerRegion[regionId]!!
+
+            if (board[position] == 0 && (values.size == 1 || regionIsOneCell(regionId, position))) {
+                board[position] = value
                 scoreResult.addScoreNewValue()
+
+                columnsPossibleValues[coordinate.column].remove(value)
+                rowsPossibleValues[coordinate.row].remove(value)
             }
-            else if (board[position] == 0) possibleValues[position].addAll(1.. size)
+            else if (board[position] == 0) {
+                possibleValues[position].addAll(values)
+            }
         }
         return scoreResult
+    }
+
+    private fun deduceOperation(
+        region: MutableList<Int>,
+        possibleValues: Array<MutableList<Int>>,
+        actualValues: IntArray
+    ): KendokuOperation? {
+        val operations = allowedOperations.filter {
+            it.filterOperation(
+                region.associate { position ->
+                    val values = possibleValues[position]
+                    if (values.isEmpty()) values.add(actualValues[position])
+                    Coordinate.fromIndex(position, size, size) to values
+                }
+            )
+        }
+        return if (operations.size == 1) operations.first()
+            else null
     }
 
     override fun populateValues(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray
     ): PopulateResult {
-        TODO("Not yet implemented")
+        val score = KendokuScore()
+
+        val addToRegions = { regionID: Int, position: Int, regions: MutableMap<Int, MutableList<Int>> ->
+            if (regions.containsKey(regionID)) regions[regionID]!!.add(position)
+            else regions[regionID] = mutableListOf(position)
+        }
+
+        val regions = mutableMapOf<Int, MutableList<Int>>()
+
+        for (position in getRemainingPositions(actualValues)) {
+            val regionID = getRegionId(position)
+            val values = possibleValues[position]
+            addToRegions(regionID, position, regions)
+
+            if (values.size == 1) {
+                addValueToActualValues(values, actualValues, position, score)
+                val coordinate = Coordinate.fromIndex(index = position, size, size)
+
+                val value = values.first()
+
+                // Delete value from the possible values in the row of position
+                (0..< size).filter { row -> row != coordinate.row }.mapNotNull { row ->
+                    Coordinate(row = row, column = coordinate.column).toIndex(size,size)
+                }.forEach { index ->
+                    possibleValues[index].remove(value)
+                }
+
+                // Delete value from the possible values in the column of position
+                (0..< size).filter { column -> column != coordinate.column }.mapNotNull { column ->
+                    Coordinate(row = coordinate.row, column = column).toIndex(size,size)
+                }.forEach { index ->
+                    possibleValues[index].remove(value)
+                }
+            }
+            else if(values.size == 0) {
+                return PopulateResult.contradiction()
+            }
+        }
+
+        // Possible values changed
+        if (score.get() > 0) return PopulateResult.success(score)
+
+        for ((regionID, region) in regions.entries) {
+            val operation = bfHelper.get(regionID) ?: deduceOperation(region, possibleValues, actualValues)
+
+            TODO()
+        }
+
+        // Possible values changed
+        /*
+        CHECK IF THIS IS NECESSARY
+        if (score.get() > 0) {
+            return if (boardMeetsRules(actualValues)) PopulateResult.success(score)
+            else PopulateResult.contradiction()
+        }
+
+        return PopulateResult.noChangesFound()
+         */
+
+        return if (score.get() > 0) PopulateResult.success(score)
+        else PopulateResult.noChangesFound()
     }
 
     override fun boardMeetsRulesStr(board: IntArray): String {

@@ -328,6 +328,16 @@ abstract class GameType(
         return boardRegions.withIndex().any { (pos, id) -> id == regionId && position != pos }
     }
 
+    protected fun addValueToActualValues(
+        values:  MutableList<Int>,
+        actualValues: IntArray,
+        position: Int,
+        score: Score
+    ) {
+        actualValues[position] = values.first()
+        values.clear()
+        score.addScoreNewValue()
+    }
 
     protected fun boardPopulated(board: IntArray): Boolean {
         return !board.any { it == 0 }

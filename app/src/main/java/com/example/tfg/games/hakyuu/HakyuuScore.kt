@@ -59,10 +59,6 @@ class HakyuuScore(score: Int = 0, bruteForce: Int = 0) : Score(Games.HAKYUU, sco
         }
     }
 
-    fun addScoreNewValue() {
-        score += 1
-    }
-
     fun addScoreRule3() {
         score += 4
     }
