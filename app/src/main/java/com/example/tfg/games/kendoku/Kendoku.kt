@@ -3,6 +3,7 @@ package com.example.tfg.games.kendoku
 import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
+import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
@@ -230,17 +231,12 @@ class Kendoku(
     ): PopulateResult {
         val score = KendokuScore()
 
-        val addToRegions = { regionID: Int, position: Int, regions: MutableMap<Int, MutableList<Int>> ->
-            if (regions.containsKey(regionID)) regions[regionID]!!.add(position)
-            else regions[regionID] = mutableListOf(position)
-        }
-
         val regions = mutableMapOf<Int, MutableList<Int>>()
 
         for (position in getRemainingPositions(actualValues)) {
             val regionID = getRegionId(position)
             val values = possibleValues[position]
-            addToRegions(regionID, position, regions)
+            Utils.addToMapList(regionID, position, regions)
 
             if (values.size == 1) {
                 addValueToActualValues(values, actualValues, position, score)
