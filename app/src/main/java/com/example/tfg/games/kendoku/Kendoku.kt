@@ -16,7 +16,7 @@ class Kendoku(
     completedBoard: IntArray = IntArray(size * size),
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
-    private var operationPerRegion: Map<Int, KendokuOperation> = mapOf(),
+    private val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
     private val allowedOperations: Array<KendokuOperation> = KendokuOperation.allButOperationAny(),
     private var printEachBoardState: Boolean = false
 ): GameType(
@@ -43,27 +43,26 @@ class Kendoku(
         super.createGame(difficulty)
         score.reset()
 
-        //TODO
-
         var actualScore: Score? = null
-        val remainingOperationsPerRegion = operationPerRegion.filterValues { !it.isUnknown() }
-        while (remainingOperationsPerRegion.isNotEmpty()) {
-            // Remove random value from startBoard
-            val randomPosition = remainingOperationsPerRegion.random(random)
-            remainingOperationsPerRegion.remove(randomPosition)
-            startBoard[randomPosition] = 0
+        val knownOperationsPerRegion = operationPerRegion.filterValues { !it.isUnknown() }.toMutableMap()
+        while (knownOperationsPerRegion.isNotEmpty()) {
+            // Remove random value from remainingOperationsPerRegion
+            val randomRegion = knownOperationsPerRegion.keys.random(random)
+            knownOperationsPerRegion.remove(randomRegion)
+
+            // Reverse the random region operation to its unknown version
+            operationPerRegion[randomRegion] = operationPerRegion[randomRegion]!!.reverse()
 
             val tmpBoard = startBoard.clone()
 
             val res = solveBoard(tmpBoard)
 
             if (res == null || res.isTooHighForDifficulty(difficulty)) {
-                // Add the value back
-                startBoard[randomPosition] = completedBoard[randomPosition]
+                // Reverse the operation back
+                operationPerRegion[randomRegion] = operationPerRegion[randomRegion]!!.reverse()
             }
             else {
                 actualScore = res
-                if (res.isTooLowForDifficulty(difficulty)) continue
             }
         }
 
@@ -87,7 +86,7 @@ class Kendoku(
 
         // Create operations
 
-        operationPerRegion = boardRegions.groupBy { it }.map { (regionID, values) ->
+        boardRegions.groupBy { it }.forEach { (regionID, values) ->
             val operation = if (values.size == 1) KendokuOperation.ANY
                 else KendokuOperation.knownOperations().filterNot {
                         // Filter out disallowed operations
@@ -101,9 +100,8 @@ class Kendoku(
                 }.random(random)
 
             operationResultPerRegion[regionID] = operation.operate(values)
-
-            regionID to operation
-        }.toMap()
+            operationPerRegion[regionID] = operation
+        }
     }
 
     private fun propagateRandomEmptyRegion(

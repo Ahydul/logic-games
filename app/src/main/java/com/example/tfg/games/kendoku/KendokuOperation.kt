@@ -42,6 +42,20 @@ enum class KendokuOperation {
         }
     }
 
+    fun reverse(): KendokuOperation {
+        return when(this){
+            SUM -> SUM_UNKNOWN
+            SUBTRACT -> SUBTRACT_UNKNOWN
+            MULTIPLY -> MULTIPLY_UNKNOWN
+            DIVIDE -> DIVIDE_UNKNOWN
+            SUM_UNKNOWN -> SUM
+            SUBTRACT_UNKNOWN -> SUBTRACT_UNKNOWN
+            MULTIPLY_UNKNOWN -> MULTIPLY
+            DIVIDE_UNKNOWN -> DIVIDE
+            ANY -> ANY
+        }
+    }
+
     companion object {
         fun allButOperationAny(): Array<KendokuOperation> {
             return KendokuOperation.entries
