@@ -160,6 +160,13 @@ abstract class GameType(
         score.add(actualScore)
     }
 
+    /**
+     * Initialize board with the values that can be calculated at the beginning
+     * and possibleValues with the possible values that that position can take.
+     *
+     * If there is a way to reduce the possible values that only needs to be used once, that is
+     * included in this function, not inside the function populateValues)
+     * **/
     protected abstract fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score
 
     fun solveBoard(board: IntArray): Score? {
@@ -213,6 +220,18 @@ abstract class GameType(
         else res
     }
 
+    /**
+     * Attempt to reduce the possibleValues with different strategies and update the actualValues
+     * if the possible values of a position is only one value.
+     *
+     * PopulateResult is a data type that includes a score and a Result enum
+     * Result will be:
+     * SUCCESS if the algorithm didn't find any problem.
+     * NO_CHANGES if the algorithm didn't change anything.
+     * CONTRADICTION if a contradiction was found.
+     * NOT_UNIQUE_SOLUTION if there are more than one solution available (when using brute force).
+     * MAX_BF_OVERPASSED if the maximum value of brute forces was overpassed.
+     * **/
     protected abstract fun populateValues(
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray,
