@@ -154,7 +154,6 @@ abstract class GameType(
             }
             else {
                 actualScore = res
-                if (res.isTooLowForDifficulty(difficulty)) continue
             }
         }
 
