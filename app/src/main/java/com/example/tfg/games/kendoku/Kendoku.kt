@@ -33,7 +33,7 @@ class Kendoku(
     // Helper variables
     private var currentID = 0
     private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf()
-    private val bfHelper = BruteForceHelper(operationPerRegion)
+    private val knownOperations = BruteForceHelper(operationPerRegion)
 
     // Use this instead of numColumns or numRows
     private val size = numColumns
@@ -182,18 +182,24 @@ class Kendoku(
     }
 
     override fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score {
+        // These arrays shows the possible values allowed in each column and row.
+        // At the beginning its all the values (1..size)
         val columnsPossibleValues = Array(size - 1){ (1..size).toMutableSet() }
         val rowsPossibleValues = Array(size - 1){ (1..size).toMutableSet() }
         val scoreResult = KendokuScore()
 
         for (position in (0..<numPositions())) {
-            val regionId = getRegionId(position)
+            val regionID = getRegionId(position)
+
             val coordinate = Coordinate.fromIndex(index = position, size, size)
 
+            // values have the common possible values of the row and column of the coordinate
             val values = rowsPossibleValues[coordinate.row].intersect(columnsPossibleValues[coordinate.column])
-            val value = if (values.size == 1) values.first() else operationResultPerRegion[regionId]!!
+            val value = if (values.size == 1) values.first() else operationResultPerRegion[regionID]!!
 
-            if (board[position] == 0 && (values.size == 1 || regionIsOneCell(regionId, position))) {
+            // If values is only one value, that value is the only possible value in that position.
+            // If not, if the region is of size 1 operationResultPerRegion[regionID] is the value in that position.
+            if (board[position] == 0 && (values.size == 1 || regionIsOneCell(regionID, position))) {
                 board[position] = value
                 scoreResult.addScoreNewValue()
 
@@ -204,10 +210,12 @@ class Kendoku(
                 possibleValues[position].addAll(values)
             }
         }
+
         return scoreResult
     }
 
     private fun deduceOperation(
+        regionID: Int,
         region: MutableList<Int>,
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray
@@ -221,8 +229,12 @@ class Kendoku(
                 }
             )
         }
-        return if (operations.size == 1) operations.first()
-            else null
+        if (operations.size == 1) {
+            val res = operations.first()
+            knownOperations.set(position = regionID, operation = res)
+            return res
+        }
+        return null
     }
 
     override fun populateValues(
@@ -233,11 +245,13 @@ class Kendoku(
 
         val regions = mutableMapOf<Int, MutableList<Int>>()
 
-        for (position in getRemainingPositions(actualValues)) {
+        for (position in getPositions()) {
             val regionID = getRegionId(position)
-            val values = possibleValues[position]
             Utils.addToMapList(regionID, position, regions)
 
+            if (actualValues[position] == 0) continue
+
+            val values = possibleValues[position]
             if (values.size == 1) {
                 addValueToActualValues(values, actualValues, position, score)
                 val coordinate = Coordinate.fromIndex(index = position, size, size)
@@ -267,24 +281,41 @@ class Kendoku(
         if (score.get() > 0) return PopulateResult.success(score)
 
         for ((regionID, region) in regions.entries) {
-            val operation = bfHelper.get(regionID) ?: deduceOperation(region, possibleValues, actualValues)
+            val operation = knownOperations.get(regionID)
+                ?: deduceOperation(regionID, region, possibleValues, actualValues)
+                ?: continue
+
+            val combinations = getRegionCombinations(possibleValues, actualValues, region, operation)
+
 
             TODO()
         }
 
-        // Possible values changed
-        /*
-        CHECK IF THIS IS NECESSARY
-        if (score.get() > 0) {
-            return if (boardMeetsRules(actualValues)) PopulateResult.success(score)
-            else PopulateResult.contradiction()
-        }
-
-        return PopulateResult.noChangesFound()
-         */
 
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
+    }
+
+    private fun getRegionCombinations(
+        possibleValues: Array<MutableList<Int>>,
+        board: IntArray,
+        region: MutableList<Int>,
+        operation: KendokuOperation
+    ): List<Int> {
+
+
+        return when(operation){
+            KendokuOperation.SUM -> {
+
+
+
+                TODO()
+            }
+            KendokuOperation.SUBTRACT -> TODO()
+            KendokuOperation.MULTIPLY -> TODO()
+            KendokuOperation.DIVIDE -> TODO()
+            else -> emptyList()
+        }
     }
 
     override fun boardMeetsRulesStr(board: IntArray): String {
