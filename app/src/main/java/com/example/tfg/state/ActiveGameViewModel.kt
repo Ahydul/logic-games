@@ -148,7 +148,7 @@ class ActiveGameViewModel(
 
     private fun endActualWinningStreak(endDate: LocalDateTime) {
         viewModelScope.launch(Dispatchers.IO) {
-            gameDao.endActualWinningStreak(endDate = endDate, difficulty = getDifficulty(), gameEnum = getGameEnum())
+            gameDao.endActualWinningStreak(endDate = endDate, difficulty = getDifficulty(), gameEnum = getGameType())
             gameDao.endActualGeneralWinningStreak(endDate = endDate, difficulty = getDifficulty())
             gameDao.endActualGeneralWinningStreak(endDate = endDate, difficulty = null)
         }
@@ -156,8 +156,8 @@ class ActiveGameViewModel(
 
     private fun addOneToActualWinningStreak() {
         viewModelScope.launch(Dispatchers.IO) {
-            var rowsUpdated = gameDao.addOneToActualWinningStreak(gameEnum = getGameEnum(), difficulty = getDifficulty())
-            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = getGameEnum(), difficulty = getDifficulty()))
+            var rowsUpdated = gameDao.addOneToActualWinningStreak(gameEnum = getGameType(), difficulty = getDifficulty())
+            if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = getGameType(), difficulty = getDifficulty()))
 
             rowsUpdated = gameDao.addOneToActualGeneralWinningStreak(difficulty = getDifficulty())
             if (rowsUpdated == 0) gameDao.insertWinningStreak(WinningStreak(gameEnum = null, difficulty = getDifficulty()))
@@ -342,7 +342,7 @@ class ActiveGameViewModel(
                 bitmap = bitmap,
                 filesDir = filesDirectory,
                 fileName = "gameStateId-${getActualGameStateId()}",
-                directory = getGameEnum().name.lowercase()
+                directory = getGameType().name.lowercase()
             )
             if (bitmapFilePath != null) {
                 val gameStateSnapshot = GameStateSnapshot(getActualGameStateId(), bitmapFilePath)
@@ -363,7 +363,7 @@ class ActiveGameViewModel(
                 bitmap = bitmap,
                 filesDir = filesDirectory,
                 fileName = "final-${getGameId()}",
-                directory = getGameEnum().name.lowercase()
+                directory = getGameType().name.lowercase()
             )
         }
     }
@@ -383,7 +383,7 @@ class ActiveGameViewModel(
 
     private fun getCells() = gameInstance.cells
 
-    private fun getGameEnum() = getAbstractGame().type
+    private fun getGameType() = getGame().gameType
 
     private fun getGameStateIds() = gameInstance.gameStateIds
 
@@ -992,10 +992,10 @@ class ActiveGameViewModel(
 
     // For debug
     fun solveBoardOneStep() {
-        val gameType = getAbstractGame()
+        val abstractGame = getAbstractGame()
         val possibleValues = cellsToPossibleValues()
         val actualValues = cellsToIntArrayValues()
-        (gameType as Hakyuu).solveBoardOneStep(possibleValues = possibleValues, actualValues = actualValues)
+        (abstractGame as Hakyuu).solveBoardOneStep(possibleValues = possibleValues, actualValues = actualValues)
 
         actualValues.indices.forEach { position ->
             val newCell = getCell(position).copy(
