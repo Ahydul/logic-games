@@ -33,10 +33,13 @@ fun MiddleSection(
 
         if (expandedStates.value) ResumeGame(viewModel = viewModel)
         else {
-            val snapshotsAllowed by viewModel.snapshotsAllowed!!.collectAsState(initial = true)
-            if (snapshotsAllowed) {
-                val snapshot = CaptureBitmap{ Board(viewModel = viewModel) }
-                viewModel.setSnapshot2(snapshot)
+            if (viewModel.snapshotsAllowed != null) {
+                val snapshotsAllowed by viewModel.snapshotsAllowed.collectAsState(initial = true)
+                if (snapshotsAllowed) {
+                    val snapshot = CaptureBitmap { Board(viewModel = viewModel) }
+                    viewModel.setSnapshot2(snapshot)
+                }
+                else Board(viewModel = viewModel)
             }
             else Board(viewModel = viewModel)
         }
