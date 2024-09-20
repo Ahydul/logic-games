@@ -9,6 +9,7 @@ import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.data.GameDao
 import com.example.tfg.games.common.AbstractGame
+import com.example.tfg.games.common.Games
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -28,7 +29,11 @@ class GameInstance(
             val game = runBlocking { gameDao.getGameById(gameId) }
             val gameStateIds = runBlocking { gameDao.getGameStateIdsByGameId(gameId) }
             if (gameStateIds.isEmpty()) GlobalScope.launch { gameDao.deleteGame(game) }
-            val abstractGame = runBlocking { gameDao.getHakyuuGame(game.abstractGameId) }
+            val abstractGame = runBlocking {
+                when(game.gameType) {
+                    Games.HAKYUU -> gameDao.getHakyuuGame(game.abstractGameId)
+                }
+            }
             val gameStateId = gameStateIds[0]
             val actualGameState = runBlocking { gameDao.getGameStateById(gameStateId) }
             val moves = runBlocking { gameDao.getMovesByGameStateId(gameStateId) }
