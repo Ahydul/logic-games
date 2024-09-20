@@ -25,7 +25,7 @@ android {
         minSdk = 26
         targetSdk = 34
         versionCode = 9 //Check licenses before changing
-        versionName = "1.1.4"
+        versionName = "1.2.0"
         //setProperty("archivesBaseName", "logic-games-$versionName")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
