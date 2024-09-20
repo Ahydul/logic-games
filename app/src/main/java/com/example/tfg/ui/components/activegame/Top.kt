@@ -43,15 +43,17 @@ fun TopSection(
                 painter = painterResource(id = R.drawable.back_arrow),
                 contentDescription = stringResource(id = R.string.go_back)
             )
-            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically!!.collectAsState(initial = true)
-            val shouldBeVisible = viewModel.hasMoreThanOneGameState() || !checkErrorsAutomatically
-            if (shouldBeVisible) {
-                CustomIconButton(
-                    onClick = { viewModel.checkErrors() },
-                    painter = painterResource(id = R.drawable.check),
-                    enabled = viewModel.buttonShouldBeEnabled(),
-                    contentDescription = "Check errors",
-                )
+            if (viewModel.checkErrorsAutomatically != null) {
+                val checkErrorsAutomatically by viewModel.checkErrorsAutomatically.collectAsState(initial = true)
+                val checkErrorsButtonVisible = viewModel.hasMoreThanOneGameState() || !checkErrorsAutomatically
+                if (checkErrorsButtonVisible) {
+                    CustomIconButton(
+                        onClick = { viewModel.checkErrors() },
+                        painter = painterResource(id = R.drawable.check),
+                        enabled = viewModel.buttonShouldBeEnabled(),
+                        contentDescription = "Check errors",
+                    )
+                }
             }
             CustomIconButton(
                 onClick = onConfigurationClick,

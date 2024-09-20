@@ -23,6 +23,7 @@ import com.example.tfg.common.GameInstance
 import com.example.tfg.common.IdGenerator
 import com.example.tfg.data.DataStoreManager.dataStore
 import com.example.tfg.data.DataStorePreferences
+import com.example.tfg.data.FakeContext
 import com.example.tfg.data.GameDatabase
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.state.CustomGameViewModelFactory
@@ -77,7 +78,7 @@ class ActiveGameView : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun ActiveGameScreenPreview() {
-    IdGenerator.initialize(LocalContext.current)
+    IdGenerator.initialize(FakeContext())
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
     val gameInstance = GameInstance.example()
     val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
@@ -96,7 +97,7 @@ fun ActiveGameScreenPreview() {
 @Preview(showBackground = true, device = Devices.NEXUS_5)
 @Composable
 fun ActiveGameScreenPreview2() {
-    IdGenerator.initialize(LocalContext.current)
+    IdGenerator.initialize(FakeContext())
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
     val gameInstance = GameInstance.example()
     val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
@@ -114,7 +115,7 @@ fun ActiveGameScreenPreview2() {
 @Preview(showBackground = true, device = Devices.FOLDABLE)
 @Composable
 fun ActiveGameScreenPreview3() {
-    IdGenerator.initialize(LocalContext.current)
+    IdGenerator.initialize(FakeContext())
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
     val gameInstance = GameInstance.example()
     val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
@@ -132,7 +133,7 @@ fun ActiveGameScreenPreview3() {
 @Preview(showBackground = true, device = Devices.NEXUS_10)
 @Composable
 fun ActiveGameScreenPreview4() {
-    IdGenerator.initialize(LocalContext.current)
+    IdGenerator.initialize(FakeContext())
     val database = GameDatabase.getInMemoryDatabase(LocalContext.current)
     val gameInstance = GameInstance.example()
     val viewModel: ActiveGameViewModel = viewModel(factory = CustomGameViewModelFactory(gameInstance, database.gameDao()))
