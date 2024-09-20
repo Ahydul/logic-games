@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 interface StatsDao {
     @Query("""
         SELECT COUNT(*) FROM Game
-        WHERE (:type IS NULL OR type = :type)
+        WHERE (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
         AND (:endDate IS NULL OR endDate <= :endDate)
@@ -20,7 +20,7 @@ interface StatsDao {
     @Query("""
         SELECT COUNT(*) FROM Game
         WHERE endDate <= :endDate
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
     """)
@@ -35,7 +35,7 @@ interface StatsDao {
         SELECT COUNT(*) FROM Game
         WHERE playerWon = :playerWon
         AND (:endDate IS NULL OR endDate <= :endDate)
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
     """)
@@ -45,7 +45,7 @@ interface StatsDao {
         SELECT SUM(timer) FROM Game
         WHERE playerWon = :playerWon 
         AND (:endDate IS NULL OR endDate <= :endDate)
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
     """)
@@ -53,7 +53,7 @@ interface StatsDao {
 
     @Query("""
         SELECT SUM(timer) FROM Game
-        WHERE (:type IS NULL OR type = :type)
+        WHERE (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
     """)
@@ -64,7 +64,7 @@ interface StatsDao {
         WHERE playerWon = :playerWon
         AND (:endDate IS NULL OR endDate <= :endDate)
         AND timer > 0
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
     """)
@@ -74,7 +74,7 @@ interface StatsDao {
         SELECT AVG(timer) FROM Game
         WHERE playerWon = :playerWon
         AND (:endDate IS NULL OR endDate <= :endDate)
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
     """)
@@ -85,7 +85,7 @@ interface StatsDao {
         WHERE playerWon = :playerWon
         AND (:endDate IS NULL OR endDate <= :endDate)
         AND timer > 0
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
         ORDER BY timer
@@ -96,7 +96,7 @@ interface StatsDao {
         SELECT SUM(numErrors) FROM Game
         WHERE endDate IS NOT NULL
         AND (:endDate IS NULL OR endDate <= :endDate)
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
 """)
@@ -106,7 +106,7 @@ interface StatsDao {
         SELECT AVG(numErrors) FROM Game
         WHERE endDate IS NOT NULL
         AND (:endDate IS NULL OR endDate <= :endDate)
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
 """)
@@ -116,7 +116,7 @@ interface StatsDao {
         SELECT numErrors FROM Game
         WHERE endDate IS NOT NULL
         AND (:endDate IS NULL OR endDate <= :endDate)
-        AND (:type IS NULL OR type = :type)
+        AND (:type IS NULL OR gameType = :type)
         AND (:difficulty IS NULL OR difficulty = :difficulty)
         AND (:startDate IS NULL OR startDate >= :startDate)
         ORDER BY numErrors

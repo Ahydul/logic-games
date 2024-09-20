@@ -1,11 +1,9 @@
 package com.example.tfg.ui.components.mainactivity
 
 import android.graphics.Bitmap
-import android.text.style.ClickableSpan
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -15,13 +13,10 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,7 +38,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,10 +60,8 @@ import com.example.tfg.ui.components.common.CustomClickableText
 import com.example.tfg.ui.components.common.CustomPopup
 import com.example.tfg.ui.components.common.CustomText
 import com.example.tfg.ui.components.common.CustomTextField
-import com.example.tfg.ui.components.common.GridLayout
 import com.example.tfg.ui.components.common.LabeledIconButton
 import com.example.tfg.ui.components.common.MainHeader
-import com.example.tfg.ui.components.common.addDebugBorder
 import com.example.tfg.ui.components.common.animateBlur
 import com.example.tfg.ui.components.common.defaultBitmap
 import com.example.tfg.ui.theme.Theme
@@ -253,7 +245,7 @@ private fun BoardInfo(
         Column(modifier = Modifier.padding(start = 18.dp)) {
             Text(color = textColor,
                 text = "${stringResource(id = R.string.type)}: " +
-                        "${game.type}")
+                        "${game.gameType}")
             Text(color = textColor,
                 text = "${stringResource(id = R.string.difficulty)}: " +
                         "${game.difficulty.toString(context)}")

@@ -17,8 +17,10 @@ import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
+import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
+import com.example.tfg.games.hakyuu.Hakyuu
 import java.time.LocalDateTime
 
 @Dao
@@ -56,6 +58,10 @@ interface GameDao {
     """)
     suspend fun updateGameErrors(gameId: Long, newError: String)
 
+    @Query("SELECT * from Hakyuu WHERE id = :abstractGameId")
+    suspend fun getHakyuuGame(abstractGameId: Long): Hakyuu
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertHakyuuGame(hakyuu: Hakyuu)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)

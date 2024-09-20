@@ -1,6 +1,8 @@
 package com.example.tfg.games.common
 
 import androidx.room.Ignore
+import androidx.room.PrimaryKey
+import com.example.tfg.common.IdGenerator
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Utils
@@ -9,12 +11,14 @@ import com.example.tfg.games.hakyuu.NumberValue
 import kotlin.math.max
 import kotlin.random.Random
 
-abstract class GameType(
-    val type: Games,
+abstract class AbstractGame(
+    @PrimaryKey
+    var id: Long = IdGenerator.generateId("abstractGame"),
+    var type: Games,
     val numColumns: Int,
     val numRows: Int,
     val seed: Long,
-    val score: Score,
+    var score: Score,
 
     var completedBoard: IntArray = IntArray(numColumns * numRows),
     var boardRegions: IntArray = IntArray(numColumns * numRows),
@@ -66,6 +70,7 @@ abstract class GameType(
         return printBoardHTML(startBoard, boardRegions)
     }
 
+    @Ignore
     private var colorMap = mutableMapOf<Int, String>()
     protected fun printBoardHTML(board: IntArray, regions: IntArray, usePreviousColorMap: Boolean = false): String {
         if (!usePreviousColorMap) colorMap = mutableMapOf()
@@ -242,6 +247,7 @@ abstract class GameType(
     }
 
     // For debug
+    @Ignore
     private val debugAmountOfBruteForces = 0
     fun solveBoardOneStep(possibleValues: Array<MutableList<Int>>, actualValues: IntArray): PopulateResult {
         if (possibleValues.all { it.size == 0 }) {
