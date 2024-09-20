@@ -1,6 +1,6 @@
 package com.example.tfg.common
 
-import com.example.tfg.games.common.GameType
+import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.Score
 import com.example.tfg.games.hakyuu.Hakyuu
@@ -16,7 +16,7 @@ class GameTypeEntity(
     var boardRegions: IntArray = IntArray(numColumns * numRows),
     var startBoard: IntArray = IntArray(numColumns * numRows)
 ){
-    fun toGameType(): GameType {
+    fun toGameType(): AbstractGame {
         return when(type){
             Games.HAKYUU -> Hakyuu(
                 numColumns = numColumns,
@@ -24,22 +24,22 @@ class GameTypeEntity(
                 seed = seed,
                 score = score as HakyuuScore,
                 completedBoard = completedBoard,
-                regions = boardRegions,
+                boardRegions = boardRegions,
                 startBoard = startBoard,
             )
         }
     }
     companion object{
-        fun create(gameType: GameType): GameTypeEntity {
+        fun create(abstractGame: AbstractGame): GameTypeEntity {
             return GameTypeEntity(
-                type = gameType.type,
-                numColumns = gameType.numColumns,
-                numRows = gameType.numRows,
-                seed = gameType.seed,
-                score = gameType.score,
-                completedBoard = gameType.completedBoard,
-                boardRegions = gameType.boardRegions,
-                startBoard = gameType.startBoard,
+                type = abstractGame.type,
+                numColumns = abstractGame.numColumns,
+                numRows = abstractGame.numRows,
+                seed = abstractGame.seed,
+                score = abstractGame.score,
+                completedBoard = abstractGame.completedBoard,
+                boardRegions = abstractGame.boardRegions,
+                startBoard = abstractGame.startBoard,
             )
         }
     }

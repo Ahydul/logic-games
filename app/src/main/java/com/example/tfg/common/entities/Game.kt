@@ -1,21 +1,20 @@
 package com.example.tfg.common.entities
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.tfg.common.GameTypeEntity
 import com.example.tfg.games.common.Difficulty
-import com.example.tfg.games.common.GameType
+import com.example.tfg.games.common.Games
 import java.time.LocalDateTime
 
 @Entity
 data class Game(
     @PrimaryKey(autoGenerate = true)
     val gameId: Long = 0,
-    @Embedded
-    val gameTypeEntity: GameTypeEntity,
+    val gameType: Games,
+    val abstractGameId: Long,
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
+    val seed: Long,
     var endDate: LocalDateTime? = null,
     var playerWon: Boolean = false,
     var errors: MutableSet<Pair<Int,Int>> = mutableSetOf(),
@@ -41,19 +40,14 @@ data class Game(
     }
 
     companion object {
-        fun create(gameType: GameType, difficulty: Difficulty): Game {
+        fun create(gameType: Games, abstractGameId: Long, difficulty: Difficulty, seed: Long): Game {
             return Game(
-                gameTypeEntity = GameTypeEntity.create(gameType),
+                gameType = gameType,
+                abstractGameId = abstractGameId,
                 difficulty = difficulty,
+                seed = seed
             )
         }
-        fun create(gameTypeEntity: GameTypeEntity, difficulty: Difficulty): Game {
-            return Game(
-                gameTypeEntity = gameTypeEntity,
-                difficulty = difficulty,
-            )
-        }
-
     }
 }
 

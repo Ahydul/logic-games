@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 class GameLowerInfo(
     val gameId: Long,
-    val type: Games,
+    val gameType: Games,
     val difficulty: Difficulty,
     val startDate: LocalDateTime = LocalDateTime.now(),
     val numErrors: Int,

@@ -1,29 +1,32 @@
 package com.example.tfg.games.hakyuu
 
+import androidx.room.Entity
+import androidx.room.Ignore
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Utils
-import com.example.tfg.games.common.BruteForceResult
-import com.example.tfg.games.common.BruteForceValues
-import com.example.tfg.games.common.GameType
+import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
-import kotlin.random.Random
 
-class Hakyuu(
+@Entity
+class Hakyuu @JvmOverloads constructor(
     numColumns: Int,
     numRows: Int,
     seed: Long,
     score: HakyuuScore = HakyuuScore(),
     completedBoard: IntArray = IntArray(numColumns * numRows),
     startBoard: IntArray = IntArray(numColumns * numRows),
-    regions: IntArray = IntArray(numColumns * numRows),
+    boardRegions: IntArray = IntArray(numColumns * numRows),
+
+    @Ignore
     var iterations: Int = 1,
+    @Ignore
     var printEachBoardState: Boolean = false
-): GameType(
+): AbstractGame(
     type = Games.HAKYUU,
     numColumns = numColumns,
     numRows = numRows,
@@ -31,10 +34,11 @@ class Hakyuu(
     score = score,
     completedBoard = completedBoard,
     startBoard = startBoard,
-    boardRegions = regions
+    boardRegions = boardRegions
 ) {
 
     // Helper variables
+    @Ignore
     private var currentID = 0
 
     override fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
@@ -513,7 +517,7 @@ class Hakyuu(
                 seed = seed,
                 startBoard = start,
                 completedBoard = completed,
-                regions = regions
+                boardRegions = regions
             )
 
             return hakyuu
@@ -532,7 +536,7 @@ class Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
                 seed = seed,
-                regions = regions,
+                boardRegions = regions,
                 startBoard = start,
                 completedBoard = completed
             )

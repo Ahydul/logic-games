@@ -375,9 +375,7 @@ class ActiveGameViewModel(
 
     private fun getGameId() = getGame().gameId
 
-    private fun getGameType() = getGame().gameTypeEntity
-
-    private fun getRealGameType() = getGameType().toGameType()
+    private fun getAbstractGame() = gameInstance.abstractGame
 
     private fun getMoves() = gameInstance.moves
 
@@ -385,7 +383,7 @@ class ActiveGameViewModel(
 
     private fun getCells() = gameInstance.cells
 
-    private fun getGameEnum() = getGameType().type
+    private fun getGameEnum() = getAbstractGame().type
 
     private fun getGameStateIds() = gameInstance.gameStateIds
 
@@ -403,7 +401,7 @@ class ActiveGameViewModel(
 
     fun getNumClues() = numClues.value
 
-    fun getScoreValue() = getGameType().score.get().toString()
+    fun getScoreValue() = getAbstractGame().score.get().toString()
 
     fun getMaxNumCluesAllowed() = maxCluesAllowed
 
@@ -411,13 +409,13 @@ class ActiveGameViewModel(
 
     fun getDifficulty(context: Context) = getGame().difficulty.toString(context)
 
-    fun getValue(value: Int): GameValue = getRealGameType().getValue(value)
+    fun getValue(value: Int): GameValue = getAbstractGame().getValue(value)
 
-    fun getMaxValue() = getRealGameType().maxRegionSize()
+    fun getMaxValue() = getAbstractGame().maxRegionSize()
 
-    private fun getRegions() = getRealGameType().getRegions()
+    private fun getRegions() = getAbstractGame().getRegions()
 
-    private fun getCompletedBoard() = getGameType().completedBoard
+    private fun getCompletedBoard() = getAbstractGame().completedBoard
 
     fun getRegionSize() = getRegions().size
 
@@ -911,7 +909,7 @@ class ActiveGameViewModel(
 
     private fun checkValue(position: Int, value: Int): Set<Int> {
         return if (isError(position, value))
-            getRealGameType().checkValue(
+            getAbstractGame().checkValue(
                 position = position,
                 value = value,
                 actualValues = cellsToIntArrayValues()
@@ -920,7 +918,7 @@ class ActiveGameViewModel(
     }
 
     private fun isError(position: Int, value: Int): Boolean {
-        return getRealGameType().isError(
+        return getAbstractGame().isError(
             position = position,
             value = value
         )
@@ -994,7 +992,7 @@ class ActiveGameViewModel(
 
     // For debug
     fun solveBoardOneStep() {
-        val gameType = getRealGameType()
+        val gameType = getAbstractGame()
         val possibleValues = cellsToPossibleValues()
         val actualValues = cellsToIntArrayValues()
         (gameType as Hakyuu).solveBoardOneStep(possibleValues = possibleValues, actualValues = actualValues)
@@ -1090,17 +1088,6 @@ class ActiveGameViewModel(
     private fun noCluesLeft(): Boolean {
         return getNumClues() == maxCluesAllowed
     }
-
-    /*
-    //For debug
-    fun giveClue() {
-        val almostCompleted = getRealGameType().solveBoard2(cellsToIntArray())
-        almostCompleted.forEachIndexed { index, value ->
-            val prev = getCell(index)
-            if (!prev.readOnly) setCell(index = index, newCell = prev.copy(value = value))
-        }
-    }
-     */
 
     fun giveClue() {
         //If only one value left refuse to allow player to "win"
