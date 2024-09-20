@@ -1,15 +1,18 @@
 package com.example.tfg.games.kendoku
 
+import androidx.room.Entity
+import androidx.room.Ignore
 import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Utils
+import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
-import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
 
+@Entity
 class Kendoku(
     size: Int,
     seed: Long,
@@ -19,8 +22,10 @@ class Kendoku(
     regions: IntArray = IntArray(size * size),
     private val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
     private val allowedOperations: Array<KendokuOperation> = KendokuOperation.allButOperationAny(),
+
+    @Ignore
     private var printEachBoardState: Boolean = false
-): GameType(
+): AbstractGame(
     type = Games.HAKYUU,
     numColumns = size,
     numRows = size,

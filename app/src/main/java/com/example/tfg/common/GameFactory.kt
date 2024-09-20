@@ -6,8 +6,8 @@ import com.example.tfg.common.entities.Game
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.data.GameDao
+import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
-import com.example.tfg.games.common.GameType
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.hakyuu.Hakyuu
 
@@ -21,7 +21,7 @@ class GameFactory(private val gameDao: GameDao) {
         seed: Long? = (Math.random() * 10000000000).toLong()
     ): Long {
         // Initialize gameType
-        val gameType: GameType = when (chosenGame) {
+        val abstractGame: AbstractGame = when (chosenGame) {
             Games.HAKYUU -> Hakyuu.create(
                 numRows = numRows,
                 numColumns = numColumns,
@@ -31,16 +31,22 @@ class GameFactory(private val gameDao: GameDao) {
         }
 
         return create(
-            gameType = gameType,
-            difficulty = gameType.score.getDifficulty(),
+            chosenGame = chosenGame,
+            abstractGame = abstractGame,
+            difficulty = abstractGame.score.getDifficulty(),
             numColumns = numColumns,
             numRows = numRows
         )
     }
 
-    private suspend fun create(gameType: GameType, difficulty: Difficulty, numColumns: Int, numRows: Int): Long {
+    private suspend fun create(chosenGame: Games, abstractGame: AbstractGame, difficulty: Difficulty, numColumns: Int, numRows: Int): Long {
+        // Insert AbstractGame
+        when (chosenGame) {
+            Games.HAKYUU -> gameDao.insertHakyuuGame(abstractGame as Hakyuu)
+        }
+
         // Create game
-        val game = Game.create(gameType = gameType, difficulty = difficulty)
+        val game = Game.create(gameType = chosenGame, abstractGameId = abstractGame.id, difficulty = difficulty, seed = abstractGame.seed)
         val gameId = gameDao.insertGame(game)
 
         // Create GameState
@@ -56,7 +62,7 @@ class GameFactory(private val gameDao: GameDao) {
        gameDao.insertBoard(board)
 
         // Initialize cells
-        val cells = gameType.startBoard.map { Cell.initializeBoardCell(it) }.toTypedArray()
+        val cells = abstractGame.startBoard.map { Cell.initializeBoardCell(it) }.toTypedArray()
         cells.forEachIndexed { index, cell ->
             gameDao.insertCell(cell)
             val crossRef = BoardCellCrossRef(boardId = board.boardId, cellId = cell.cellId, cellPosition = index)
@@ -64,18 +70,6 @@ class GameFactory(private val gameDao: GameDao) {
         }
 
         return gameId
-    }
-
-    suspend fun exampleHakyuuToDB(): Long {
-        val numColumns = 8
-        val numRows = 8
-
-        return create(
-            gameType = exampleHakyuu(),
-            difficulty = Difficulty.EASY,
-            numColumns = numColumns,
-            numRows = numRows
-        )
     }
 
 
@@ -96,7 +90,7 @@ class GameFactory(private val gameDao: GameDao) {
             )
         }
 
-        fun exampleHakyuuGame() = Game.create(exampleHakyuu(), Difficulty.EASY)
+        fun exampleHakyuuGame() = Game.create(Games.HAKYUU, 0, Difficulty.EASY, 0)
         fun exampleGameState(gameId: Long) = GameState(gameStateId = 0, gameId = gameId, position = 0)
         fun exampleBoard(gameStateId: Long) = Board(boardId = 0, numRows = 8, numColumns = 8, gameStateId = gameStateId)
         fun exampleCells(cellArray: IntArray) = cellArray.mapIndexed { index, value ->

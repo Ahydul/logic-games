@@ -8,12 +8,14 @@ import com.example.tfg.common.entities.Game
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.data.GameDao
+import com.example.tfg.games.common.AbstractGame
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class GameInstance(
     val game: Game,
+    val abstractGame: AbstractGame,
     val gameStateIds: MutableList<Long>,
     var actualGameState: GameState,
     var moves: MutableList<MoveWithActions>,
@@ -26,6 +28,7 @@ class GameInstance(
             val game = runBlocking { gameDao.getGameById(gameId) }
             val gameStateIds = runBlocking { gameDao.getGameStateIdsByGameId(gameId) }
             if (gameStateIds.isEmpty()) GlobalScope.launch { gameDao.deleteGame(game) }
+            val abstractGame = runBlocking { gameDao.getHakyuuGame(game.abstractGameId) }
             val gameStateId = gameStateIds[0]
             val actualGameState = runBlocking { gameDao.getGameStateById(gameStateId) }
             val moves = runBlocking { gameDao.getMovesByGameStateId(gameStateId) }
@@ -34,6 +37,7 @@ class GameInstance(
 
             return GameInstance(
                 game = game,
+                abstractGame = abstractGame,
                 gameStateIds = gameStateIds,
                 actualGameState = actualGameState,
                 moves = moves,
@@ -44,14 +48,16 @@ class GameInstance(
 
         fun example(): GameInstance {
             val game = GameFactory.exampleHakyuuGame()
+            val hakyuu = GameFactory.exampleHakyuu()
             val gameStateIds = mutableListOf<Long>()
             val actualGameState = GameFactory.exampleGameState(game.gameId)
             val moves = mutableListOf<MoveWithActions>()
             val board = GameFactory.exampleBoard(gameStateId = actualGameState.gameStateId)
-            val cells = GameFactory.exampleCells(game.gameTypeEntity.startBoard).map { mutableStateOf(it) }.toTypedArray()
+            val cells = GameFactory.exampleCells(hakyuu.startBoard).map { mutableStateOf(it) }.toTypedArray()
 
             return GameInstance(
                 game = game,
+                abstractGame = hakyuu,
                 gameStateIds = gameStateIds,
                 actualGameState = actualGameState,
                 moves = moves,
