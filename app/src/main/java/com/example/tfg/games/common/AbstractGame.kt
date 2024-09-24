@@ -2,7 +2,6 @@ package com.example.tfg.games.common
 
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.example.tfg.common.IdGenerator
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Utils
@@ -13,7 +12,7 @@ import kotlin.random.Random
 
 abstract class AbstractGame(
     @PrimaryKey
-    var id: Long = IdGenerator.generateId("abstractGame"),
+    var id: Long,
     var type: Games,
     val numColumns: Int,
     val numRows: Int,

@@ -2,6 +2,7 @@ package com.example.tfg.games.kendoku
 
 import androidx.room.Entity
 import androidx.room.Ignore
+import com.example.tfg.common.IdGenerator
 import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
@@ -14,6 +15,7 @@ import com.example.tfg.games.common.Score
 
 @Entity
 class Kendoku(
+    id: Long = IdGenerator.generateId("kendokuGame"),
     size: Int,
     seed: Long,
     score: KendokuScore = KendokuScore(),
@@ -26,6 +28,7 @@ class Kendoku(
     @Ignore
     private var printEachBoardState: Boolean = false
 ): AbstractGame(
+    id = id,
     type = Games.HAKYUU,
     numColumns = size,
     numRows = size,
@@ -291,7 +294,8 @@ class Kendoku(
                 ?: deduceOperation(regionID, region, possibleValues, actualValues)
                 ?: continue
 
-            val combinations = getRegionCombinations(possibleValues, actualValues, region, operation)
+            val operationRes = operationResultPerRegion[regionID]!!
+            val combinations = getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
 
 
             TODO()
@@ -302,25 +306,65 @@ class Kendoku(
         else PopulateResult.noChangesFound()
     }
 
-    private fun getRegionSumCombinations(
+    internal fun getRegionSumCombinations(
         possibleValues: Array<MutableList<Int>>,
-        board: IntArray,
         region: MutableList<Int>,
-        operation: KnownKendokuOperation
-    ): List<Int> {
+        sum: Int
+    ): List<IntArray> {
+        val combinations = mutableListOf<IntArray>()
+        val regionSize = region.size
+        val lastCombination = IntArray(regionSize)
+
+        val helper = region.mapIndexed { index, position1  ->
+            region.slice(0..< index).reversed().filter { position2 ->
+                Coordinate.sameColumnOrRow(position1 = position1, position2 = position2, numColumns = size)
+            }.map { region.indexOf(it) }
+        }.toTypedArray()
+
+        val valueAlreadyInRowOrColumn = { index: Int, value: Int ->
+            helper[index].any { lastCombination[it] == value }
+        }
+
+        fun backtrack(index: Int = 0, actualSum: Int = 0): Boolean {
+            //println(lastCombination.withIndex().takeWhile { it.index < index }.fold("") { acc, last -> "$acc ${last.value}" })
+            val values = possibleValues[region[index]]
+            if (index == regionSize - 1) {
+                val subtraction = sum - actualSum
+                if (values.contains(subtraction) && !valueAlreadyInRowOrColumn(index, subtraction)) {
+                    lastCombination[index] = subtraction
+                    combinations.add(lastCombination.clone())
+                    //println(lastCombination.withIndex().takeWhile { it.index <= index }.fold("") { acc, last -> "$acc ${last.value}" })
+                }
+                return values.last() > subtraction
+            }
+
+            for (value in values.reversed()) {
+                val newActualSum = actualSum + value
+                if (newActualSum >= sum) continue
+                if (valueAlreadyInRowOrColumn(index, value)) continue
+
+                lastCombination[index] = value
+                if (!backtrack(index = index + 1, actualSum = newActualSum)) break
+            }
+
+            return true
+        }
 
 
-        return emptyList()
+        backtrack()
+
+        return combinations
     }
 
     private fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
         region: MutableList<Int>,
+        operationResult: Int,
         operation: KnownKendokuOperation
-    ): List<Int> {
+    ): List<IntArray> {
         return when(operation){
-            KnownKendokuOperation.SUM -> return getRegionSumCombinations(possibleValues, board, region, operation)
+            KnownKendokuOperation.SUM -> getRegionSumCombinations(possibleValues, region, operationResult)
             KnownKendokuOperation.SUBTRACT -> TODO()
             KnownKendokuOperation.MULTIPLY -> TODO()
             KnownKendokuOperation.DIVIDE -> TODO()

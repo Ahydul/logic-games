@@ -2,6 +2,7 @@ package com.example.tfg.games.hakyuu
 
 import androidx.room.Entity
 import androidx.room.Ignore
+import com.example.tfg.common.IdGenerator
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
@@ -14,6 +15,7 @@ import com.example.tfg.games.common.Score
 
 @Entity
 class Hakyuu @JvmOverloads constructor(
+    id: Long = IdGenerator.generateId("kendokuGame"),
     numColumns: Int,
     numRows: Int,
     seed: Long,
@@ -27,6 +29,7 @@ class Hakyuu @JvmOverloads constructor(
     @Ignore
     var printEachBoardState: Boolean = false
 ): AbstractGame(
+    id = id,
     type = Games.HAKYUU,
     numColumns = numColumns,
     numRows = numRows,
