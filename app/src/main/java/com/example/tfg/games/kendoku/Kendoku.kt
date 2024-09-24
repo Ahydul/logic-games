@@ -21,7 +21,7 @@ class Kendoku(
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
     private val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
-    private val allowedOperations: Array<KendokuOperation> = KendokuOperation.allButOperationAny(),
+    private val allowedOperations: Array<KendokuOperation> = KendokuOperation.allOperations(),
 
     @Ignore
     private var printEachBoardState: Boolean = false
@@ -93,7 +93,7 @@ class Kendoku(
         // Create operations
 
         boardRegions.groupBy { it }.forEach { (regionID, values) ->
-            val operation = if (values.size == 1) KendokuOperation.ANY
+            val operation = if (values.size == 1) KendokuOperation.SUM_UNKNOWN
                 else KendokuOperation.knownOperations().filterNot {
                         // Filter out disallowed operations
                     !allowedOperations.contains(it) ||
@@ -224,7 +224,8 @@ class Kendoku(
         region: MutableList<Int>,
         possibleValues: Array<MutableList<Int>>,
         actualValues: IntArray
-    ): KendokuOperation? {
+    ): KnownKendokuOperation? {
+        //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 2*2 = 2+2
         val operations = allowedOperations.filter {
             it.filterOperation(
                 region.associate { position ->
@@ -235,8 +236,8 @@ class Kendoku(
             )
         }
         if (operations.size == 1) {
-            val res = operations.first()
-            knownOperations.set(position = regionID, operation = res)
+            val res = operations.first().reverse().toKnownEnum()!!
+            knownOperations.set(regionID = regionID, operation = res)
             return res
         }
         return null
@@ -301,25 +302,28 @@ class Kendoku(
         else PopulateResult.noChangesFound()
     }
 
+    private fun getRegionSumCombinations(
+        possibleValues: Array<MutableList<Int>>,
+        board: IntArray,
+        region: MutableList<Int>,
+        operation: KnownKendokuOperation
+    ): List<Int> {
+
+
+        return emptyList()
+    }
+
     private fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
         region: MutableList<Int>,
-        operation: KendokuOperation
+        operation: KnownKendokuOperation
     ): List<Int> {
-
-
         return when(operation){
-            KendokuOperation.SUM -> {
-
-
-
-                TODO()
-            }
-            KendokuOperation.SUBTRACT -> TODO()
-            KendokuOperation.MULTIPLY -> TODO()
-            KendokuOperation.DIVIDE -> TODO()
-            else -> emptyList()
+            KnownKendokuOperation.SUM -> return getRegionSumCombinations(possibleValues, board, region, operation)
+            KnownKendokuOperation.SUBTRACT -> TODO()
+            KnownKendokuOperation.MULTIPLY -> TODO()
+            KnownKendokuOperation.DIVIDE -> TODO()
         }
     }
 

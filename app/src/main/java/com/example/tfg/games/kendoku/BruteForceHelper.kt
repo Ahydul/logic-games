@@ -4,26 +4,25 @@ import com.example.tfg.common.utils.Utils
 
 class BruteForceHelper private constructor(
     private var bruteForceIteration: Int = 0,
-    private val operationPerRegion: Array<KendokuOperation?>,
+    private val operationPerRegion: Array<KnownKendokuOperation?>,
     private val regionsSetPerIteration: MutableMap<Int, MutableList<Int>> = mutableMapOf()
 ) {
     constructor(operations: Map<Int, KendokuOperation>) :
-            this(operationPerRegion = operations.map { (_, operation) ->
-                if (operation.isUnknown()) null
-                else operation
+            this(operationPerRegion =
+            operations.map { (_, operation) ->
+               operation.toKnownEnum()
             }.toTypedArray())
 
-    fun get(position: Int): KendokuOperation? {
-        return operationPerRegion[position]
+    fun get(regionID: Int): KnownKendokuOperation? {
+        return operationPerRegion[regionID]
     }
 
-    fun set(operation: KendokuOperation, position: Int) {
-        require(!operation.isUnknown()) { "Operation provided is unknown" }
-        require(operationPerRegion[position] == null) { "Region already set. Overriding forbidden" }
+    fun set(operation: KnownKendokuOperation, regionID: Int) {
+        require(operationPerRegion[regionID] == null) { "Region already set. Overriding forbidden" }
 
-        operationPerRegion[position] = operation
+        operationPerRegion[regionID] = operation
 
-        Utils.addToMapList(key = bruteForceIteration, value = position, map = regionsSetPerIteration)
+        Utils.addToMapList(key = bruteForceIteration, value = regionID, map = regionsSetPerIteration)
     }
 
     fun regressIteration() {

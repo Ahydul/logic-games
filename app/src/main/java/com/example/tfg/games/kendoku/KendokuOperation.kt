@@ -2,6 +2,13 @@ package com.example.tfg.games.kendoku
 
 import com.example.tfg.common.utils.Coordinate
 
+enum class KnownKendokuOperation {
+    SUM,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE
+}
+
 enum class KendokuOperation {
     SUM,
     SUBTRACT,
@@ -11,9 +18,7 @@ enum class KendokuOperation {
     SUM_UNKNOWN,
     SUBTRACT_UNKNOWN,
     MULTIPLY_UNKNOWN,
-    DIVIDE_UNKNOWN,
-
-    ANY;
+    DIVIDE_UNKNOWN;
 
     fun operate(values: List<Int>): Int {
         return when(this){
@@ -21,7 +26,6 @@ enum class KendokuOperation {
             SUBTRACT, SUBTRACT_UNKNOWN -> values.max() - values.min()
             MULTIPLY, MULTIPLY_UNKNOWN -> values.reduce { acc, num -> acc * num }
             DIVIDE, DIVIDE_UNKNOWN -> values.max() / values.min()
-            ANY -> values.first()
         }
     }
 
@@ -49,20 +53,23 @@ enum class KendokuOperation {
             MULTIPLY -> MULTIPLY_UNKNOWN
             DIVIDE -> DIVIDE_UNKNOWN
             SUM_UNKNOWN -> SUM
-            SUBTRACT_UNKNOWN -> SUBTRACT_UNKNOWN
+            SUBTRACT_UNKNOWN -> SUBTRACT
             MULTIPLY_UNKNOWN -> MULTIPLY
             DIVIDE_UNKNOWN -> DIVIDE
-            ANY -> ANY
+        }
+    }
+
+    fun toKnownEnum(): KnownKendokuOperation? {
+        return when(this) {
+            SUM -> KnownKendokuOperation.SUM
+            SUBTRACT -> KnownKendokuOperation.SUBTRACT
+            MULTIPLY -> KnownKendokuOperation.MULTIPLY
+            DIVIDE -> KnownKendokuOperation.DIVIDE
+            else -> null
         }
     }
 
     companion object {
-        fun allButOperationAny(): Array<KendokuOperation> {
-            return KendokuOperation.entries
-                .filterNot { it == ANY }
-                .toTypedArray()
-        }
-
         fun knownOperations(): Array<KendokuOperation> {
             return KendokuOperation.entries
                 .filterNot { it.isUnknown() }
