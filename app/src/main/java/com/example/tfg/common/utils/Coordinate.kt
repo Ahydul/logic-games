@@ -121,5 +121,11 @@ data class Coordinate(val row: Int, val column: Int) {
             if (newPosition >= numColumns*numRows) return null
             return newPosition
         }
+
+        fun sameColumnOrRow(position1: Int, position2: Int, numColumns: Int): Boolean {
+            return getRow(position1, numColumns) == getRow(position2, numColumns) ||
+                    getColumn(position1, numColumns) == getColumn(position2, numColumns)
+        }
+
     }
 }

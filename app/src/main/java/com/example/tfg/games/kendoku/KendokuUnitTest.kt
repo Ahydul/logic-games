@@ -29,6 +29,37 @@ class KendokuUnitTest {
     }
 
     @Test
+    fun testGetRegionSumCombinations() {
+        val kendoku = Kendoku(0, 3,0L)
+
+        val possibleValues = arrayOf(
+            mutableListOf(1,2,3), mutableListOf(2,3), mutableListOf(5,6),
+            mutableListOf(8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
+            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
+        )
+
+
+        val startTime = System.currentTimeMillis()
+/*
+        repeat(1000000) {
+            val test2 = kendoku.getRegionSumCombinations(possibleValues = possibleValues, region = mutableListOf(4,6,7), sum = 18)
+        }
+
+ */
+
+        val endTime = System.currentTimeMillis()
+        println("Time: ${endTime - startTime} ms")
+
+        //val test1 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(0, 1, 2, 3, 5),28)
+        val test2 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(4,6,7,8), 18)
+
+        println("${test2.size} combinations")
+        test2.forEach { println(it.fold("") { acc, v -> "$acc $v" }) }
+
+        assert(true)
+    }
+
+    @Test
     fun testCreateSeededKendokuBoard() {
         val size = 15
         val seed = 234242242L
