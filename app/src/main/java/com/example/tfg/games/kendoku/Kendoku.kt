@@ -326,14 +326,12 @@ class Kendoku(
         }
 
         fun backtrack(index: Int = 0, actualSum: Int = 0): Boolean {
-            //println(lastCombination.withIndex().takeWhile { it.index < index }.fold("") { acc, last -> "$acc ${last.value}" })
             val values = possibleValues[region[index]]
             if (index == regionSize - 1) {
                 val subtraction = sum - actualSum
                 if (values.contains(subtraction) && !valueAlreadyInRowOrColumn(index, subtraction)) {
                     lastCombination[index] = subtraction
                     combinations.add(lastCombination.clone())
-                    //println(lastCombination.withIndex().takeWhile { it.index <= index }.fold("") { acc, last -> "$acc ${last.value}" })
                 }
                 return values.last() > subtraction
             }
