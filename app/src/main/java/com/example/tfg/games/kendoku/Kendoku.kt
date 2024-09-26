@@ -356,6 +356,24 @@ class Kendoku(
         return combinations
     }
 
+    internal fun getRegionSubtractCombinations(
+        possibleValues: Array<MutableList<Int>>,
+        region: MutableList<Int>,
+        subtraction: Int
+    ): List<IntArray> {
+        val combinations = mutableListOf<IntArray>()
+        val possibleValues1 = possibleValues[region[0]]
+        val possibleValues2 = possibleValues[region[1]]
+        (subtraction+1 .. size).forEach { int ->
+            val int2 = int-subtraction
+            if (possibleValues1.contains(int) && possibleValues2.contains(int2))
+                combinations.add(intArrayOf(int, int2))
+            if (possibleValues1.contains(int2) && possibleValues2.contains(int))
+                combinations.add(intArrayOf(int2, int))
+        }
+        return combinations
+    }
+
     private fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
@@ -365,7 +383,7 @@ class Kendoku(
     ): List<IntArray> {
         return when(operation){
             KnownKendokuOperation.SUM -> getRegionSumCombinations(possibleValues, region, operationResult)
-            KnownKendokuOperation.SUBTRACT -> TODO()
+            KnownKendokuOperation.SUBTRACT -> getRegionSubtractCombinations(possibleValues, region, operationResult)
             KnownKendokuOperation.MULTIPLY -> TODO()
             KnownKendokuOperation.DIVIDE -> TODO()
         }
