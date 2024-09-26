@@ -374,6 +374,57 @@ class Kendoku(
         return combinations
     }
 
+    internal fun getRegionMultiplicationCombinations(
+        possibleValues: Array<MutableList<Int>>,
+        region: MutableList<Int>,
+        multiplication: Int
+    ): List<IntArray> {
+        val combinations = mutableListOf<IntArray>()
+        val regionSize = region.size
+        val lastCombination = IntArray(regionSize)
+
+        val helper = region.mapIndexed { index, position1  ->
+            region.slice(0..< index).reversed().filter { position2 ->
+                Coordinate.sameColumnOrRow(position1 = position1, position2 = position2, numColumns = size)
+            }.map { region.indexOf(it) }
+        }.toTypedArray()
+
+        val valueAlreadyInRowOrColumn = { index: Int, value: Int ->
+            helper[index].any { lastCombination[it] == value }
+        }
+
+        fun backtrack(index: Int = 0, actualMultiplication: Int = 1): Boolean {
+            val values = possibleValues[region[index]]
+            if (index == regionSize - 1) {
+                val division = multiplication / actualMultiplication
+                if (multiplication % actualMultiplication == 0 &&
+                    values.contains(division) &&
+                    !valueAlreadyInRowOrColumn(index, division))
+                {
+                    lastCombination[index] = division
+                    combinations.add(lastCombination.clone())
+                }
+                return values.last() > division
+            }
+
+            for (value in values.reversed()) {
+                val newActualMultiplication = actualMultiplication * value
+                if (newActualMultiplication >= multiplication) continue
+                if (valueAlreadyInRowOrColumn(index, value)) continue
+
+                lastCombination[index] = value
+                if (!backtrack(index = index + 1, actualMultiplication = newActualMultiplication)) break
+            }
+
+            return true
+        }
+
+
+        backtrack()
+
+        return combinations
+    }
+
     private fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
@@ -384,7 +435,7 @@ class Kendoku(
         return when(operation){
             KnownKendokuOperation.SUM -> getRegionSumCombinations(possibleValues, region, operationResult)
             KnownKendokuOperation.SUBTRACT -> getRegionSubtractCombinations(possibleValues, region, operationResult)
-            KnownKendokuOperation.MULTIPLY -> TODO()
+            KnownKendokuOperation.MULTIPLY -> getRegionMultiplicationCombinations(possibleValues, region, operationResult)
             KnownKendokuOperation.DIVIDE -> TODO()
         }
     }
