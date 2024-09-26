@@ -9,6 +9,7 @@ import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.common.AbstractGame
+import com.example.tfg.games.common.BoardData
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
@@ -269,11 +270,11 @@ class Hakyuu @JvmOverloads constructor(
 
     // Tries to populate values while there is no contradiction
     // Return if there wasnt a contradiction
-    override fun populateValues(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-    ): PopulateResult {
+    override fun populateValues(boardData: BoardData): PopulateResult {
         val score = HakyuuScore()
+
+        val possibleValues = boardData.possibleValues
+        val actualValues = boardData.actualValues
 
         val filteredRegions = mutableMapOf<Int, MutableList<Int>>()
         val remainingRegions = mutableMapOf<Int, MutableList<Int>>()
@@ -494,8 +495,22 @@ class Hakyuu @JvmOverloads constructor(
 
     companion object {
 
-        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty, printEachBoardState: Boolean = false): Hakyuu {
+        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
             val hakyuu = Hakyuu(
+                numRows = numRows,
+                numColumns = numColumns,
+                seed = seed
+            )
+
+            hakyuu.createGame(difficulty)
+
+            return hakyuu
+        }
+
+        // For testing
+        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty, printEachBoardState: Boolean): Hakyuu {
+            val hakyuu = Hakyuu(
+                id = 0,
                 numRows = numRows,
                 numColumns = numColumns,
                 seed = seed,
@@ -507,6 +522,7 @@ class Hakyuu @JvmOverloads constructor(
             return hakyuu
         }
 
+        // For testing
         fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String, reverse: Boolean = false): Hakyuu {
             val start = Hakyuu.parseBoardString(startBoard)
             val completed = Hakyuu.parseBoardString(completedBoard)
@@ -515,6 +531,7 @@ class Hakyuu @JvmOverloads constructor(
             require(start.size == completed.size && start.size == regions.size && start.size == numRows*numColumns) { "Incompatible sizes provided to Hakyuu" }
 
             val hakyuu = Hakyuu(
+                id = 0,
                 numRows = numRows,
                 numColumns = numColumns,
                 seed = seed,
@@ -526,6 +543,7 @@ class Hakyuu @JvmOverloads constructor(
             return hakyuu
         }
 
+        // For testing
         fun solveBoard(seed: Long, boardToSolve: String, boardRegions: String, reverseCoordinates: Boolean = false): Hakyuu {
             val start = Hakyuu.parseBoardString(boardToSolve)
             val regions = Hakyuu.parseRegionString(boardRegions, reverseCoordinates)
@@ -536,6 +554,7 @@ class Hakyuu @JvmOverloads constructor(
             require(start.size == regions.size) { "Incompatible sizes provided to Hakyuu" }
 
             val hakyuu = Hakyuu(
+                id = 0,
                 numRows = numRows,
                 numColumns = numColumns,
                 seed = seed,

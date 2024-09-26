@@ -1,13 +1,11 @@
 package com.example.tfg.games.common
 
 class BruteForceValues(
-    private val newPossibleValues: Array<MutableList<Int>>,
-    private val newActualValues: IntArray,
+    private val boardData: BoardData,
     private val score: Score
 ) {
-    operator fun component1() = newPossibleValues
-    operator fun component2() = newActualValues
-    operator fun component3() = score
+    operator fun component1() = boardData
+    operator fun component2() = score
 }
 
 open class GenericResult<T> private constructor(

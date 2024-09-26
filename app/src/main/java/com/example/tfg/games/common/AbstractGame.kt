@@ -4,7 +4,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
-import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.hakyuu.HakyuuScore
 import com.example.tfg.games.hakyuu.NumberValue
 import kotlin.math.max
@@ -177,7 +176,7 @@ abstract class AbstractGame(
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
         val scoreResult = fillPossibleValues(possibleValues = possibleValues, board = board)
 
-        val result = solveBoard(possibleValues = possibleValues, actualValues = board)
+        val result = solveBoard(BoardData(possibleValues = possibleValues, actualValues = board))
             .get() ?: return null
 
         scoreResult.add(result)
@@ -185,20 +184,12 @@ abstract class AbstractGame(
         return scoreResult
     }
 
-    private fun solveBoard(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        amountOfBruteForces: Int = 0
-    ): PopulateResult {
+    private fun solveBoard(boardData: BoardData, amountOfBruteForces: Int = 0): PopulateResult {
         val score = HakyuuScore()
 
-        while (getRemainingPositions(actualValues).isNotEmpty())
+        while (getRemainingPositions(boardData.actualValues).isNotEmpty())
         {
-            val res = solveBoardOneStep(
-                possibleValues = possibleValues,
-                actualValues = actualValues,
-                amountOfBruteForces = amountOfBruteForces
-            ).let {
+            val res = solveBoardOneStep(boardData, amountOfBruteForces).let {
                 it.get() ?: return it // Found error -> can't populate
             }
 
@@ -208,19 +199,10 @@ abstract class AbstractGame(
         return PopulateResult.success(score)
     }
 
-    private fun solveBoardOneStep(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        amountOfBruteForces: Int = 0
-    ): PopulateResult {
-        val res = populateValues(possibleValues = possibleValues, actualValues = actualValues)
+    private fun solveBoardOneStep(boardData:BoardData, amountOfBruteForces: Int): PopulateResult {
+        val res = populateValues(boardData)
 
-        return if (res.gotNoChangesFound())
-            bruteForce(
-                possibleValues = possibleValues,
-                actualValues = actualValues,
-                amountOfBruteForces = amountOfBruteForces + 1
-            )
+        return if (res.gotNoChangesFound()) bruteForce(boardData, amountOfBruteForces + 1)
         else res
     }
 
@@ -236,10 +218,7 @@ abstract class AbstractGame(
      * NOT_UNIQUE_SOLUTION if there are more than one solution available (when using brute force).
      * MAX_BF_OVERPASSED if the maximum value of brute forces was overpassed.
      * **/
-    protected abstract fun populateValues(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-    ): PopulateResult
+    protected abstract fun populateValues(boardData: BoardData): PopulateResult
 
     fun getRemainingPositions(actualValues: IntArray): List<Int> {
         return getPositions().filter { actualValues[it] == 0 }
@@ -248,47 +227,34 @@ abstract class AbstractGame(
     // For debug
     @Ignore
     private val debugAmountOfBruteForces = 0
-    fun solveBoardOneStep(possibleValues: Array<MutableList<Int>>, actualValues: IntArray): PopulateResult {
-        if (possibleValues.all { it.size == 0 }) {
-            fillPossibleValues(possibleValues = possibleValues, board = actualValues)
+    fun solveBoardOneStep(boardData: BoardData): PopulateResult {
+        if (boardData.possibleValues.all { it.size == 0 }) {
+            fillPossibleValues(boardData.possibleValues, boardData.actualValues)
         }
 
-        return solveBoardOneStep(
-            possibleValues = possibleValues,
-            actualValues = actualValues,
-            amountOfBruteForces = debugAmountOfBruteForces
-        )
+        return solveBoardOneStep(boardData, debugAmountOfBruteForces)
     }
 
     private fun bruteForceAValue(
         chosenValue: Int,
         position: Int,
-        possibleValues: Array<MutableList<Int>>,
-        newActualValues: IntArray,
+        boardData: BoardData,
         amountOfBruteForces: Int
     ): BruteForceResult {
-        possibleValues[position].remove(chosenValue)
-        val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
-            possibleValues[it].toMutableList()
-        }
-        newPossibleValues[position] = mutableListOf(chosenValue)
+        boardData.possibleValues[position].clear()
+        boardData.possibleValues[position].add(chosenValue)
 
-        val result = solveBoard(
-            possibleValues = newPossibleValues,
-            actualValues = newActualValues,
-            amountOfBruteForces = amountOfBruteForces
-        )
+        val result = solveBoard(boardData, amountOfBruteForces)
 
-        return if (result.gotSuccess()) BruteForceResult.success(BruteForceValues(newPossibleValues, newActualValues, result.get()!!))
+        return if (result.gotSuccess()) BruteForceResult.success(BruteForceValues(boardData, result.get()!!))
         else result.errorToBruteForceResult()
     }
 
-    private fun bruteForce(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray,
-        amountOfBruteForces: Int
-    ): PopulateResult {
+    private fun bruteForce(boardData: BoardData, amountOfBruteForces: Int): PopulateResult {
         if (amountOfBruteForces > maxAmountOfBruteForces) return PopulateResult.maxBFOverpassed()
+
+        val possibleValues = boardData.possibleValues
+        val actualValues = boardData.actualValues
 
         val (position, minPossibleValues) = getRemainingPositions(actualValues)
             .map { it to possibleValues[it] }
@@ -296,7 +262,8 @@ abstract class AbstractGame(
 
         val results = mutableListOf<BruteForceResult>()
         for(chosenValue in minPossibleValues.toList()) {
-            val result = bruteForceAValue(chosenValue, position, possibleValues, actualValues.clone(), amountOfBruteForces)
+            possibleValues[position].remove(chosenValue)
+            val result = bruteForceAValue(chosenValue, position, boardData.clone(), amountOfBruteForces)
             // Filter contradictions
             if (!result.gotContradiction()) {
                 results.add(result)
@@ -313,9 +280,8 @@ abstract class AbstractGame(
         val result = results.first()
         return if (result.gotSuccess()) {
             // Got only 1 valid result
-            val (newPossibleValues, newActualValues, score) = result.get()!!
-            Utils.replaceArray(thisArray = possibleValues, with = newPossibleValues)
-            Utils.replaceArray(thisArray = actualValues, with = newActualValues)
+            val (newBoardData, score) = result.get()!!
+            boardData.replaceDataWith(newBoardData)
             score.addScoreBruteForce()
             PopulateResult.success(score)
         } else {
