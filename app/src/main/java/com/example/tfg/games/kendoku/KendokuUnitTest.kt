@@ -93,8 +93,8 @@ class KendokuUnitTest {
             mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
         )
 
-        val test1 = kendoku.getRegionMultiplicationCombinations(possibleValues, mutableListOf(0, 1, 2, 4), 60)
-        val test2 = kendoku.getRegionMultiplicationCombinations(possibleValues, mutableListOf(4,6,7,8), 1200)
+        val test1 = kendoku.getRegionMultiplyCombinations(possibleValues, mutableListOf(0, 1, 2, 4), 60)
+        val test2 = kendoku.getRegionMultiplyCombinations(possibleValues, mutableListOf(4,6,7,8), 1200)
 
         val foldResult = { result: List<IntArray> ->
             result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
