@@ -423,6 +423,37 @@ class Kendoku(
         return combinations
     }
 
+    internal fun getRegionDivideCombinations(
+        possibleValues: Array<MutableList<Int>>,
+        region: MutableList<Int>,
+        division: Int
+    ): List<IntArray> {
+        val combinations = mutableListOf<IntArray>()
+        val possibleValues1 = possibleValues[region[0]]
+        val possibleValues2 = possibleValues[region[1]]
+        (2..division)
+            .filter { division%it == 0 }
+            .forEach { int ->
+                val int2 = division/int
+                if (possibleValues1.contains(int2) && possibleValues2.contains(int))
+                    combinations.add(intArrayOf(int2, int))
+                if (possibleValues1.contains(int) && possibleValues2.contains(int2))
+                    combinations.add(intArrayOf(int, int2))
+            }
+        (division+1..size)
+            .filter { it%division == 0 }
+            .forEach { int ->
+                val int2 = int/division
+                if (possibleValues1.contains(int2) && possibleValues2.contains(int))
+                    combinations.add(intArrayOf(int2, int))
+                if (possibleValues1.contains(int) && possibleValues2.contains(int2))
+                    combinations.add(intArrayOf(int, int2))
+            }
+
+        return combinations
+    }
+
+
     private fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
