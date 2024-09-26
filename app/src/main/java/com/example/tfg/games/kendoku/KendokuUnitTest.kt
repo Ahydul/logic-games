@@ -105,6 +105,29 @@ class KendokuUnitTest {
     }
 
     @Test
+    fun testGetRegionDivideCombinations() {
+        val kendoku = Kendoku(0, 9,0L)
+
+        val possibleValues = arrayOf(
+            mutableListOf(1,2,3), mutableListOf(2,3),
+            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,8),
+            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
+        )
+
+        val test1 = kendoku.getRegionDivideCombinations(possibleValues, mutableListOf(0, 1),3)
+        val test2 = kendoku.getRegionDivideCombinations(possibleValues, mutableListOf(2,3), 2)
+        val test3 = kendoku.getRegionDivideCombinations(possibleValues, mutableListOf(4,5), 7)
+
+        val foldResult = { result: List<IntArray> ->
+            result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
+        }
+
+        assert(foldResult(test1) == "13")
+        assert(foldResult(test2) == "12;21;24;42;63;48;84")
+        assert(foldResult(test3) == "17;71")
+    }
+
+    @Test
     fun testCreateSeededKendokuBoard() {
         val size = 15
         val seed = 234242242L
