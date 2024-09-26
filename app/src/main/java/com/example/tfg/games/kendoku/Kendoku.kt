@@ -42,7 +42,6 @@ class Kendoku(
     // Helper variables
     private var currentID = 0
     private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf()
-    private val knownOperations = BruteForceHelper(operationPerRegion)
 
     // Use this instead of numColumns or numRows
     private val size = numColumns
@@ -226,22 +225,21 @@ class Kendoku(
     private fun deduceOperation(
         regionID: Int,
         region: MutableList<Int>,
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray
+        boardData: KendokuBoardData
     ): KnownKendokuOperation? {
         //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 2*2 = 2+2
         val operations = allowedOperations.filter {
             it.filterOperation(
                 region.associate { position ->
-                    val values = possibleValues[position]
-                    if (values.isEmpty()) values.add(actualValues[position])
+                    val values = boardData.possibleValues[position]
+                    if (values.isEmpty()) values.add(boardData.actualValues[position])
                     Coordinate.fromIndex(position, size, size) to values
                 }
             )
         }
         if (operations.size == 1) {
             val res = operations.first().reverse().toKnownEnum()!!
-            knownOperations.set(regionID = regionID, operation = res)
+            boardData.knownOperations[regionID] = res
             return res
         }
         return null
@@ -250,8 +248,11 @@ class Kendoku(
     override fun populateValues(boardData: BoardData): PopulateResult {
         val score = KendokuScore()
 
+        val boardData = boardData as KendokuBoardData
         val possibleValues = boardData.possibleValues
         val actualValues = boardData.actualValues
+        val knownOperations = boardData.knownOperations
+        val regionCombinations = boardData.regionCombinations
 
         val regions = mutableMapOf<Int, MutableList<Int>>()
 
@@ -291,12 +292,14 @@ class Kendoku(
         if (score.get() > 0) return PopulateResult.success(score)
 
         for ((regionID, region) in regions.entries) {
-            val operation = knownOperations.get(regionID)
-                ?: deduceOperation(regionID, region, possibleValues, actualValues)
+            val operation = knownOperations.getOrDefault(regionID, null)
+                ?: deduceOperation(regionID, region, boardData)
                 ?: continue
 
             val operationRes = operationResultPerRegion[regionID]!!
-            val combinations = getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
+
+            val combinations = regionCombinations.getOrDefault(regionID, null)
+                ?: getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
 
 
             TODO()
