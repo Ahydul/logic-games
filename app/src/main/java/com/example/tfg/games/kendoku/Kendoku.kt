@@ -372,7 +372,7 @@ class Kendoku(
         return combinations
     }
 
-    internal fun getRegionMultiplicationCombinations(
+    internal fun getRegionMultiplyCombinations(
         possibleValues: Array<MutableList<Int>>,
         region: MutableList<Int>,
         multiplication: Int
@@ -433,7 +433,7 @@ class Kendoku(
         return when(operation){
             KnownKendokuOperation.SUM -> getRegionSumCombinations(possibleValues, region, operationResult)
             KnownKendokuOperation.SUBTRACT -> getRegionSubtractCombinations(possibleValues, region, operationResult)
-            KnownKendokuOperation.MULTIPLY -> getRegionMultiplicationCombinations(possibleValues, region, operationResult)
+            KnownKendokuOperation.MULTIPLY -> getRegionMultiplyCombinations(possibleValues, region, operationResult)
             KnownKendokuOperation.DIVIDE -> TODO()
         }
     }
