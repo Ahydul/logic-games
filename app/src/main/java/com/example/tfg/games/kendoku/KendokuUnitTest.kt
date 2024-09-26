@@ -37,26 +37,27 @@ class KendokuUnitTest {
             mutableListOf(8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
             mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
         )
-
-
-        val startTime = System.currentTimeMillis()
 /*
+        val startTime = System.currentTimeMillis()
         repeat(1000000) {
             val test2 = kendoku.getRegionSumCombinations(possibleValues = possibleValues, region = mutableListOf(4,6,7), sum = 18)
         }
-
- */
-
         val endTime = System.currentTimeMillis()
         println("Time: ${endTime - startTime} ms")
+ */
 
-        //val test1 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(0, 1, 2, 3, 5),28)
-        val test2 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(4,6,7,8), 18)
+        val test1 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(0, 1, 2, 3, 5),28)
+        val test2 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(4,6,7,8), 10)
 
-        println("${test2.size} combinations")
-        test2.forEach { println(it.fold("") { acc, v -> "$acc $v" }) }
+        //println("${test2.size} combinations")
+        //test2.forEach { println(it.joinToString(separator = "")) }
 
-        assert(true)
+        val foldResult = { result: List<IntArray> ->
+            result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
+        }
+
+        assert(foldResult(test1) == "32698;23698")
+        assert(foldResult(test2) == "4321;4312;4231;4213;4132;4123;3421;3412;3241;3214;3142;3124;2512;2431;2413;2341;2314;2251;2215;2152;2143;2134;1621;1531;1432;1423;1351;1342;1324;1261;1243;1234;1162;1153;1135;1126")
     }
 
     @Test
