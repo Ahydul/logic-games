@@ -311,7 +311,7 @@ class HakyuuUnitTest {
         val seed = 234234242342L
 
         val getGameType = {
-            Hakyuu.create(numColumns = size, numRows = size, seed = seed, difficulty = Difficulty.EXPERT)
+            Hakyuu.create(numColumns = size, numRows = size, seed = seed, difficulty = Difficulty.EXPERT, printEachBoardState = false)
         }
 
         testHakyuuBoard(getGameType, print = false)
@@ -442,7 +442,7 @@ class HakyuuUnitTest {
 
         val getGameType = { _: Int ->
             val seed = (Math.random()*10000000000).toLong()
-            val res = Hakyuu.create(numColumns = numColumns, numRows = numColumns, seed = seed, difficulty = Difficulty.MASTER)
+            val res = Hakyuu.create(numColumns = numColumns, numRows = numColumns, seed = seed, difficulty = Difficulty.MASTER, printEachBoardState = false)
             res
         }
         val getTest = { gameType: Hakyuu, _: Int ->
@@ -472,7 +472,7 @@ class HakyuuUnitTest {
         val repeat = 100
 
         val getGameType = { _: Int ->
-            val res = Hakyuu.create(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong(), difficulty = Difficulty.EASY)
+            val res = Hakyuu.create(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong(), difficulty = Difficulty.MASTER, printEachBoardState = false)
             res
         }
         val getTest = { gameType: Hakyuu, _: Int ->

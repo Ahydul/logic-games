@@ -33,6 +33,7 @@ import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.Converters
 import com.example.tfg.data.DataStorePreferences
 import com.example.tfg.data.GameDao
+import com.example.tfg.games.common.BoardData
 import com.example.tfg.games.common.GameValue
 import com.example.tfg.games.hakyuu.Hakyuu
 import com.example.tfg.ui.theme.Theme
@@ -995,7 +996,7 @@ class ActiveGameViewModel(
         val abstractGame = getAbstractGame()
         val possibleValues = cellsToPossibleValues()
         val actualValues = cellsToIntArrayValues()
-        (abstractGame as Hakyuu).solveBoardOneStep(possibleValues = possibleValues, actualValues = actualValues)
+        (abstractGame as Hakyuu).solveBoardOneStep(BoardData(possibleValues = possibleValues, actualValues = actualValues))
 
         actualValues.indices.forEach { position ->
             val newCell = getCell(position).copy(

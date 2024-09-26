@@ -8,6 +8,7 @@ import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.common.AbstractGame
+import com.example.tfg.games.common.BoardData
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.PopulateResult
@@ -246,11 +247,11 @@ class Kendoku(
         return null
     }
 
-    override fun populateValues(
-        possibleValues: Array<MutableList<Int>>,
-        actualValues: IntArray
-    ): PopulateResult {
+    override fun populateValues(boardData: BoardData): PopulateResult {
         val score = KendokuScore()
+
+        val possibleValues = boardData.possibleValues
+        val actualValues = boardData.actualValues
 
         val regions = mutableMapOf<Int, MutableList<Int>>()
 
