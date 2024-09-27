@@ -314,7 +314,7 @@ class Kendoku(
         possibleValues: Array<MutableList<Int>>,
         region: MutableList<Int>,
         sum: Int
-    ): List<IntArray> {
+    ): MutableList<IntArray> {
         val combinations = mutableListOf<IntArray>()
         val regionSize = region.size
         val lastCombination = IntArray(regionSize)
@@ -358,29 +358,11 @@ class Kendoku(
         return combinations
     }
 
-    internal fun getRegionSubtractCombinations(
-        possibleValues: Array<MutableList<Int>>,
-        region: MutableList<Int>,
-        subtraction: Int
-    ): List<IntArray> {
-        val combinations = mutableListOf<IntArray>()
-        val possibleValues1 = possibleValues[region[0]]
-        val possibleValues2 = possibleValues[region[1]]
-        (subtraction+1 .. size).forEach { int ->
-            val int2 = int-subtraction
-            if (possibleValues1.contains(int) && possibleValues2.contains(int2))
-                combinations.add(intArrayOf(int, int2))
-            if (possibleValues1.contains(int2) && possibleValues2.contains(int))
-                combinations.add(intArrayOf(int2, int))
-        }
-        return combinations
-    }
-
     internal fun getRegionMultiplyCombinations(
         possibleValues: Array<MutableList<Int>>,
         region: MutableList<Int>,
         multiplication: Int
-    ): List<IntArray> {
+    ): MutableList<IntArray> {
         val combinations = mutableListOf<IntArray>()
         val regionSize = region.size
         val lastCombination = IntArray(regionSize)
@@ -427,49 +409,102 @@ class Kendoku(
         return combinations
     }
 
+    internal fun getRegionSubtractCombinations(
+        possibleValues: Array<MutableList<Int>>,
+        board: IntArray,
+        region: MutableList<Int>,
+        subtraction: Int
+    ): List<IntArray> {
+        val combinations = mutableListOf<IntArray>()
+        val possibleValues1 = possibleValues[region[0]]
+        val possibleValues2 = possibleValues[region[1]]
+        val addValues = { int1: Int, int2: Int ->
+            if (possibleValues1.contains(int1) && possibleValues2.contains(int2)) combinations.add(intArrayOf(int1, int2))
+            if (possibleValues1.contains(int2) && possibleValues2.contains(int1)) combinations.add(intArrayOf(int2, int1))
+        }
+
+        val position = region.find { board[it] != 0 }
+        if (position != null) {
+            val int1 = board[position]
+            possibleValues[position].add(int1)
+            addValues(int1, int1 + subtraction)
+            addValues(int1, int1 - subtraction)
+            possibleValues[position].clear()
+        }
+        else (subtraction+1 .. size).forEach { addValues(it, it - subtraction) }
+
+        return combinations
+    }
+
     internal fun getRegionDivideCombinations(
         possibleValues: Array<MutableList<Int>>,
+        board: IntArray,
         region: MutableList<Int>,
         division: Int
     ): List<IntArray> {
         val combinations = mutableListOf<IntArray>()
         val possibleValues1 = possibleValues[region[0]]
         val possibleValues2 = possibleValues[region[1]]
-        (2..division)
-            .filter { division%it == 0 }
-            .forEach { int ->
-                val int2 = division/int
-                if (possibleValues1.contains(int2) && possibleValues2.contains(int))
-                    combinations.add(intArrayOf(int2, int))
-                if (possibleValues1.contains(int) && possibleValues2.contains(int2))
-                    combinations.add(intArrayOf(int, int2))
-            }
-        (division+1..size)
-            .filter { it%division == 0 }
-            .forEach { int ->
-                val int2 = int/division
-                if (possibleValues1.contains(int2) && possibleValues2.contains(int))
-                    combinations.add(intArrayOf(int2, int))
-                if (possibleValues1.contains(int) && possibleValues2.contains(int2))
-                    combinations.add(intArrayOf(int, int2))
-            }
+
+        val addValues = { int1: Int, int2: Int ->
+            if (possibleValues1.contains(int2) && possibleValues2.contains(int1)) combinations.add(intArrayOf(int2, int1))
+            if (possibleValues1.contains(int1) && possibleValues2.contains(int2)) combinations.add(intArrayOf(int1, int2))
+        }
+
+        val position = region.find { board[it] != 0 }
+        if (position != null) {
+            val int1 = board[position]
+            possibleValues[position].add(int1)
+        }
+
+        (2..division).filter { division%it == 0 }.forEach { addValues(it, division/it) }
+        (division+1..size).filter { it%division == 0 }.forEach { addValues(it, it/division) }
+
+        if (position != null) possibleValues[position].clear()
 
         return combinations
     }
 
 
-    private fun getRegionCombinations(
+    internal fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
         region: MutableList<Int>,
         operationResult: Int,
         operation: KnownKendokuOperation
     ): List<IntArray> {
+        val filteredRegion = mutableListOf<Int>()
+        val arraySyntax = IntArray(region.size)
+        region.forEachIndexed { index, i ->
+            val value = board[i]
+            if (value == 0) filteredRegion.add(i)
+            arraySyntax[index] = value
+        }
+
+        if (filteredRegion.isEmpty()) return emptyList()
+
+        val addFilteredValuesBack = { combinations: MutableList<IntArray> ->
+            combinations.replaceAll { arr ->
+                val iterator = arr.iterator()
+                arraySyntax.map { if (it == 0) iterator.next() else it }.toIntArray()
+            }
+        }
+
         return when(operation){
-            KnownKendokuOperation.SUM -> getRegionSumCombinations(possibleValues, region, operationResult)
-            KnownKendokuOperation.SUBTRACT -> getRegionSubtractCombinations(possibleValues, region, operationResult)
-            KnownKendokuOperation.MULTIPLY -> getRegionMultiplyCombinations(possibleValues, region, operationResult)
-            KnownKendokuOperation.DIVIDE -> TODO()
+            KnownKendokuOperation.SUBTRACT -> getRegionSubtractCombinations(possibleValues, board, region, operationResult)
+            KnownKendokuOperation.DIVIDE -> getRegionDivideCombinations(possibleValues, board, region, operationResult)
+            KnownKendokuOperation.SUM -> {
+                val combinations = getRegionSumCombinations(possibleValues, filteredRegion,
+                    sum = operationResult - arraySyntax.sum())
+                if (filteredRegion.size < region.size) addFilteredValuesBack(combinations)
+                combinations
+            }
+            KnownKendokuOperation.MULTIPLY -> {
+                val combinations = getRegionMultiplyCombinations(possibleValues, filteredRegion,
+                    multiplication = operationResult / arraySyntax.filter { it != 0 }.reduce { acc, i -> acc * i } )
+                if (filteredRegion.size < region.size) addFilteredValuesBack(combinations)
+                combinations
+            }
         }
     }
 

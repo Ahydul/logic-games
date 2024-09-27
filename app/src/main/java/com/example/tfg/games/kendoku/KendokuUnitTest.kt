@@ -35,22 +35,18 @@ class KendokuUnitTest {
         val possibleValues = arrayOf(
             mutableListOf(1,2,3), mutableListOf(2,3), mutableListOf(5,6),
             mutableListOf(8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
+            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
+            mutableListOf(), mutableListOf(1,3,4,5,6,7,8,9), mutableListOf(1,3,4), mutableListOf()
         )
-/*
-        val startTime = System.currentTimeMillis()
-        repeat(1000000) {
-            val test2 = kendoku.getRegionSumCombinations(possibleValues = possibleValues, region = mutableListOf(4,6,7), sum = 18)
-        }
-        val endTime = System.currentTimeMillis()
-        println("Time: ${endTime - startTime} ms")
- */
 
         val test1 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(0, 1, 2, 3, 5),28)
         val test2 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(4,6,7,8), 10)
 
-        //println("${test2.size} combinations")
-        //test2.forEach { println(it.joinToString(separator = "")) }
+        val board = IntArray(13)
+        board[9] = 2
+        board[12] = 3
+
+        val test3 = kendoku.getRegionCombinations(possibleValues, board, mutableListOf(9,10,11,12), 10, KnownKendokuOperation.SUM)
 
         val foldResult = { result: List<IntArray> ->
             result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
@@ -58,6 +54,7 @@ class KendokuUnitTest {
 
         assert(foldResult(test1) == "32698;23698")
         assert(foldResult(test2) == "4321;4312;4231;4213;4132;4123;3421;3412;3241;3214;3142;3124;2512;2431;2413;2341;2314;2251;2215;2152;2143;2134;1621;1531;1432;1423;1351;1342;1324;1261;1243;1234;1162;1153;1135;1126")
+        assert(foldResult(test3) == "2413;2143")
     }
 
     @Test
@@ -67,12 +64,16 @@ class KendokuUnitTest {
         val possibleValues = arrayOf(
             mutableListOf(1,2,3), mutableListOf(2,3),
             mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
+            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
+            mutableListOf(1,2,3,5,6,7,8,9), mutableListOf()
         )
+        val board = IntArray(9)
+        board[7] = 4
 
-        val test1 = kendoku.getRegionSubtractCombinations(possibleValues, mutableListOf(0, 1),1)
-        val test2 = kendoku.getRegionSubtractCombinations(possibleValues, mutableListOf(2,3), 3)
-        val test3 = kendoku.getRegionSubtractCombinations(possibleValues, mutableListOf(4,5), 7)
+        val test1 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(0, 1),1)
+        val test2 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(2,3), 3)
+        val test3 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(4,5), 7)
+        val test4 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(6,7), 2)
 
         val foldResult = { result: List<IntArray> ->
             result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
@@ -81,6 +82,7 @@ class KendokuUnitTest {
         assert(foldResult(test1) == "12;32;23")
         assert(foldResult(test2) == "25;85;58")
         assert(foldResult(test3) == "81;18;92;29")
+        assert(foldResult(test4) == "64;24")
     }
 
     @Test
@@ -90,11 +92,17 @@ class KendokuUnitTest {
         val possibleValues = arrayOf(
             mutableListOf(1,2,3), mutableListOf(2,3), mutableListOf(5,6),
             mutableListOf(8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
+            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
+            mutableListOf(), mutableListOf(1,2,3,4,6,7,8,9), mutableListOf(1,2,3,4,6,7,8,9)
         )
 
         val test1 = kendoku.getRegionMultiplyCombinations(possibleValues, mutableListOf(0, 1, 2, 4), 60)
         val test2 = kendoku.getRegionMultiplyCombinations(possibleValues, mutableListOf(4,6,7,8), 1200)
+
+        val board = IntArray(12)
+        board[9] = 5
+
+        val test3 = kendoku.getRegionCombinations(possibleValues, board, mutableListOf(9,10,11), 40, KnownKendokuOperation.MULTIPLY)
 
         val foldResult = { result: List<IntArray> ->
             result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
@@ -111,12 +119,16 @@ class KendokuUnitTest {
         val possibleValues = arrayOf(
             mutableListOf(1,2,3), mutableListOf(2,3),
             mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9)
+            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
+            mutableListOf(1,2,3,5,6,7,8,9), mutableListOf()
         )
+        val board = IntArray(9)
+        board[7] = 4
 
-        val test1 = kendoku.getRegionDivideCombinations(possibleValues, mutableListOf(0, 1),3)
-        val test2 = kendoku.getRegionDivideCombinations(possibleValues, mutableListOf(2,3), 2)
-        val test3 = kendoku.getRegionDivideCombinations(possibleValues, mutableListOf(4,5), 7)
+        val test1 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(0, 1),3)
+        val test2 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(2,3), 2)
+        val test3 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(4,5), 7)
+        val test4 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(6,7), 2)
 
         val foldResult = { result: List<IntArray> ->
             result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
@@ -125,6 +137,7 @@ class KendokuUnitTest {
         assert(foldResult(test1) == "13")
         assert(foldResult(test2) == "12;21;24;42;63;48;84")
         assert(foldResult(test3) == "17;71")
+        assert(foldResult(test4) == "24;84")
     }
 
     @Test
