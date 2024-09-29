@@ -291,15 +291,26 @@ class Kendoku(
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
 
+        //TODO: Complete score functionality
         for (rowIndex in (0..< size)) {
             val n = rowIndex*size
             val row = (n..< size+n).map { possibleValues[it] }.toTypedArray()
-            cleanLastCellInLine(row)
+
+            val numHiddenSingles = cleanHiddenSingles(row)
+
+            val numPairs = cleanNakedPairsInLine(row)
+
+            val numTriples = cleanNakedTriplesInLine(row)
         }
 
         for (columnIndex in (0..< size)) {
             val column = (columnIndex..< size*(columnIndex+1) step size).map { possibleValues[it] }.toTypedArray()
-            cleanLastCellInLine(column)
+
+            val numHiddenSingles = cleanHiddenSingles(column)
+
+            val numPairs = cleanNakedPairsInLine(column)
+
+            val numTriples = cleanNakedTriplesInLine(column)
         }
 
         for ((regionID, region) in regions.entries) {
@@ -321,7 +332,8 @@ class Kendoku(
         else PopulateResult.noChangesFound()
     }
 
-    internal fun cleanLastCellInLine(line: Array<MutableList<Int>>) {
+    internal fun cleanHiddenSingles(line: Array<MutableList<Int>>): Int {
+        var numSingles = 0
         val valueCount = IntArray(size)
         val lastAppearanceInLine = IntArray(size)
 
@@ -335,10 +347,11 @@ class Kendoku(
 
         valueCount.withIndex().filter { (_, i) -> i == 1 }.forEach { (index, _) ->
             val possibleValues = line[lastAppearanceInLine[index]]
-            possibleValues.clear()
-            possibleValues.add(index + 1)
+            val result = possibleValues.removeIf { it != index+1 }
+            if (result) numSingles++
         }
 
+        return numSingles
     }
 
     internal fun cleanNakedPairsInLine(line: Array<MutableList<Int>>): Int {
