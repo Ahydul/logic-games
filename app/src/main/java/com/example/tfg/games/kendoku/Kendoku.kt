@@ -341,6 +341,51 @@ class Kendoku(
 
     }
 
+    internal fun cleanNakedPairsInLine(line: Array<MutableList<Int>>): Int {
+        var numPairs = 0
+        val filteredLine = line.withIndex().filter { (_, ints) -> ints.size == 2 }
+
+        filteredLine.forEachIndexed { drop, (index, ints) ->
+            val otherPair = filteredLine.drop(drop+1).find { (_, ints2) -> ints == ints2 }?.index
+            if (otherPair != null) {
+                var changedValues = false
+                line.filterIndexed { index2, _ -> index2 != otherPair && index2 != index }
+                    .forEach {
+                        val res = it.removeAll(ints)
+                        changedValues = changedValues || res
+                    }
+                if (changedValues) numPairs++
+            }
+        }
+        return numPairs
+    }
+
+    internal fun cleanNakedTriplesInLine(line: Array<MutableList<Int>>): Int {
+        var numTriples = 0
+        val filteredLine = line.withIndex().filter { (_, ints) -> ints.size in 2..3 }
+
+        filteredLine.forEachIndexed { drop, (index1, ints) ->
+            val union = filteredLine.drop(drop+1).map { (index2, ints2) -> index2 to ints.union(ints2) }
+
+            val otherTriples = union.filter { other ->
+                // Different position, same content and sizes 3 or 2 means its a triple
+                union.any { it.first != other.first && it.second == other.second && it.second.size == 3 }
+            }
+
+            if (otherTriples.size == 2) {
+                var changedValues = false
+                line.filterIndexed { index, _ -> index !in intArrayOf(index1, otherTriples[0].first, otherTriples[1].first) }
+                    .forEach {
+                        val res = it.removeAll(otherTriples[0].second)
+                        changedValues = changedValues || res
+                    }
+                if (changedValues) numTriples++
+            }
+        }
+
+        return numTriples
+    }
+
     internal fun getRegionSumCombinations(
         possibleValues: Array<MutableList<Int>>,
         region: MutableList<Int>,
