@@ -146,19 +146,27 @@ class KendokuUnitTest {
         return line.joinToString(separator = ";") { it.joinToString(separator = "") }
     }
 
+    private fun decodeInputNakeds(input: String): Array<MutableList<Int>> {
+        return input.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
+    }
+
     @Test
-    fun testCleanLastCellInLine() {
+    fun testCleanHiddenSingles() {
         val kendoku = Kendoku(0, 6,0L)
-        val line = arrayOf(mutableListOf(1,2,3,4,5), mutableListOf(2,3,4,5), mutableListOf(3,4,5),mutableListOf(), mutableListOf(5,6))
+        val input = "12345;2345;345;345;345;56"
+        val line = decodeInputNakeds(input)
 
-        kendoku.cleanLastCellInLine(line)
-        assert(foldResultNakeds(line) == "1;2345;345;;6")
+        var singles = kendoku.cleanHiddenSingles(line)
+        assert(foldResultNakeds(line) == "1;2345;345;345;345;6")
+        assert(singles == 2)
 
-        kendoku.cleanLastCellInLine(line)
-        assert(foldResultNakeds(line) == "1;2;345;;6")
+        singles = kendoku.cleanHiddenSingles(line)
+        assert(foldResultNakeds(line) == "1;2;345;345;345;6")
+        assert(singles == 1)
 
-        kendoku.cleanLastCellInLine(line)
-        assert(foldResultNakeds(line) == "1;2;5;;6")
+        singles = kendoku.cleanHiddenSingles(line)
+        assert(foldResultNakeds(line) == "1;2;345;345;345;6")
+        assert(singles == 0)
     }
 
     @ParameterizedTest
@@ -169,7 +177,7 @@ class KendokuUnitTest {
     )
     fun testCleanNakedPairs(input: String, expectedNumPairs: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 6,0L)
-        val line = input.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
+        val line = decodeInputNakeds(input)
 
         val numPairs = kendoku.cleanNakedPairsInLine(line)
         val foldResult = foldResultNakeds(line)
@@ -188,7 +196,7 @@ class KendokuUnitTest {
     )
     fun testCleanNakedTriples(input: String, expectedNumTriples: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 7,0L)
-        val line = input.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
+        val line = decodeInputNakeds(input)
 
         val numTriples = kendoku.cleanNakedTriplesInLine(line)
         val foldResult = foldResultNakeds(line)
