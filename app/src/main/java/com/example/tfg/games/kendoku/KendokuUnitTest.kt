@@ -5,6 +5,8 @@ import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.games.common.Difficulty
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import kotlin.random.Random
 
 @ExtendWith(CustomTestWatcher::class)
@@ -140,21 +142,62 @@ class KendokuUnitTest {
         assert(foldResult(test4) == "24;84")
     }
 
+    private fun foldResultNakeds(line: Array<MutableList<Int>>): String {
+        return line.joinToString(separator = ";") { it.joinToString(separator = "") }
+    }
+
     @Test
     fun testCleanLastCellInLine() {
         val kendoku = Kendoku(0, 6,0L)
         val line = arrayOf(mutableListOf(1,2,3,4,5), mutableListOf(2,3,4,5), mutableListOf(3,4,5),mutableListOf(), mutableListOf(5,6))
-        val foldResult = { line.joinToString(separator = "; ") { it.joinToString(separator = ",") } }
 
         kendoku.cleanLastCellInLine(line)
-        assert(foldResult() == "1; 2,3,4,5; 3,4,5; ; 6")
+        assert(foldResultNakeds(line) == "1;2345;345;;6")
 
         kendoku.cleanLastCellInLine(line)
-        assert(foldResult() == "1; 2; 3,4,5; ; 6")
+        assert(foldResultNakeds(line) == "1;2;345;;6")
 
         kendoku.cleanLastCellInLine(line)
-        assert(foldResult() == "1; 2; 5; ; 6")
+        assert(foldResultNakeds(line) == "1;2;5;;6")
     }
+
+    @ParameterizedTest
+    @CsvSource(
+        "12345;23;23;23456;56;56, 2, 14;23;23;4;56;56",
+        "12;12;1234567;1234567;1234567;1234567;1234567, 1, 12;12;34567;34567;34567;34567;34567",
+        "12;12;34;34;56;56;1234567, 3, 12;12;34;34;56;56;7",
+    )
+    fun testCleanNakedPairs(input: String, expectedNumPairs: Int, expectedResult: String) {
+        val kendoku = Kendoku(0, 6,0L)
+        val line = input.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
+
+        val numPairs = kendoku.cleanNakedPairsInLine(line)
+        val foldResult = foldResultNakeds(line)
+
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        assert(numPairs == expectedNumPairs)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "123;23;234;24;235;56;74, 1, 1;23;234;24;5;56;7",
+        "123;123;12;1234567;1234567;1234567;1234567, 1, 123;123;12;4567;4567;4567;4567",
+        "123;123;123;456;456;456;1234567, 2, 123;123;123;456;456;456;7",
+        "123;23;24;43;1234567;1234567;1234567, 1, 1;23;24;43;1567;1567;1567",
+    )
+    fun testCleanNakedTriples(input: String, expectedNumTriples: Int, expectedResult: String) {
+        val kendoku = Kendoku(0, 7,0L)
+        val line = input.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
+
+        val numTriples = kendoku.cleanNakedTriplesInLine(line)
+        val foldResult = foldResultNakeds(line)
+
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        assert(numTriples == expectedNumTriples)
+    }
+
 
     @Test
     fun testCreateSeededKendokuBoard() {
