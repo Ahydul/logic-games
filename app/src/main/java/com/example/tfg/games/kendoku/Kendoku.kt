@@ -291,6 +291,17 @@ class Kendoku(
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
 
+        for (rowIndex in (0..< size)) {
+            val n = rowIndex*size
+            val row = (n..< size+n).map { possibleValues[it] }.toTypedArray()
+            cleanLastCellInLine(row)
+        }
+
+        for (columnIndex in (0..< size)) {
+            val column = (columnIndex..< size*(columnIndex+1) step size).map { possibleValues[it] }.toTypedArray()
+            cleanLastCellInLine(column)
+        }
+
         for ((regionID, region) in regions.entries) {
             val operation = knownOperations.getOrDefault(regionID, null)
                 ?: deduceOperation(regionID, region, boardData)
@@ -308,6 +319,26 @@ class Kendoku(
 
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
+    }
+
+    internal fun cleanLastCellInLine(line: Array<MutableList<Int>>) {
+        val valueCount = IntArray(size)
+        val lastAppearanceInLine = IntArray(size)
+
+        line.forEachIndexed { lineIndex, ints ->
+            ints.forEach {
+                val index = it - 1
+                valueCount[index]++
+                lastAppearanceInLine[index] = lineIndex
+            }
+        }
+
+        valueCount.withIndex().filter { (_, i) -> i == 1 }.forEach { (index, _) ->
+            val possibleValues = line[lastAppearanceInLine[index]]
+            possibleValues.clear()
+            possibleValues.add(index + 1)
+        }
+
     }
 
     internal fun getRegionSumCombinations(

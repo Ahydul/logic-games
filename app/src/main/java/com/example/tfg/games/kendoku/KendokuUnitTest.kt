@@ -141,6 +141,22 @@ class KendokuUnitTest {
     }
 
     @Test
+    fun testCleanLastCellInLine() {
+        val kendoku = Kendoku(0, 6,0L)
+        val line = arrayOf(mutableListOf(1,2,3,4,5), mutableListOf(2,3,4,5), mutableListOf(3,4,5),mutableListOf(), mutableListOf(5,6))
+        val foldResult = { line.joinToString(separator = "; ") { it.joinToString(separator = ",") } }
+
+        kendoku.cleanLastCellInLine(line)
+        assert(foldResult() == "1; 2,3,4,5; 3,4,5; ; 6")
+
+        kendoku.cleanLastCellInLine(line)
+        assert(foldResult() == "1; 2; 3,4,5; ; 6")
+
+        kendoku.cleanLastCellInLine(line)
+        assert(foldResult() == "1; 2; 5; ; 6")
+    }
+
+    @Test
     fun testCreateSeededKendokuBoard() {
         val size = 15
         val seed = 234242242L
