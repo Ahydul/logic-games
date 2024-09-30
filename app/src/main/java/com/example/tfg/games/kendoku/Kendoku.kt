@@ -296,21 +296,21 @@ class Kendoku(
             val n = rowIndex*size
             val row = (n..< size+n).map { possibleValues[it] }.toTypedArray()
 
-            val numHiddenSingles = cleanHiddenSingles(row)
-
             val numPairs = cleanNakedPairsInLine(row)
 
             val numTriples = cleanNakedTriplesInLine(row)
+
+            val numSPT = cleanHiddenSinglesPairsTriplesInline(row)
         }
 
         for (columnIndex in (0..< size)) {
             val column = (columnIndex..< size*(columnIndex+1) step size).map { possibleValues[it] }.toTypedArray()
 
-            val numHiddenSingles = cleanHiddenSingles(column)
-
             val numPairs = cleanNakedPairsInLine(column)
 
             val numTriples = cleanNakedTriplesInLine(column)
+
+            val numSPT = cleanHiddenSinglesPairsTriplesInline(column)
         }
 
         for ((regionID, region) in regions.entries) {
@@ -354,6 +354,66 @@ class Kendoku(
         return numSingles
     }
 
+    internal fun cleanHiddenSinglesPairsTriplesInline(line: Array<MutableList<Int>>): IntArray {
+        //Number of singles, pairs and triples
+        val numberSPT = IntArray(3)
+
+        val valueAppearsInIndexes = Array(size){ mutableListOf<Int>() }
+        line.forEachIndexed { lineIndex, ints ->
+            ints.forEach { valueAppearsInIndexes[it-1].add(lineIndex) }
+        }
+
+        for ((i, indexes) in valueAppearsInIndexes.withIndex()) {
+            val value = i + 1
+            val numberAppearances = indexes.size
+            if (numberAppearances == 1) {
+                // Hidden single
+                val res = line[indexes.first()].removeIf { it != value }
+                if (res) numberSPT[0]++
+                continue
+            } else if (numberAppearances == 2) {
+                // Possible hidden pair/triple
+
+                val otherPairIndex = valueAppearsInIndexes.withIndex().drop(value)
+                    .find { it.value == indexes }?.index
+
+                if (otherPairIndex != null) { // Found pair
+                    val valuesNotToRemove = intArrayOf(value, otherPairIndex+1)
+                    var valuesChanged = false
+                    indexes.forEach { index ->
+                        val res = line[index].removeIf { !valuesNotToRemove.contains(it) }
+                        valuesChanged = valuesChanged || res
+                    }
+                    if (valuesChanged) numberSPT[1]++
+                    continue
+                }
+            }
+
+            // Possible hidden triple
+
+            val union = valueAppearsInIndexes.withIndex().drop(value)
+                .map { (i2, indexes2) -> i2 to indexes.union(indexes2) }
+
+            val otherTriples = union.filter { other ->
+                // Different position, same content and size 3 means its a triple
+                union.any { it.first != other.first && it.second == other.second && it.second.size == 3 }
+            }
+
+            if (otherTriples.size == 2) { // Found triple
+                val valuesNotToRemove = intArrayOf(value, otherTriples[0].first + 1, otherTriples[1].first + 1)
+                val indexes = otherTriples[0].second //previous indexes may be incomplete because triples take many forms
+                var valuesChanged = false
+                indexes.forEach { index ->
+                    val res = line[index].removeIf { !valuesNotToRemove.contains(it) }
+                    valuesChanged = valuesChanged || res
+                }
+                if (valuesChanged) numberSPT[2]++
+            }
+        }
+
+        return numberSPT
+    }
+
     internal fun cleanNakedPairsInLine(line: Array<MutableList<Int>>): Int {
         var numPairs = 0
         val filteredLine = line.withIndex().filter { (_, ints) -> ints.size == 2 }
@@ -381,7 +441,7 @@ class Kendoku(
             val union = filteredLine.drop(drop+1).map { (index2, ints2) -> index2 to ints.union(ints2) }
 
             val otherTriples = union.filter { other ->
-                // Different position, same content and sizes 3 or 2 means its a triple
+                // Different position, same content and size 3 means its a triple
                 union.any { it.first != other.first && it.second == other.second && it.second.size == 3 }
             }
 
