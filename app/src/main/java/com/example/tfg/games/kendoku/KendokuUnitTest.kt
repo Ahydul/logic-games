@@ -247,7 +247,7 @@ class KendokuUnitTest {
 
     private fun testKendokuBoard(
         getGameType: () -> Kendoku,
-        getTest: (Kendoku) -> Boolean = { gameType: Kendoku -> gameType.boardMeetsRules() && gameType.score.get() != 0 },
+        getTest: (Kendoku) -> Boolean = { gameType: Kendoku -> gameType.boardMeetsRulesPrintingInfo() && gameType.score.get() != 0 },
         print: Boolean = true,
         printHTML: Boolean = false,
     ) {

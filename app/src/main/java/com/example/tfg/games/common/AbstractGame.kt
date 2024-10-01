@@ -332,7 +332,7 @@ abstract class AbstractGame(
         return !board.any { it == 0 }
     }
 
-    private fun boardPopulated2(board: IntArray): Boolean {
+    private fun boardPopulatedPrintingInfo(board: IntArray): Boolean {
         val res = board.withIndex().filter { it.value == 0 }
         if (res.isNotEmpty()){
             println("The next positions were empty ${res.joinToString(separator = ", "){ it.index.toString() }}")
@@ -341,13 +341,13 @@ abstract class AbstractGame(
         return true
     }
 
-    fun boardMeetsRules(): Boolean {
-        return boardMeetsRules2(completedBoard) && boardPopulated2(completedBoard)
+    fun boardMeetsRulesPrintingInfo(): Boolean {
+        return boardMeetsRulesPrintingInfo(completedBoard) && boardPopulatedPrintingInfo(completedBoard)
     }
 
     protected abstract fun boardMeetsRulesStr(board: IntArray): String
     protected fun boardMeetsRules(board: IntArray) = boardMeetsRulesStr(board) == ""
-    private fun boardMeetsRules2(board: IntArray): Boolean {
+    private fun boardMeetsRulesPrintingInfo(board: IntArray): Boolean {
         val res = boardMeetsRulesStr(board)
         print(res)
         return res == ""
