@@ -301,7 +301,7 @@ class HakyuuUnitTest {
         print("""<button onclick="toggleTables()">Next</button> """.trimIndent())
         print("""<button onclick="showEndTable()">End</button> """.trimIndent())
 
-        assert(gameType.boardMeetsRules())
+        assert(gameType.boardMeetsRulesPrintingInfo())
     }
 
 
@@ -319,7 +319,7 @@ class HakyuuUnitTest {
 
     private fun testHakyuuBoard(
         getGameType: () -> Hakyuu,
-        getTest: (Hakyuu) -> Boolean = { gameType: Hakyuu -> gameType.boardMeetsRules() && gameType.score.get() != 0 },
+        getTest: (Hakyuu) -> Boolean = { gameType: Hakyuu -> gameType.boardMeetsRulesPrintingInfo() && gameType.score.get() != 0 },
         print: Boolean = true,
         printHTML: Boolean = false,
     ) {
@@ -446,7 +446,7 @@ class HakyuuUnitTest {
             res
         }
         val getTest = { gameType: Hakyuu, _: Int ->
-            val boardMeetsRules = gameType.boardMeetsRules()
+            val boardMeetsRules = gameType.boardMeetsRulesPrintingInfo()
             val scoreIsNotZero = gameType.score.get() != 0
             if (!boardMeetsRules) println("Incorrect board:\n${gameType.printCompletedBoard()}")
             if (!scoreIsNotZero) println("Score is 0")
@@ -476,7 +476,7 @@ class HakyuuUnitTest {
             res
         }
         val getTest = { gameType: Hakyuu, _: Int ->
-            val boardMeetsRules = gameType.boardMeetsRules()
+            val boardMeetsRules = gameType.boardMeetsRulesPrintingInfo()
             val scoreIsNotZero = gameType.score.get() != 0
             if (!boardMeetsRules) println("Incorrect board:\n${gameType.printCompletedBoard()}")
             if (!scoreIsNotZero) println("Score is 0")
@@ -498,7 +498,7 @@ class HakyuuUnitTest {
         numRows: Int,
         repeat: Int,
         getGameType: (Int) -> Hakyuu,
-        getTest: (Hakyuu, Int) -> Boolean = { gameType: Hakyuu, _: Int -> gameType.boardMeetsRules()},
+        getTest: (Hakyuu, Int) -> Boolean = { gameType: Hakyuu, _: Int -> gameType.boardMeetsRulesPrintingInfo()},
         printBoards: Boolean = true,
         printCompleted: Boolean = false,
         summarizeStats: Boolean = false
