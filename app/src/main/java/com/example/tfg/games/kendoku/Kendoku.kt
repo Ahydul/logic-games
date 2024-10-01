@@ -658,7 +658,48 @@ class Kendoku(
     }
 
     override fun boardMeetsRulesStr(board: IntArray): String {
-        TODO("Not yet implemented")
+        val regions = mutableMapOf<Int, MutableList<Int>>()
+        val fillRegions = { positions: IntProgression ->
+            positions.forEach { Utils.addToMapList(getRegionId(it), it, regions) }
+        }
+
+        val tmp = IntArray(size)
+        val fillTmpArray = { (1.. size).forEach { tmp[it] = it } }
+        val deleteValuesFromTmp = { indexes: IntProgression -> indexes.forEach { tmp[board[it]] = 0 } }
+        val tmpArrayIsNotZero = { tmp.sum() != 0 }
+
+        for (rowIndex in (0..< size)) {
+            val n = rowIndex*size
+            val rowIndexes = (n..< size+n)
+
+            fillTmpArray()
+            deleteValuesFromTmp(rowIndexes)
+
+            fillRegions(rowIndexes)
+
+            if (tmpArrayIsNotZero()) return "Row: $rowIndex is not made of unique values. Indexes: $rowIndexes"
+        }
+
+        for (columnIndex in (0..< size)) {
+            val columnIndexes = (columnIndex..< size*(columnIndex+1) step size)
+
+            fillTmpArray()
+            deleteValuesFromTmp(columnIndexes)
+
+            fillRegions(columnIndexes)
+
+            if (tmpArrayIsNotZero()) return "Column: $columnIndex is not made of unique values. Indexes: $columnIndexes"
+        }
+
+        for ((regionID, positions) in regions) {
+            val operation = operationPerRegion[regionID]!!
+            val operationResult = operation.operate(positions.map { board[it] })
+            val actualResult = operation.operate(positions.map { completedBoard[it] })
+
+            if (operationResult != actualResult) return "Region: $regionID with positions: $positions, operation: $operation doesn't result in the correct value $actualResult. Result obtained: $operationResult"
+        }
+
+        return ""
     }
 
     override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
