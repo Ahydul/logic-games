@@ -361,4 +361,11 @@ abstract class AbstractGame(
     fun getValue(value: Int): GameValue {
         return NumberValue.get(value)
     }
+
+    protected fun getRowPositions(rowIndex: Int): IntRange {
+        val n = rowIndex * numColumns
+        return (n ..< numColumns+n)
+    }
+
+    protected fun getColumnPositions(columnIndex: Int) = (columnIndex..< numPositions() step numColumns)
 }
