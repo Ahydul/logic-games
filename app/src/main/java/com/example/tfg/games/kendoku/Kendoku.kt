@@ -293,8 +293,7 @@ class Kendoku(
 
         //TODO: Complete score functionality
         for (rowIndex in (0..< size)) {
-            val n = rowIndex*size
-            val row = (n..< size+n).map { possibleValues[it] }.toTypedArray()
+            val row = getRowPositions(rowIndex).map { possibleValues[it] }.toTypedArray()
 
             val numPairs = cleanNakedPairsInLine(row)
 
@@ -304,7 +303,7 @@ class Kendoku(
         }
 
         for (columnIndex in (0..< size)) {
-            val column = (columnIndex..< size*(columnIndex+1) step size).map { possibleValues[it] }.toTypedArray()
+            val column = getColumnPositions(columnIndex).map { possibleValues[it] }.toTypedArray()
 
             val numPairs = cleanNakedPairsInLine(column)
 
@@ -670,7 +669,7 @@ class Kendoku(
 
         for (rowIndex in (0..< size)) {
             val n = rowIndex*size
-            val rowIndexes = (n..< size+n)
+            val rowIndexes = getRowPositions(rowIndex)
 
             fillTmpArray()
             deleteValuesFromTmp(rowIndexes)
@@ -681,7 +680,7 @@ class Kendoku(
         }
 
         for (columnIndex in (0..< size)) {
-            val columnIndexes = (columnIndex..< size*(columnIndex+1) step size)
+            val columnIndexes = getColumnPositions(columnIndex)
 
             fillTmpArray()
             deleteValuesFromTmp(columnIndexes)
@@ -703,7 +702,27 @@ class Kendoku(
     }
 
     override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
-        TODO("Not yet implemented")
+        val res = mutableSetOf<Int>()
+
+        if (value == 0) return res
+
+        //Check row for same value
+        for (rowIndex in (0..< size)) {
+            getRowPositions(rowIndex)
+                .filterNot { it == position }
+                .filter { actualValues[it] == value }
+                .forEach { res.add(it) }
+        }
+
+        //Check column for same value
+        for (columnIndex in (0..< size)) {
+            getColumnPositions(columnIndex)
+                .filterNot { it == position }
+                .filter { actualValues[it] == value }
+                .forEach { res.add(it) }
+        }
+
+        return res
     }
 
 
