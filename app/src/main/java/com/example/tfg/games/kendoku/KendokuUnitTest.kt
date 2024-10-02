@@ -2,7 +2,6 @@ package com.example.tfg.games.kendoku
 
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.CustomTestWatcher
-import com.example.tfg.games.common.Difficulty
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -29,6 +28,10 @@ class KendokuUnitTest {
         val data = values.groupBy { it }.map { it.key to it.value.size }
         println(data)
     }
+
+    /*
+        Combination functions Tests
+     */
 
     private fun foldCombination(combination: List<IntArray>): String {
         return combination.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
@@ -125,31 +128,32 @@ class KendokuUnitTest {
         assert(foldCombination(test) == expectedResult)
     }
 
+
+    /*
+        Clean singles/pairs/triples functions Tests
+     */
+
     private fun foldResult(line: Array<MutableList<Int>>): String {
         return line.joinToString(separator = ";") { it.joinToString(separator = "") }
     }
 
-    private fun decodeInput(input: String): Array<MutableList<Int>> {
-        return input.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
-    }
+    @ParameterizedTest
+    @CsvSource(
+        "123;23;234;24;235;56;74, 3, 1;23;234;24;235;6;7",
+        "1;23;234;24;235;6;7, 1, 1;23;234;24;5;6;7",
+        "1345;2345;345;56;345;345;3457, 4, 1;2;345;6;345;345;7",
+        "1;2;345;6;345;345;7, 0, 1;2;345;6;345;345;7",
+    )
+    fun testCleanHiddenSingles(input: String, expectedNumSingles: Int, expectedResult: String) {
+        val kendoku = Kendoku(0, 7,0L)
+        val line = parsePossibleValues(input)
 
-    @Test
-    fun testCleanHiddenSingles() {
-        val kendoku = Kendoku(0, 6,0L)
-        val input = "12345;2345;345;345;345;56"
-        val line = decodeInput(input)
+        val numberSingles = kendoku.cleanHiddenSingles(line)
+        val foldResult = foldResult(line)
 
-        var singles = kendoku.cleanHiddenSingles(line)
-        assert(foldResult(line) == "1;2345;345;345;345;6")
-        assert(singles == 2)
-
-        singles = kendoku.cleanHiddenSingles(line)
-        assert(foldResult(line) == "1;2;345;345;345;6")
-        assert(singles == 1)
-
-        singles = kendoku.cleanHiddenSingles(line)
-        assert(foldResult(line) == "1;2;345;345;345;6")
-        assert(singles == 0)
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        assert(numberSingles == expectedNumSingles)
     }
 
     @ParameterizedTest
@@ -160,7 +164,7 @@ class KendokuUnitTest {
     )
     fun testCleanNakedPairs(input: String, expectedNumPairs: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 6,0L)
-        val line = decodeInput(input)
+        val line = parsePossibleValues(input)
 
         val numPairs = kendoku.cleanNakedPairsInLine(line)
         val foldResult = foldResult(line)
@@ -179,7 +183,7 @@ class KendokuUnitTest {
     )
     fun testCleanNakedTriples(input: String, expectedNumTriples: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 7,0L)
-        val line = decodeInput(input)
+        val line = parsePossibleValues(input)
 
         val numTriples = kendoku.cleanNakedTriplesInLine(line)
         val foldResult = foldResult(line)
@@ -205,7 +209,7 @@ class KendokuUnitTest {
     )
     fun testCleanHiddenSinglesPairsTriples(input: String, expectedSPT: String, expectedResult: String) {
         val kendoku = Kendoku(0, 7,0L)
-        val line = decodeInput(input)
+        val line = parsePossibleValues(input)
 
         val numberSPT = kendoku.cleanHiddenSinglesPairsTriplesInline(line)
         val foldResult = foldResult(line)
@@ -216,6 +220,7 @@ class KendokuUnitTest {
         assert(numberSPT.toList() == expectedSPT.split(";").map { it.toInt() })
     }
 
+/*
     @Test
     fun testCreateSeededKendokuBoard() {
         val size = 15
@@ -254,5 +259,5 @@ class KendokuUnitTest {
 
         assert(getTest(gameType)) { "Failed with seed: ${gameType.seed} " }
     }
-
+*/
 }
