@@ -458,7 +458,7 @@ class Kendoku(
         return numTriples
     }
 
-    internal fun getRegionSumCombinations(
+    private fun getRegionSumCombinations(
         possibleValues: Array<MutableList<Int>>,
         region: MutableList<Int>,
         sum: Int
@@ -506,7 +506,7 @@ class Kendoku(
         return combinations
     }
 
-    internal fun getRegionMultiplyCombinations(
+    private fun getRegionMultiplyCombinations(
         possibleValues: Array<MutableList<Int>>,
         region: MutableList<Int>,
         multiplication: Int
@@ -541,7 +541,7 @@ class Kendoku(
 
             for (value in values.reversed()) {
                 val newActualMultiplication = actualMultiplication * value
-                if (newActualMultiplication >= multiplication) continue
+                if (newActualMultiplication > multiplication) continue
                 if (valueAlreadyInRowOrColumn(index, value)) continue
 
                 lastCombination[index] = value
@@ -557,34 +557,40 @@ class Kendoku(
         return combinations
     }
 
-    internal fun getRegionSubtractCombinations(
+    private fun getRegionSubtractCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
         region: MutableList<Int>,
         subtraction: Int
     ): List<IntArray> {
         val combinations = mutableListOf<IntArray>()
-        val possibleValues1 = possibleValues[region[0]]
-        val possibleValues2 = possibleValues[region[1]]
-        val addValues = { int1: Int, int2: Int ->
+
+        val position = region.find { board[it] != 0 }
+        if (position != null) {
+            val int = board[position]
+            val otherPositionPossibleValues = possibleValues[region.find { it != position }!!]
+
+            val int1 = int + subtraction
+            val int2 = int - subtraction
+
+            if (otherPositionPossibleValues.contains(int1)) combinations.add(intArrayOf(int1))
+            if (otherPositionPossibleValues.contains(int2)) combinations.add(intArrayOf(int2))
+        }
+        else (subtraction+1 .. size).forEach {
+            val possibleValues1 = possibleValues[region[0]]
+            val possibleValues2 = possibleValues[region[1]]
+
+            val int1 = it
+            val int2 = int1 - subtraction
+
             if (possibleValues1.contains(int1) && possibleValues2.contains(int2)) combinations.add(intArrayOf(int1, int2))
             if (possibleValues1.contains(int2) && possibleValues2.contains(int1)) combinations.add(intArrayOf(int2, int1))
         }
 
-        val position = region.find { board[it] != 0 }
-        if (position != null) {
-            val int1 = board[position]
-            possibleValues[position].add(int1)
-            addValues(int1, int1 + subtraction)
-            addValues(int1, int1 - subtraction)
-            possibleValues[position].clear()
-        }
-        else (subtraction+1 .. size).forEach { addValues(it, it - subtraction) }
-
         return combinations
     }
 
-    internal fun getRegionDivideCombinations(
+    private fun getRegionDivideCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
         region: MutableList<Int>,
@@ -601,14 +607,19 @@ class Kendoku(
 
         val position = region.find { board[it] != 0 }
         if (position != null) {
-            val int1 = board[position]
-            possibleValues[position].add(int1)
+            val int = board[position]
+            val otherPositionPossibleValues = possibleValues[region.find { it != position }!!]
+
+            val int1 = int * division
+            val int2 = int / division
+
+            if (otherPositionPossibleValues.contains(int1)) combinations.add(intArrayOf(int1))
+            if (int%division == 0 && otherPositionPossibleValues.contains(int2)) combinations.add(intArrayOf(int2))
         }
-
-        (2..division).filter { division%it == 0 }.forEach { addValues(it, division/it) }
-        (division+1..size).filter { it%division == 0 }.forEach { addValues(it, it/division) }
-
-        if (position != null) possibleValues[position].clear()
+        else {
+            (2..division).filter { division%it == 0 }.forEach { addValues(it, division/it) }
+            (division+1..size).filter { it%division == 0 }.forEach { addValues(it, it/division) }
+        }
 
         return combinations
     }
@@ -631,28 +642,13 @@ class Kendoku(
 
         if (filteredRegion.isEmpty()) return emptyList()
 
-        val addFilteredValuesBack = { combinations: MutableList<IntArray> ->
-            combinations.replaceAll { arr ->
-                val iterator = arr.iterator()
-                arraySyntax.map { if (it == 0) iterator.next() else it }.toIntArray()
-            }
-        }
-
         return when(operation){
             KnownKendokuOperation.SUBTRACT -> getRegionSubtractCombinations(possibleValues, board, region, operationResult)
             KnownKendokuOperation.DIVIDE -> getRegionDivideCombinations(possibleValues, board, region, operationResult)
-            KnownKendokuOperation.SUM -> {
-                val combinations = getRegionSumCombinations(possibleValues, filteredRegion,
-                    sum = operationResult - arraySyntax.sum())
-                if (filteredRegion.size < region.size) addFilteredValuesBack(combinations)
-                combinations
-            }
-            KnownKendokuOperation.MULTIPLY -> {
-                val combinations = getRegionMultiplyCombinations(possibleValues, filteredRegion,
-                    multiplication = operationResult / arraySyntax.filter { it != 0 }.reduce { acc, i -> acc * i } )
-                if (filteredRegion.size < region.size) addFilteredValuesBack(combinations)
-                combinations
-            }
+            KnownKendokuOperation.SUM -> getRegionSumCombinations(possibleValues, filteredRegion,
+                sum = operationResult - arraySyntax.sum())
+            KnownKendokuOperation.MULTIPLY -> getRegionMultiplyCombinations(possibleValues, filteredRegion,
+                multiplication = operationResult / (arraySyntax.filter { it != 0 }.reduceOrNull { acc, i -> acc * i } ?: 1)  )
         }
     }
 

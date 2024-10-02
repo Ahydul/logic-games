@@ -30,116 +30,99 @@ class KendokuUnitTest {
         println(data)
     }
 
-    @Test
-    fun testGetRegionSumCombinations() {
-        val kendoku = Kendoku(0, 3,0L)
-
-        val possibleValues = arrayOf(
-            mutableListOf(1,2,3), mutableListOf(2,3), mutableListOf(5,6),
-            mutableListOf(8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
-            mutableListOf(), mutableListOf(1,3,4,5,6,7,8,9), mutableListOf(1,3,4), mutableListOf()
-        )
-
-        val test1 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(0, 1, 2, 3, 5),28)
-        val test2 = kendoku.getRegionSumCombinations(possibleValues, mutableListOf(4,6,7,8), 10)
-
-        val board = IntArray(13)
-        board[9] = 2
-        board[12] = 3
-
-        val test3 = kendoku.getRegionCombinations(possibleValues, board, mutableListOf(9,10,11,12), 10, KnownKendokuOperation.SUM)
-
-        val foldResult = { result: List<IntArray> ->
-            result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
+    private fun foldCombination(combination: List<IntArray>): String {
+        return combination.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
+    }
+    private fun parseRegion(region: String): MutableList<Int> {
+        return region.split(";").map { it.toInt() }.toMutableList()
+    }
+    private fun parsePossibleValues(possibleValues: String): Array<MutableList<Int>> {
+        return possibleValues.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
+    }
+    private fun createBoard(possibleValues: Array<MutableList<Int>>): IntArray {
+        return IntArray(possibleValues.size) {
+            val possValues = possibleValues[it]
+            if (possValues.size == 1) possValues.first()
+            else 0
         }
-
-        assert(foldResult(test1) == "32698;23698")
-        assert(foldResult(test2) == "4321;4312;4231;4213;4132;4123;3421;3412;3241;3214;3142;3124;2512;2431;2413;2341;2314;2251;2215;2152;2143;2134;1621;1531;1432;1423;1351;1342;1324;1261;1243;1234;1162;1153;1135;1126")
-        assert(foldResult(test3) == "2413;2143")
     }
 
-    @Test
-    fun testGetRegionSubtractCombinations() {
+    @ParameterizedTest
+    @CsvSource(
+        "123;23;56;89;;123456789, 0;1;2;3;5, 28, 32698;32689;23698;23689",
+        ";123456789;;123456789;123456789;123456789, 1;3;4;5, 10, 4321;4312;4231;4213;4132;4123;3421;3412;3241;3214;3142;3124;2512;2431;2413;2341;2314;2251;2215;2152;2143;2134;1621;1531;1432;1423;1351;1342;1324;1261;1243;1234;1162;1153;1135;1126",
+        "2;13456789;134;3, 0;1;2;3, 10, 41;14",
+    )
+    fun testGetRegionSumCombinations(possibleValuesInput: String, regionInput: String, sum: Int, expectedResult: String) {
+        val kendoku = Kendoku(0, 3,0L)
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+        val board = createBoard(possibleValues)
+        val region = parseRegion(regionInput)
+
+        val test = kendoku.getRegionCombinations(possibleValues, board, region, sum, KnownKendokuOperation.SUM)
+
+        println(foldCombination(test))
+
+        assert(foldCombination(test) == expectedResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "123;23, 0;1, 1, 12;32;23",
+        "123456789;58, 0;1, 3, 25;85;58",
+        "123456789;123456789, 0;1, 7, 81;18;92;29",
+        "12356789;4, 0;1, 2, 6;2",
+    )
+    fun testGetRegionSubtractCombinations(possibleValuesInput: String, regionInput: String, subtraction: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
 
-        val possibleValues = arrayOf(
-            mutableListOf(1,2,3), mutableListOf(2,3),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
-            mutableListOf(1,2,3,5,6,7,8,9), mutableListOf()
-        )
-        val board = IntArray(9)
-        board[7] = 4
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+        val board = createBoard(possibleValues)
+        val region = parseRegion(regionInput)
 
-        val test1 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(0, 1),1)
-        val test2 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(2,3), 3)
-        val test3 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(4,5), 7)
-        val test4 = kendoku.getRegionSubtractCombinations(possibleValues, board, mutableListOf(6,7), 2)
+        val test = kendoku.getRegionCombinations(possibleValues, board, region, subtraction, KnownKendokuOperation.SUBTRACT)
 
-        val foldResult = { result: List<IntArray> ->
-            result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
-        }
-
-        assert(foldResult(test1) == "12;32;23")
-        assert(foldResult(test2) == "25;85;58")
-        assert(foldResult(test3) == "81;18;92;29")
-        assert(foldResult(test4) == "64;24")
+        assert(foldCombination(test) == expectedResult)
     }
 
-    @Test
-    fun testGetRegionMultiplicationCombinations() {
+    @ParameterizedTest
+    @CsvSource(
+        "123;23;56;;123456789;, 0;1;2;4, 60, 2352;1354;1265;1256",
+        ";123456789;;123456789;123456789;123456789, 1;3;4;5, 1200, 5865;5685;5586;5568",
+        "5;12346789;12346789, 0;1;2, 40, 81;42;24;18",
+    )
+    fun testGetRegionMultiplicationCombinations(possibleValuesInput: String, regionInput: String, multiplication: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 3,0L)
 
-        val possibleValues = arrayOf(
-            mutableListOf(1,2,3), mutableListOf(2,3), mutableListOf(5,6),
-            mutableListOf(8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(5,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
-            mutableListOf(), mutableListOf(1,2,3,4,6,7,8,9), mutableListOf(1,2,3,4,6,7,8,9)
-        )
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+        val board = createBoard(possibleValues)
+        val region = parseRegion(regionInput)
 
-        val test1 = kendoku.getRegionMultiplyCombinations(possibleValues, mutableListOf(0, 1, 2, 4), 60)
-        val test2 = kendoku.getRegionMultiplyCombinations(possibleValues, mutableListOf(4,6,7,8), 1200)
+        val test = kendoku.getRegionCombinations(possibleValues, board, region, multiplication, KnownKendokuOperation.MULTIPLY)
 
-        val board = IntArray(12)
-        board[9] = 5
-
-        val test3 = kendoku.getRegionCombinations(possibleValues, board, mutableListOf(9,10,11), 40, KnownKendokuOperation.MULTIPLY)
-
-        val foldResult = { result: List<IntArray> ->
-            result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
-        }
-
-        assert(foldResult(test1) == "2352;1354;1265;1256")
-        assert(foldResult(test2) == "5865;5685;5586;5568")
+        assert(foldCombination(test) == expectedResult)
     }
 
-    @Test
-    fun testGetRegionDivideCombinations() {
+    @ParameterizedTest
+    @CsvSource(
+        "123;23, 0;1, 3, 13",
+        "123456789;12348, 0;1, 2, 12;21;24;42;63;48;84",
+        "123456789;123456789, 0;1, 7, 17;71",
+        "12356789;4, 0;1, 2, 8;2",
+        "13456789;2, 0;1, 4, 8",
+        "13456789;2, 0;1, 2, 4;1",
+    )
+    fun testGetRegionDivideCombinations(possibleValuesInput: String, regionInput: String, division: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
 
-        val possibleValues = arrayOf(
-            mutableListOf(1,2,3), mutableListOf(2,3),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,8),
-            mutableListOf(1,2,3,4,5,6,7,8,9), mutableListOf(1,2,3,4,5,6,7,8,9),
-            mutableListOf(1,2,3,5,6,7,8,9), mutableListOf()
-        )
-        val board = IntArray(9)
-        board[7] = 4
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+        val board = createBoard(possibleValues)
+        val region = parseRegion(regionInput)
 
-        val test1 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(0, 1),3)
-        val test2 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(2,3), 2)
-        val test3 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(4,5), 7)
-        val test4 = kendoku.getRegionDivideCombinations(possibleValues, board, mutableListOf(6,7), 2)
+        val test = kendoku.getRegionCombinations(possibleValues, board, region, division, KnownKendokuOperation.DIVIDE)
 
-        val foldResult = { result: List<IntArray> ->
-            result.joinToString(separator = ";") { arr -> arr.joinToString(separator = "") }
-        }
-
-        assert(foldResult(test1) == "13")
-        assert(foldResult(test2) == "12;21;24;42;63;48;84")
-        assert(foldResult(test3) == "17;71")
-        assert(foldResult(test4) == "24;84")
+        println(foldCombination(test))
+        assert(foldCombination(test) == expectedResult)
     }
 
     private fun foldResult(line: Array<MutableList<Int>>): String {
