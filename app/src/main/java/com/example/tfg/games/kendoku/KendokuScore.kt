@@ -11,6 +11,19 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += 4
     }
 
+    //TODO: Complete score
+    fun addNakedPairs(numPairs: Int) {
+        score += numPairs
+    }
+
+    fun addNakedTriples(numTriples: Int) {
+        score += numTriples
+    }
+
+    fun addHiddenSPT(numSPT: IntArray) {
+        numSPT.forEach { score += it }
+    }
+
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
         TODO("Not yet implemented")
     }

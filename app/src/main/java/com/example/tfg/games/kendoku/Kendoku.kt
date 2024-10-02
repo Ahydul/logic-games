@@ -291,44 +291,80 @@ class Kendoku(
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
 
-        //TODO: Complete score functionality
+
         for (rowIndex in (0..< size)) {
             val row = getRowPositions(rowIndex).map { possibleValues[it] }.toTypedArray()
 
             val numPairs = cleanNakedPairsInLine(row)
+            score.addNakedPairs(numPairs)
 
             val numTriples = cleanNakedTriplesInLine(row)
+            score.addNakedPairs(numTriples)
 
             val numSPT = cleanHiddenSinglesPairsTriplesInline(row)
+            score.addHiddenSPT(numSPT)
         }
 
         for (columnIndex in (0..< size)) {
             val column = getColumnPositions(columnIndex).map { possibleValues[it] }.toTypedArray()
 
             val numPairs = cleanNakedPairsInLine(column)
+            score.addNakedPairs(numPairs)
 
             val numTriples = cleanNakedTriplesInLine(column)
+            score.addNakedTriples(numTriples)
 
             val numSPT = cleanHiddenSinglesPairsTriplesInline(column)
+            score.addHiddenSPT(numSPT)
         }
+
+        // Possible values changed
+        if (score.get() > 0) return PopulateResult.success(score)
+
 
         for ((regionID, region) in regions.entries) {
             val operation = knownOperations.getOrDefault(regionID, null)
                 ?: deduceOperation(regionID, region, boardData)
                 ?: continue
-
             val operationRes = operationResultPerRegion[regionID]!!
-
-            val combinations = regionCombinations.getOrDefault(regionID, null)
+            var combinations = regionCombinations.getOrDefault(regionID, null)
                 ?: getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
 
+            val values = region.map {
+                val possVal = possibleValues[it]
+                if (possVal.isEmpty()) listOf(actualValues[it])
+                else possVal
+            }.toTypedArray()
+            combinations = reduceCombinations(combinations, values)
 
-            TODO()
+            boardData.setRegionCombinations(regionID, combinations)
+            reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
         }
 
 
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
+    }
+
+    private fun reduceCombinations(combinations: MutableList<IntArray>, values: Array<List<Int>>): MutableList<IntArray> {
+        return combinations.filterNot { combination -> combination.withIndex().all { (index, value) ->
+            values[index].contains(value)
+        } }.toMutableList()
+    }
+
+    private fun reducePossibleValuesUsingCombinations(
+        combinations: MutableList<IntArray>,
+        region: MutableList<Int>,
+        possibleValues: Array<MutableList<Int>>
+    ) {
+        val possibleValuesToKeep = Array(region.size) { mutableSetOf<Int>()  }
+        combinations.forEach { combination ->
+            combination.forEachIndexed { index, value -> possibleValuesToKeep[index].add(value) }
+        }
+
+        region.forEachIndexed { index, position ->
+            possibleValues[position].removeIf { !possibleValuesToKeep[index].contains(it) }
+        }
     }
 
     internal fun cleanHiddenSingles(line: Array<MutableList<Int>>): Int {
@@ -560,9 +596,9 @@ class Kendoku(
     private fun getRegionSubtractCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
-        region: MutableList<Int>,
+        region: List<Int>,
         subtraction: Int
-    ): List<IntArray> {
+    ): MutableList<IntArray> {
         val combinations = mutableListOf<IntArray>()
         val possibleValues1 = possibleValues[region[0]]
         val possibleValues2 = possibleValues[region[1]]
@@ -587,9 +623,9 @@ class Kendoku(
     private fun getRegionDivideCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
-        region: MutableList<Int>,
+        region: List<Int>,
         division: Int
-    ): List<IntArray> {
+    ): MutableList<IntArray> {
         val combinations = mutableListOf<IntArray>()
         val possibleValues1 = possibleValues[region[0]]
         val possibleValues2 = possibleValues[region[1]]
@@ -617,10 +653,10 @@ class Kendoku(
     internal fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
         board: IntArray,
-        region: MutableList<Int>,
+        region: List<Int>,
         operationResult: Int,
         operation: KnownKendokuOperation
-    ): List<IntArray> {
+    ): MutableList<IntArray> {
         val filteredRegion = mutableListOf<Int>()
         val arraySyntax = IntArray(region.size)
         region.forEachIndexed { index, i ->
@@ -629,7 +665,7 @@ class Kendoku(
             arraySyntax[index] = value
         }
 
-        if (filteredRegion.isEmpty()) return emptyList()
+        if (filteredRegion.isEmpty()) return mutableListOf()
 
         val addFilteredValuesBack = { combinations: MutableList<IntArray> ->
             combinations.replaceAll { arr ->

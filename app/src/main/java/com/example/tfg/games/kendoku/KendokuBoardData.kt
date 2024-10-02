@@ -29,4 +29,8 @@ class KendokuBoardData(
         regionCombinations.clear()
         regionCombinations.putAll(newBoardData.regionCombinations)
     }
+
+    fun setRegionCombinations(regionID: Int, combinations: MutableList<IntArray>) {
+        regionCombinations[regionID] = combinations
+    }
 }
