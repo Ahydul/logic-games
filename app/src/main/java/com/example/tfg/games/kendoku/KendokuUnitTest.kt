@@ -54,7 +54,7 @@ class KendokuUnitTest {
     @CsvSource(
         "123;23;56;89;;123456789, 0;1;2;3;5, 28, 32698;32689;23698;23689",
         ";123456789;;123456789;123456789;123456789, 1;3;4;5, 10, 4321;4312;4231;4213;4132;4123;3421;3412;3241;3214;3142;3124;2512;2431;2413;2341;2314;2251;2215;2152;2143;2134;1621;1531;1432;1423;1351;1342;1324;1261;1243;1234;1162;1153;1135;1126",
-        "2;13456789;134;3, 0;1;2;3, 10, 41;14",
+        "2;13456789;134;3, 0;1;2;3, 10, 2413;2143",
     )
     fun testGetRegionSumCombinations(possibleValuesInput: String, regionInput: String, sum: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 3,0L)
@@ -66,6 +66,7 @@ class KendokuUnitTest {
 
         println(foldCombination(test))
 
+        println(foldCombination(test))
         assert(foldCombination(test) == expectedResult)
     }
 
@@ -74,7 +75,7 @@ class KendokuUnitTest {
         "123;23, 0;1, 1, 12;32;23",
         "123456789;58, 0;1, 3, 25;85;58",
         "123456789;123456789, 0;1, 7, 81;18;92;29",
-        "12356789;4, 0;1, 2, 6;2",
+        "12356789;4, 0;1, 2, 64;24",
     )
     fun testGetRegionSubtractCombinations(possibleValuesInput: String, regionInput: String, subtraction: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
@@ -85,6 +86,7 @@ class KendokuUnitTest {
 
         val test = kendoku.getRegionCombinations(possibleValues, board, region, subtraction, KnownKendokuOperation.SUBTRACT)
 
+        println(foldCombination(test))
         assert(foldCombination(test) == expectedResult)
     }
 
@@ -92,7 +94,7 @@ class KendokuUnitTest {
     @CsvSource(
         "123;23;56;;123456789;, 0;1;2;4, 60, 2352;1354;1265;1256",
         ";123456789;;123456789;123456789;123456789, 1;3;4;5, 1200, 5865;5685;5586;5568",
-        "5;12346789;12346789, 0;1;2, 40, 81;42;24;18",
+        "5;12346789;12346789, 0;1;2, 40, 581;542;524;518",
     )
     fun testGetRegionMultiplicationCombinations(possibleValuesInput: String, regionInput: String, multiplication: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 3,0L)
@@ -103,6 +105,7 @@ class KendokuUnitTest {
 
         val test = kendoku.getRegionCombinations(possibleValues, board, region, multiplication, KnownKendokuOperation.MULTIPLY)
 
+        println(foldCombination(test))
         assert(foldCombination(test) == expectedResult)
     }
 
@@ -111,9 +114,9 @@ class KendokuUnitTest {
         "123;23, 0;1, 3, 13",
         "123456789;12348, 0;1, 2, 12;21;24;42;63;48;84",
         "123456789;123456789, 0;1, 7, 17;71",
-        "12356789;4, 0;1, 2, 8;2",
-        "13456789;2, 0;1, 4, 8",
-        "13456789;2, 0;1, 2, 4;1",
+        "12356789;4, 0;1, 2, 24;84",
+        "13456789;2, 0;1, 4, 82",
+        "13456789;2, 0;1, 2, 12;42",
     )
     fun testGetRegionDivideCombinations(possibleValuesInput: String, regionInput: String, division: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
