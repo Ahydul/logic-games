@@ -2,10 +2,14 @@ package com.example.tfg.games.kendoku
 
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.CustomTestWatcher
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import java.io.File
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 @ExtendWith(CustomTestWatcher::class)
@@ -198,20 +202,21 @@ class KendokuUnitTest {
 
     @ParameterizedTest
     @CsvSource(
-        "123;23;234;24;235;56;74, 3;0;0, 1;23;234;24;235;6;7",
-        "1;23;234;24;235;6;7, 1;0;0, 1;23;234;24;5;6;7",
-        "1345;2345;345;56;345;345;3457, 4;0;0, 1;2;345;6;345;345;7",
-        "1;2;345;6;345;345;7, 0;0;0, 1;2;345;6;345;345;7",
-        "1234567;12345;1234567;12345;12345;12345;12345, 0;1;0, 67;12345;67;12345;12345;12345;12345",
-        "34567;345;34567;345;345;12345;12345, 0;2;0, 67;345;67;345;345;12;12",
-        "12367;1235;12367;123;123;123;1234, 2;1;0, 67;5;67;123;123;123;4",
-        "1234567;1234;1234567;1234;1234567;1234;1234, 0;0;1, 567;1234;567;1234;567;1234;1234",
-        "123456;1234;1234567;1234;1234567;1234;1234, 0;0;1, 56;1234;567;1234;567;1234;1234",
-        "123456;1234;123457;1234;123467;1234;1234, 0;0;1, 56;1234;57;1234;67;1234;1234",
-        "3456;34;3457;34;3467;1234;1234, 0;1;1, 56;34;57;34;67;12;12",
+        "7, 123;23;234;24;235;56;74, 3;0;0, 1;23;234;24;235;6;7",
+        "7, 1;23;234;24;235;6;7, 1;0;0, 1;23;234;24;5;6;7",
+        "7, 1345;2345;345;56;345;345;3457, 4;0;0, 1;2;345;6;345;345;7",
+        "7, 1;2;345;6;345;345;7, 0;0;0, 1;2;345;6;345;345;7",
+        "7, 1234567;12345;1234567;12345;12345;12345;12345, 0;1;0, 67;12345;67;12345;12345;12345;12345",
+        "7, 34567;345;34567;345;345;12345;12345, 0;2;0, 67;345;67;345;345;12;12",
+        "7, 12367;1235;12367;123;123;123;1234, 2;1;0, 67;5;67;123;123;123;4",
+        "7, 1234567;1234;1234567;1234;1234567;1234;1234, 0;0;1, 567;1234;567;1234;567;1234;1234",
+        "7, 123456;1234;1234567;1234;1234567;1234;1234, 0;0;1, 56;1234;567;1234;567;1234;1234",
+        "7, 123456;1234;123457;1234;123467;1234;1234, 0;0;1, 56;1234;57;1234;67;1234;1234",
+        "7, 3456;34;3457;34;3467;1234;1234, 0;1;1, 56;34;57;34;67;12;12",
+        "4, 124;124;124;, 0;0;0, 124;124;124;",
     )
-    fun testCleanHiddenSinglesPairsTriples(input: String, expectedSPT: String, expectedResult: String) {
-        val kendoku = Kendoku(0, 7,0L)
+    fun testCleanHiddenSinglesPairsTriples(size: Int, input: String, expectedSPT: String, expectedResult: String) {
+        val kendoku = Kendoku(0, size,0L)
         val line = parsePossibleValues(input)
 
         val numberSPT = kendoku.cleanHiddenSinglesPairsTriplesInline(line)
@@ -223,44 +228,86 @@ class KendokuUnitTest {
         assert(numberSPT.toList() == expectedSPT.split(";").map { it.toInt() })
     }
 
-/*
+
+    /*
+        Test Janko Boards
+     */
+
+    data class KendokuBoard(val boardId: Int, val difficulty: String, val size: Int, val problem: String, val areas: String, val solution: String) {
+        fun getStartBoard() = IntArray(size*size) // Janko boards are always empty
+
+        fun getRegions() = areas.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
+
+        fun getCompletedBoard() = solution.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
+
+        fun getOperationsPerRegion(regions: IntArray): MutableMap<Int, KendokuOperation> {
+            val operationsPerRegion = mutableMapOf<Int, KendokuOperation>()
+            problem.replace("\n", " ").split(" ")
+                .withIndex().filterNot { it.value=="-" || it.value=="." }
+                .forEach { (index, s) ->
+                    val regionID = regions[index]
+                    val operation = if (s.indexOf("+") != -1) KendokuOperation.SUM
+                        else if (s.indexOf("-") != -1) KendokuOperation.SUBTRACT
+                        else if (s.indexOf("x") != -1 || s.indexOf("*") != -1) KendokuOperation.MULTIPLY
+                        else if (s.indexOf("/") != -1) KendokuOperation.DIVIDE
+                        else KendokuOperation.SUM_UNKNOWN
+                    operationsPerRegion[regionID] = operation
+                }
+            return operationsPerRegion
+        }
+
+        fun getOperationResultPerRegion(regions: IntArray): MutableMap<Int, Int> {
+            val operationResultPerRegion = mutableMapOf<Int, Int>()
+            problem.replace("\n", " ").split(" ")
+                .withIndex().filterNot { it.value=="-" || it.value=="." }
+                .forEach { (index, s) ->
+                    val regionID = regions[index]
+                    val result = s.dropLast(1).toIntOrNull() ?: s.toInt()
+                    operationResultPerRegion[regionID] = result
+                }
+            return operationResultPerRegion
+        }
+    }
+
+    private fun loadKendokuData(): List<KendokuBoard> {
+        val file = File("src/test/testdata/kendoku-data.json")
+        return Gson().fromJson(file.readText(), object : TypeToken<List<KendokuBoard?>?>() {}.type)
+    }
+
     @Test
-    fun testCreateSeededKendokuBoard() {
-        val size = 15
-        val seed = 234242242L
+    fun testOkJankoBoards() {
+        val kendokuBoard = loadKendokuData()
+        val seed = (Math.random()*10000000000).toLong()
 
-        val getGameType = {
-            Kendoku.create(size = size, seed = seed, difficulty = Difficulty.EXPERT)
-        }
+        println("board, score, times, brute-forces, regions")
 
-        testKendokuBoard(getGameType, getTest = {_: Kendoku -> true}, printHTML = true)
-    }
+        for (board in kendokuBoard) {
+            val regions = board.getRegions()
 
-    private fun testKendokuBoard(
-        getGameType: () -> Kendoku,
-        getTest: (Kendoku) -> Boolean = { gameType: Kendoku -> gameType.boardMeetsRulesPrintingInfo() && gameType.score.get() != 0 },
-        print: Boolean = true,
-        printHTML: Boolean = false,
-    ) {
-        val startTime = System.currentTimeMillis()
-        val gameType = getGameType()
-        val endTime = System.currentTimeMillis()
+            val startTime = System.currentTimeMillis()
+            val kendoku = Kendoku.solveBoard(
+                seed = seed,
+                size = sqrt(regions.size.toDouble()).toInt(),
+                startBoard = board.getStartBoard(),
+                completedBoard = board.getCompletedBoard(),
+                regions = regions,
+                operationPerRegion = board.getOperationsPerRegion(regions),
+                operationResultPerRegion = board.getOperationResultPerRegion(regions)
+            )
+            val endTime = System.currentTimeMillis()
 
-        if (print) {
-            if (printHTML) {
-                println(gameType.printStartBoardHTML())
-                println("\n${gameType.printCompletedBoardHTML()}")
-            } else {
-                println(gameType.printStartBoard())
-                println("\n${gameType.printCompletedBoard()}")
+
+            val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
+            val numBruteForces = kendoku.score.getBruteForceValue()
+
+            assert(correctBoard) {
+                println("Board: ${board.boardId} is incorrect")
+                println("Actual board:\n${kendoku.printStartBoard()}\n" +
+                        "Expected board:\n${kendoku.printCompletedBoard()}")
             }
+
+            println("${board.boardId}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
+
         }
-
-        println("Test with sizes ${gameType.numRows}x${gameType.numColumns}")
-        println("Time: ${endTime - startTime} ms")
-        println("Score: ${gameType.score.get()}")
-
-        assert(getTest(gameType)) { "Failed with seed: ${gameType.seed} " }
     }
-*/
 }
