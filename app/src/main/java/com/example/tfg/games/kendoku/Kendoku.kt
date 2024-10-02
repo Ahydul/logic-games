@@ -668,7 +668,6 @@ class Kendoku(
         val tmpArrayIsNotZero = { tmp.sum() != 0 }
 
         for (rowIndex in (0..< size)) {
-            val n = rowIndex*size
             val rowIndexes = getRowPositions(rowIndex)
 
             fillTmpArray()
