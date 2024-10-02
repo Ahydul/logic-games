@@ -26,6 +26,9 @@ class Kendoku(
     private val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
     private val allowedOperations: Array<KendokuOperation> = KendokuOperation.allOperations(),
 
+    // Helper variables
+    @Ignore
+    private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf(),
     @Ignore
     private var printEachBoardState: Boolean = false
 ): AbstractGame(
@@ -41,7 +44,6 @@ class Kendoku(
 ) {
     // Helper variables
     private var currentID = 0
-    private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf()
 
     // Use this instead of numColumns or numRows
     private val size = numColumns
@@ -190,33 +192,25 @@ class Kendoku(
     }
 
     override fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score {
-        // These arrays shows the possible values allowed in each column and row.
-        // At the beginning its all the values (1..size)
-        val columnsPossibleValues = Array(size - 1){ (1..size).toMutableSet() }
-        val rowsPossibleValues = Array(size - 1){ (1..size).toMutableSet() }
         val scoreResult = KendokuScore()
+        val checkedRegions = mutableListOf<Int>()
 
-        for (position in (0..<numPositions())) {
+        for (position in (0..< numPositions())) {
             val regionID = getRegionId(position)
-
-            val coordinate = Coordinate.fromIndex(index = position, size, size)
-
-            // values have the common possible values of the row and column of the coordinate
-            val values = rowsPossibleValues[coordinate.row].intersect(columnsPossibleValues[coordinate.column])
-            val value = if (values.size == 1) values.first() else operationResultPerRegion[regionID]!!
-
-            // If values is only one value, that value is the only possible value in that position.
-            // If not, if the region is of size 1 operationResultPerRegion[regionID] is the value in that position.
-            if (board[position] == 0 && (values.size == 1 || regionIsOneCell(regionID, position))) {
-                board[position] = value
+            if (!checkedRegions.contains(regionID) && regionIsOneCell(regionID, position)) {
+                board[position] = operationResultPerRegion[regionID]!!
                 scoreResult.addScoreNewValue()
+            }
+            else {
+                checkedRegions.add(regionID)
+                possibleValues[position].addAll((1..size).toMutableSet())
+            }
+        }
 
-                columnsPossibleValues[coordinate.column].remove(value)
-                rowsPossibleValues[coordinate.row].remove(value)
-            }
-            else if (board[position] == 0) {
-                possibleValues[position].addAll(values)
-            }
+        board.withIndex().filter { it.value != 0 }.forEach { (index, value) ->
+            val coordinate = Coordinate.fromIndex(index, size, size)
+            getRowPositions(coordinate.row).forEach { possibleValues[it].remove(value) }
+            getColumnPositions(coordinate.column).forEach { possibleValues[it].remove(value) }
         }
 
         return scoreResult
@@ -248,7 +242,8 @@ class Kendoku(
     override fun populateValues(boardData: BoardData): PopulateResult {
         val score = KendokuScore()
 
-        val boardData = boardData as KendokuBoardData
+        val boardData = if (boardData is KendokuBoardData) boardData
+            else KendokuBoardData.create(boardData.possibleValues, boardData.actualValues, operationPerRegion)
         val possibleValues = boardData.possibleValues
         val actualValues = boardData.actualValues
         val knownOperations = boardData.knownOperations
@@ -260,14 +255,14 @@ class Kendoku(
             val regionID = getRegionId(position)
             Utils.addToMapList(regionID, position, regions)
 
-            if (actualValues[position] == 0) continue
+            if (actualValues[position] != 0) continue
 
             val values = possibleValues[position]
             if (values.size == 1) {
+                val value = values.first()
                 addValueToActualValues(values, actualValues, position, score)
                 val coordinate = Coordinate.fromIndex(index = position, size, size)
 
-                val value = values.first()
 
                 // Delete value from the possible values in the row of position
                 (0..< size).filter { row -> row != coordinate.row }.mapNotNull { row ->
@@ -323,6 +318,8 @@ class Kendoku(
 
 
         for ((regionID, region) in regions.entries) {
+            if (region.size == 1) continue
+
             val operation = knownOperations.getOrDefault(regionID, null)
                 ?: deduceOperation(regionID, region, boardData)
                 ?: continue
@@ -338,7 +335,8 @@ class Kendoku(
             combinations = reduceCombinations(combinations, values)
 
             boardData.setRegionCombinations(regionID, combinations)
-            reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
+            val numValuesRemoved = reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
+            score.addCombinations(numValuesRemoved)
         }
 
 
@@ -347,7 +345,7 @@ class Kendoku(
     }
 
     private fun reduceCombinations(combinations: MutableList<IntArray>, values: Array<List<Int>>): MutableList<IntArray> {
-        return combinations.filterNot { combination -> combination.withIndex().all { (index, value) ->
+        return combinations.filter { combination -> combination.withIndex().all { (index, value) ->
             values[index].contains(value)
         } }.toMutableList()
     }
@@ -356,15 +354,19 @@ class Kendoku(
         combinations: MutableList<IntArray>,
         region: MutableList<Int>,
         possibleValues: Array<MutableList<Int>>
-    ) {
+    ): Int {
         val possibleValuesToKeep = Array(region.size) { mutableSetOf<Int>()  }
         combinations.forEach { combination ->
             combination.forEachIndexed { index, value -> possibleValuesToKeep[index].add(value) }
         }
 
+        var numValuesRemoved = 0
         region.forEachIndexed { index, position ->
-            possibleValues[position].removeIf { !possibleValuesToKeep[index].contains(it) }
+            val valuesChanged = possibleValues[position].removeIf { !possibleValuesToKeep[index].contains(it) }
+            if (valuesChanged) numValuesRemoved++
         }
+
+        return numValuesRemoved
     }
 
     internal fun cleanHiddenSingles(line: Array<MutableList<Int>>): Int {
@@ -401,6 +403,7 @@ class Kendoku(
         for ((i, indexes) in valueAppearsInIndexes.withIndex()) {
             val value = i + 1
             val numberAppearances = indexes.size
+            if (numberAppearances == 0) continue
             if (numberAppearances == 1) {
                 // Hidden single
                 val res = line[indexes.first()].removeIf { it != value }
@@ -426,7 +429,7 @@ class Kendoku(
 
             // Possible hidden triple
 
-            val union = valueAppearsInIndexes.withIndex().drop(value)
+            val union = valueAppearsInIndexes.withIndex().drop(value).filter { it.value.isNotEmpty() }
                 .map { (i2, indexes2) -> i2 to indexes.union(indexes2) }
 
             val otherTriples = union.filter { other ->
@@ -462,7 +465,9 @@ class Kendoku(
                         val res = it.removeAll(ints)
                         changedValues = changedValues || res
                     }
-                if (changedValues) numPairs++
+                if (changedValues) {
+                    numPairs++
+                }
             }
         }
         return numPairs
@@ -487,7 +492,9 @@ class Kendoku(
                         val res = it.removeAll(otherTriples[0].second)
                         changedValues = changedValues || res
                     }
-                if (changedValues) numTriples++
+                if (changedValues) {
+                    numTriples++
+                }
             }
         }
 
@@ -762,7 +769,12 @@ class Kendoku(
 
 
     companion object {
-        fun create(size: Int, seed: Long, difficulty: Difficulty, printEachBoardState: Boolean = false): Kendoku {
+        fun create(
+            size: Int,
+            seed: Long,
+            difficulty: Difficulty,
+            printEachBoardState: Boolean = false
+        ): Kendoku {
             val kendoku = Kendoku(
                 size = size,
                 seed = seed,
@@ -770,6 +782,33 @@ class Kendoku(
             )
 
             kendoku.createGame(difficulty)
+
+            return kendoku
+        }
+
+        // For testing
+        fun solveBoard(
+            seed: Long,
+            size: Int,
+            startBoard: IntArray,
+            completedBoard: IntArray,
+            regions: IntArray,
+            operationPerRegion: MutableMap<Int, KendokuOperation>,
+            operationResultPerRegion: MutableMap<Int, Int>
+        ): Kendoku {
+            val kendoku = Kendoku(
+                id = 0,
+                size = size,
+                seed = seed,
+                regions = regions,
+                startBoard = startBoard,
+                completedBoard = completedBoard,
+                operationPerRegion = operationPerRegion,
+                operationResultPerRegion = operationResultPerRegion
+            )
+
+            val score = kendoku.solveBoard(kendoku.startBoard)
+            kendoku.score.add(score)
 
             return kendoku
         }

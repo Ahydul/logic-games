@@ -24,6 +24,10 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         numSPT.forEach { score += it }
     }
 
+    fun addCombinations(numValuesRemoved: Int) {
+        score += numValuesRemoved
+    }
+
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
         TODO("Not yet implemented")
     }

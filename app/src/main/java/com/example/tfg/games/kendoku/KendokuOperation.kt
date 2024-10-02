@@ -36,12 +36,13 @@ enum class KendokuOperation {
         }
     }
 
+    //TODO
     fun filterOperation(region: Map<Coordinate, List<Int>>): Boolean {
         return when(this){
-            SUM -> TODO()
-            SUBTRACT -> TODO()
-            MULTIPLY -> TODO()
-            DIVIDE -> TODO()
+            SUM -> false
+            SUBTRACT -> false
+            MULTIPLY -> false
+            DIVIDE -> false
             else -> false
         }
     }
