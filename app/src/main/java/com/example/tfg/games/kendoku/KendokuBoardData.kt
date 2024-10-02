@@ -6,7 +6,7 @@ class KendokuBoardData(
     possibleValues: Array<MutableList<Int>>,
     actualValues: IntArray,
     val knownOperations: MutableMap<Int, KnownKendokuOperation>,
-    val regionCombinations: MutableMap<Int, MutableList<IntArray>>
+    val regionCombinations: MutableMap<Int, MutableList<IntArray>> = mutableMapOf()
 ) : BoardData(possibleValues, actualValues) {
     override fun clone(): BoardData {
         val newBoardData = super.clone()
@@ -32,5 +32,20 @@ class KendokuBoardData(
 
     fun setRegionCombinations(regionID: Int, combinations: MutableList<IntArray>) {
         regionCombinations[regionID] = combinations
+    }
+
+    companion object {
+        fun create(
+            possibleValues: Array<MutableList<Int>>,
+            actualValues: IntArray,
+            operationPerRegion: MutableMap<Int, KendokuOperation>
+        ): KendokuBoardData {
+            val knownOperations = operationPerRegion.mapNotNull {
+                val op = it.value.toKnownEnum()
+                if (op == null) null
+                else it.key to op
+            }.toMap().toMutableMap()
+            return KendokuBoardData(possibleValues, actualValues, knownOperations)
+        }
     }
 }

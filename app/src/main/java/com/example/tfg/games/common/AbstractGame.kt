@@ -4,7 +4,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
-import com.example.tfg.games.hakyuu.HakyuuScore
 import com.example.tfg.games.hakyuu.NumberValue
 import kotlin.math.max
 import kotlin.random.Random
@@ -176,7 +175,7 @@ abstract class AbstractGame(
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
         val scoreResult = fillPossibleValues(possibleValues = possibleValues, board = board)
 
-        val result = solveBoard(BoardData(possibleValues = possibleValues, actualValues = board))
+        val result = solveBoard(BoardData(possibleValues, board))
             .get() ?: return null
 
         scoreResult.add(result)
@@ -185,7 +184,7 @@ abstract class AbstractGame(
     }
 
     private fun solveBoard(boardData: BoardData, amountOfBruteForces: Int = 0): PopulateResult {
-        val score = HakyuuScore()
+        val score = Score.create(type)
 
         while (getRemainingPositions(boardData.actualValues).isNotEmpty())
         {
@@ -314,7 +313,7 @@ abstract class AbstractGame(
     }
 
     protected fun regionIsOneCell(regionId: Int, position: Int): Boolean {
-        return boardRegions.withIndex().any { (pos, id) -> id == regionId && position != pos }
+        return !boardRegions.withIndex().any { (pos, id) -> id == regionId && position != pos }
     }
 
     protected fun addValueToActualValues(

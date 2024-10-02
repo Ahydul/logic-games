@@ -1,5 +1,6 @@
 package com.example.tfg.games.common
 
+import com.example.tfg.games.kendoku.KendokuScore
 import com.google.gson.JsonElement
 
 abstract class Score(
@@ -39,4 +40,12 @@ abstract class Score(
     abstract fun getMaxBruteForceValue(difficulty: Difficulty): Int
     abstract fun getDifficulty(): Difficulty
     abstract fun serialize(): JsonElement
+
+    companion object {
+        fun create(gameType: Games): Score {
+            return when(gameType){
+                Games.HAKYUU -> KendokuScore()
+            }
+        }
+    }
 }
