@@ -318,7 +318,12 @@ class Kendoku(
 
 
         for ((regionID, region) in regions.entries) {
-            if (region.size == 1) continue
+            val values = region.map {
+                val possVal = possibleValues[it]
+                if (possVal.isEmpty()) listOf(actualValues[it])
+                else possVal
+            }.toTypedArray()
+            if (values.all { it.size == 1 }) continue //Region is completed
 
             val operation = knownOperations.getOrDefault(regionID, null)
                 ?: deduceOperation(regionID, region, boardData)
@@ -327,11 +332,6 @@ class Kendoku(
             var combinations = regionCombinations.getOrDefault(regionID, null)
                 ?: getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
 
-            val values = region.map {
-                val possVal = possibleValues[it]
-                if (possVal.isEmpty()) listOf(actualValues[it])
-                else possVal
-            }.toTypedArray()
             combinations = reduceCombinations(combinations, values)
 
             boardData.setRegionCombinations(regionID, combinations)
@@ -634,6 +634,9 @@ class Kendoku(
         division: Int
     ): MutableList<IntArray> {
         val combinations = mutableListOf<IntArray>()
+
+        if (division == 1) return combinations
+
         val possibleValues1 = possibleValues[region[0]]
         val possibleValues2 = possibleValues[region[1]]
 
@@ -648,8 +651,7 @@ class Kendoku(
             possibleValues[position].add(int1)
         }
 
-        (2..division).filter { division%it == 0 }.forEach { addValues(it, division/it) }
-        (division+1..size).filter { it%division == 0 }.forEach { addValues(it, it/division) }
+        (division..size).filter { it%division == 0 }.forEach { addValues(it, it/division) }
 
         if (position != null) possibleValues[position].clear()
 
