@@ -59,6 +59,10 @@ class KendokuUnitTest {
         "123;23;56;89;;123456789, 0;1;2;3;5, 28, 32698;32689;23698;23689",
         ";123456789;;123456789;123456789;123456789, 1;3;4;5, 10, 4321;4312;4231;4213;4132;4123;3421;3412;3241;3214;3142;3124;2512;2431;2413;2341;2314;2251;2215;2152;2143;2134;1621;1531;1432;1423;1351;1342;1324;1261;1243;1234;1162;1153;1135;1126",
         "2;13456789;134;3, 0;1;2;3, 10, 2413;2143",
+        "5678;;;789;19;, 0;3;4, 25, None",
+        "5678;;;19;789;, 0;3;4, 25, 898",
+        "123456789;;;123456789;123456789;, 0;3;4, 26, 989",
+        "123456789;;;123456789;123456789;, 0;3;4, 27, None",
     )
     fun testGetRegionSumCombinations(possibleValuesInput: String, regionInput: String, sum: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 3,0L)
@@ -69,9 +73,7 @@ class KendokuUnitTest {
         val test = kendoku.getRegionCombinations(possibleValues, board, region, sum, KnownKendokuOperation.SUM)
 
         println(foldCombination(test))
-
-        println(foldCombination(test))
-        assert(foldCombination(test) == expectedResult)
+        assert(foldCombination(test) == expectedResult || foldCombination(test) == "" && expectedResult == "None")
     }
 
     @ParameterizedTest
@@ -80,6 +82,7 @@ class KendokuUnitTest {
         "123456789;58, 0;1, 3, 25;85;58",
         "123456789;123456789, 0;1, 7, 81;18;92;29",
         "12356789;4, 0;1, 2, 64;24",
+        "123456789;123456789, 0;1, 10, None",
     )
     fun testGetRegionSubtractCombinations(possibleValuesInput: String, regionInput: String, subtraction: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
@@ -91,7 +94,7 @@ class KendokuUnitTest {
         val test = kendoku.getRegionCombinations(possibleValues, board, region, subtraction, KnownKendokuOperation.SUBTRACT)
 
         println(foldCombination(test))
-        assert(foldCombination(test) == expectedResult)
+        assert(foldCombination(test) == expectedResult || foldCombination(test) == "" && expectedResult == "None")
     }
 
     @ParameterizedTest
@@ -99,6 +102,10 @@ class KendokuUnitTest {
         "123;23;56;;123456789;, 0;1;2;4, 60, 2352;1354;1265;1256",
         ";123456789;;123456789;123456789;123456789, 1;3;4;5, 1200, 5865;5685;5586;5568",
         "5;12346789;12346789, 0;1;2, 40, 581;542;524;518",
+        "12346789;12346789;12346789, 0;1;2, 11, None",
+        "12346789;12346789;;12346789;, 0;1;3, 3, 311",
+        "12346789;12346789;;12346789;, 0;1;3, 8, 811;421;412;241;214;142;124",
+        "12346789;236789;3, 0;1;2, 12, None",
     )
     fun testGetRegionMultiplicationCombinations(possibleValuesInput: String, regionInput: String, multiplication: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 3,0L)
@@ -110,17 +117,21 @@ class KendokuUnitTest {
         val test = kendoku.getRegionCombinations(possibleValues, board, region, multiplication, KnownKendokuOperation.MULTIPLY)
 
         println(foldCombination(test))
-        assert(foldCombination(test) == expectedResult)
+        assert(foldCombination(test) == expectedResult || foldCombination(test) == "" && expectedResult == "None")
     }
 
     @ParameterizedTest
     @CsvSource(
         "123;23, 0;1, 3, 13",
         "123456789;12348, 0;1, 2, 12;21;24;42;63;48;84",
+        "123456789;123456789, 0;1, 3, 13;31;26;62;39;93",
+        "123456789;1234578, 0;1, 3, 13;31;62;93",
         "123456789;123456789, 0;1, 7, 17;71",
+        "123456789;123456789, 0;1, 9, 19;91",
         "12356789;4, 0;1, 2, 24;84",
         "13456789;2, 0;1, 4, 82",
         "13456789;2, 0;1, 2, 12;42",
+        "123456789;123456789, 0;1, 1, None",
     )
     fun testGetRegionDivideCombinations(possibleValuesInput: String, regionInput: String, division: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
@@ -132,7 +143,7 @@ class KendokuUnitTest {
         val test = kendoku.getRegionCombinations(possibleValues, board, region, division, KnownKendokuOperation.DIVIDE)
 
         println(foldCombination(test))
-        assert(foldCombination(test) == expectedResult)
+        assert(foldCombination(test) == expectedResult || foldCombination(test) == "" && expectedResult == "None")
     }
 
 
