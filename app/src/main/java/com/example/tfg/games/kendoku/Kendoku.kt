@@ -221,7 +221,7 @@ class Kendoku(
         region: MutableList<Int>,
         boardData: KendokuBoardData
     ): KnownKendokuOperation? {
-        //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 2*2 = 2+2
+        //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 1+3+2 = 1*3*2 = 6
         val operations = allowedOperations.filter {
             it.filterOperation(
                 region.associate { position ->
@@ -554,6 +554,7 @@ class Kendoku(
         region: MutableList<Int>,
         multiplication: Int
     ): MutableList<IntArray> {
+        //TODO: Calculate multiples and reduce possible values
         val combinations = mutableListOf<IntArray>()
         val regionSize = region.size
         val lastCombination = IntArray(regionSize)
