@@ -2,10 +2,10 @@ package com.example.tfg.games.kendoku
 
 import com.example.tfg.games.common.BoardData
 
-class KendokuBoardData(
+class KendokuBoardData private constructor(
     possibleValues: Array<MutableList<Int>>,
     actualValues: IntArray,
-    val knownOperations: MutableMap<Int, KnownKendokuOperation>,
+    val knownOperations: MutableMap<Int, KnownKendokuOperation> = mutableMapOf(),
     val regionCombinations: MutableMap<Int, MutableList<IntArray>> = mutableMapOf()
 ) : BoardData(possibleValues, actualValues) {
     override fun clone(): BoardData {
@@ -47,5 +47,10 @@ class KendokuBoardData(
             }.toMap().toMutableMap()
             return KendokuBoardData(possibleValues, actualValues, knownOperations)
         }
+
+        fun create(possibleValues: Array<MutableList<Int>>, actualValues: IntArray): KendokuBoardData {
+            return KendokuBoardData(possibleValues, actualValues)
+        }
+
     }
 }

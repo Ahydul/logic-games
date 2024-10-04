@@ -175,8 +175,7 @@ abstract class AbstractGame(
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
         val scoreResult = fillPossibleValues(possibleValues = possibleValues, board = board)
 
-        val result = solveBoard(BoardData(possibleValues, board))
-            .get() ?: return null
+        val result = solveBoard(BoardData.create(possibleValues, board, type)).get() ?: return null
 
         scoreResult.add(result)
 
