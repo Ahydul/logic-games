@@ -273,7 +273,7 @@ class KendokuUnitTest {
                 .withIndex().filterNot { it.value=="-" || it.value=="." }
                 .forEach { (index, s) ->
                     val regionID = regions[index]
-                    val result = s.dropLast(1).toIntOrNull() ?: s.toInt()
+                    val result = s.toIntOrNull() ?: s.dropLast(1).toInt()
                     operationResultPerRegion[regionID] = result
                 }
             return operationResultPerRegion
