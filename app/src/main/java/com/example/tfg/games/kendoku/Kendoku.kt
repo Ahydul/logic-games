@@ -24,7 +24,7 @@ class Kendoku(
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
     private val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
-    private val allowedOperations: Array<KendokuOperation> = KendokuOperation.allOperations(),
+    private val allowedOperations: Array<KnownKendokuOperation> = KnownKendokuOperation.allOperations(),
 
     // Helper variables
     @Ignore
@@ -42,11 +42,12 @@ class Kendoku(
     startBoard = startBoard,
     boardRegions = regions
 ) {
-    // Helper variables
-    private var currentID = 0
-
     // Use this instead of numColumns or numRows
     private val size = numColumns
+
+    // Helper variables
+    private var currentID = 0
+    private val primes = listOf(1,2,3,5,7,11,13,17,19).takeWhile { it <= size }
 
     override fun maxRegionSize(): Int = size
 
@@ -99,16 +100,14 @@ class Kendoku(
 
         boardRegions.groupBy { it }.forEach { (regionID, values) ->
             val operation = if (values.size == 1) KendokuOperation.SUM_UNKNOWN
-                else KendokuOperation.knownOperations().filterNot {
-                        // Filter out disallowed operations
-                    !allowedOperations.contains(it) ||
+                else allowedOperations.filterNot {
                         // Subtractions can't have more than 2 operands
-                    (it == KendokuOperation.SUBTRACT && values.size != 2) ||
+                    (it == KnownKendokuOperation.SUBTRACT && values.size != 2) ||
                         // Divisions can't have more than 2 operands and must result in integers
-                    (it == KendokuOperation.DIVIDE && (values.size != 2 || (values.max() % values.min() != 0))) ||
+                    (it == KnownKendokuOperation.DIVIDE && (values.size != 2 || (values.max() % values.min() != 0))) ||
                         // Multiplications can't be result in numbers higher than 1000
-                    (it == KendokuOperation.MULTIPLY && (values.reduce { acc, num -> acc * num } > 1000))
-                }.random(random)
+                    (it == KnownKendokuOperation.MULTIPLY && (values.reduce { acc, num -> acc * num } > 1000))
+                }.map { it.toGeneralEnum() }.random(random)
 
             operationResultPerRegion[regionID] = operation.operate(values)
             operationPerRegion[regionID] = operation
@@ -216,33 +215,10 @@ class Kendoku(
         return scoreResult
     }
 
-    private fun deduceOperation(
-        regionID: Int,
-        region: MutableList<Int>,
-        boardData: KendokuBoardData
-    ): KnownKendokuOperation? {
-        //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 1+3+2 = 1*3*2 = 6
-        val operations = allowedOperations.filter {
-            it.filterOperation(
-                region.associate { position ->
-                    val values = boardData.possibleValues[position]
-                    if (values.isEmpty()) values.add(boardData.actualValues[position])
-                    Coordinate.fromIndex(position, size, size) to values
-                }
-            )
-        }
-        if (operations.size == 1) {
-            val res = operations.first().reverse().toKnownEnum()!!
-            boardData.knownOperations[regionID] = res
-            return res
-        }
-        return null
-    }
-
     override fun populateValues(boardData: BoardData): PopulateResult {
         val score = KendokuScore()
 
-        val boardData = if (boardData is KendokuBoardData) boardData
+        val boardData = if ((boardData as KendokuBoardData).knownOperations.isNotEmpty()) boardData
             else KendokuBoardData.create(boardData.possibleValues, boardData.actualValues, operationPerRegion)
         val possibleValues = boardData.possibleValues
         val actualValues = boardData.actualValues
@@ -251,10 +227,11 @@ class Kendoku(
 
         val regions = mutableMapOf<Int, MutableList<Int>>()
 
-        for (position in getPositions()) {
-            val regionID = getRegionId(position)
-            Utils.addToMapList(regionID, position, regions)
+        getPositions().forEach { position ->
+            regions.getOrPut(getRegionId(position)) { mutableListOf() }.add(position)
+        }
 
+        for (position in getPositions()) {
             if (actualValues[position] != 0) continue
 
             val values = possibleValues[position]
@@ -263,19 +240,17 @@ class Kendoku(
                 addValueToActualValues(values, actualValues, position, score)
                 val coordinate = Coordinate.fromIndex(index = position, size, size)
 
-
                 // Delete value from the possible values in the row of position
-                (0..< size).filter { row -> row != coordinate.row }.mapNotNull { row ->
-                    Coordinate(row = row, column = coordinate.column).toIndex(size,size)
-                }.forEach { index ->
-                    possibleValues[index].remove(value)
-                }
+                getRowPositions(coordinate.row).forEach { index -> possibleValues[index].remove(value) }
 
                 // Delete value from the possible values in the column of position
-                (0..< size).filter { column -> column != coordinate.column }.mapNotNull { column ->
-                    Coordinate(row = coordinate.row, column = column).toIndex(size,size)
-                }.forEach { index ->
-                    possibleValues[index].remove(value)
+                getColumnPositions(coordinate.column).forEach { index -> possibleValues[index].remove(value) }
+
+                // When brute force has been used the value may be wrong. We check the region
+                val regionID = getRegionId(position)
+                val regionValues = regions[regionID]!!.map { actualValues[it] }
+                if (regionValues.all { it != 0 } && !checkRegionIsOk(regionValues, regionID)) {
+                    return PopulateResult.contradiction()
                 }
             }
             else if(values.size == 0) {
@@ -325,10 +300,10 @@ class Kendoku(
             }.toTypedArray()
             if (values.all { it.size == 1 }) continue //Region is completed
 
-            val operation = knownOperations.getOrDefault(regionID, null)
-                ?: deduceOperation(regionID, region, boardData)
-                ?: continue
             val operationRes = operationResultPerRegion[regionID]!!
+            val operation = knownOperations.getOrDefault(regionID, null)
+                ?: deduceOperation(regionID, region, boardData, operationRes)
+                ?: continue
             var combinations = regionCombinations.getOrDefault(regionID, null)
                 ?: getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
 
@@ -342,6 +317,42 @@ class Kendoku(
 
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
+    }
+
+    private fun checkRegionIsOk(regionValues: List<Int>, regionID: Int): Boolean {
+        return allowedOperations
+            .filterNot { regionValues.size > 2 && it.isDivideOrSubtract() }
+            .any { it.operate(regionValues) == operationResultPerRegion[regionID] }
+    }
+
+    private fun deduceOperation(
+        regionID: Int,
+        region: MutableList<Int>,
+        boardData: KendokuBoardData,
+        operationResult: Int
+    ): KnownKendokuOperation? {
+
+        val operation = if (operationResult == 1) {
+            KnownKendokuOperation.SUBTRACT
+        }
+        else if (operationResult > region.size*size) {
+            KnownKendokuOperation.MULTIPLY
+        }
+        else {
+            //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 1+3+2 = 1*3*2 = 6
+            val validOperations = allowedOperations.filterNot { it.isDivideOrSubtract() && region.size > 2 && operationResult <= size }
+                .filter {
+                val combinations = getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationResult, it)
+                combinations.isNotEmpty()
+            }
+            if (validOperations.size == 1) validOperations.first()
+
+            else return null
+        }
+
+        boardData.knownOperations[regionID] = operation
+
+        return operation
     }
 
     private fun reduceCombinations(combinations: MutableList<IntArray>, values: Array<List<Int>>): MutableList<IntArray> {
@@ -709,7 +720,7 @@ class Kendoku(
         }
 
         val tmp = IntArray(size)
-        val fillTmpArray = { (1.. size).forEach { tmp[it] = it } }
+        val fillTmpArray = { (0..< size).forEach { tmp[it] = it + 1 } }
         val deleteValuesFromTmp = { indexes: IntProgression -> indexes.forEach { tmp[board[it]] = 0 } }
         val tmpArrayIsNotZero = { tmp.sum() != 0 }
 

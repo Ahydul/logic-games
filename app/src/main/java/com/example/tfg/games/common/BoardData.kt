@@ -1,6 +1,7 @@
 package com.example.tfg.games.common
 
 import com.example.tfg.common.utils.Utils
+import com.example.tfg.games.kendoku.KendokuBoardData
 
 open class BoardData(
     val possibleValues: Array<MutableList<Int>>,
@@ -17,5 +18,13 @@ open class BoardData(
     open fun replaceDataWith(newBoardData: BoardData) {
         Utils.replaceArray(thisArray = possibleValues, with = newBoardData.possibleValues)
         Utils.replaceArray(thisArray = actualValues, with = newBoardData.actualValues)
+    }
+
+    companion object {
+        fun create(possibleValues: Array<MutableList<Int>>, board: IntArray, type: Games): BoardData {
+            return when(type){
+                Games.HAKYUU -> KendokuBoardData.create(possibleValues, board)
+            }
+        }
     }
 }

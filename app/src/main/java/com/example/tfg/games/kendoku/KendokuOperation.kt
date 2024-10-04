@@ -1,12 +1,42 @@
 package com.example.tfg.games.kendoku
 
-import com.example.tfg.common.utils.Coordinate
-
 enum class KnownKendokuOperation {
     SUM,
     SUBTRACT,
     MULTIPLY,
-    DIVIDE
+    DIVIDE;
+
+    fun toGeneralEnum(): KendokuOperation {
+        return when(this) {
+            SUM -> KendokuOperation.SUM
+            SUBTRACT -> KendokuOperation.SUBTRACT
+            MULTIPLY -> KendokuOperation.MULTIPLY
+            DIVIDE -> KendokuOperation.DIVIDE
+        }
+    }
+
+    fun operate(values: List<Int>): Int {
+        return when(this){
+            SUM -> values.sum()
+            SUBTRACT -> values.max() - values.min()
+            MULTIPLY -> values.reduce { acc, num -> acc * num }
+            DIVIDE -> values.max() / values.min()
+        }
+    }
+
+    fun isDivideOrSubtract(): Boolean {
+        return when(this) {
+            SUBTRACT, DIVIDE -> true
+            else -> false
+        }
+    }
+
+    companion object {
+        fun allOperations(): Array<KnownKendokuOperation> {
+            return KnownKendokuOperation.entries.toTypedArray()
+        }
+    }
+
 }
 
 enum class KendokuOperation {
@@ -36,17 +66,6 @@ enum class KendokuOperation {
         }
     }
 
-    //TODO
-    fun filterOperation(region: Map<Coordinate, List<Int>>): Boolean {
-        return when(this){
-            SUM -> false
-            SUBTRACT -> false
-            MULTIPLY -> false
-            DIVIDE -> false
-            else -> false
-        }
-    }
-
     fun reverse(): KendokuOperation {
         return when(this){
             SUM -> SUM_UNKNOWN
@@ -67,18 +86,6 @@ enum class KendokuOperation {
             MULTIPLY -> KnownKendokuOperation.MULTIPLY
             DIVIDE -> KnownKendokuOperation.DIVIDE
             else -> null
-        }
-    }
-
-    companion object {
-        fun knownOperations(): Array<KendokuOperation> {
-            return KendokuOperation.entries
-                .filterNot { it.isUnknown() }
-                .toTypedArray()
-        }
-
-        fun allOperations(): Array<KendokuOperation> {
-            return KendokuOperation.entries.toTypedArray()
         }
     }
 }
