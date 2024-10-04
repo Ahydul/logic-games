@@ -289,7 +289,7 @@ class KendokuUnitTest {
     fun testOkJankoBoard() {
         val boardId = 34
         val kendokuBoard = loadKendokuData()
-        println("board, score, times, brute-forces, regions")
+        println("board, difficulty, score, times, brute-forces, regions")
         val board = kendokuBoard.find { it.boardId == boardId } !!
         testJankoBoard(board)
     }
@@ -297,7 +297,7 @@ class KendokuUnitTest {
         @Test
     fun testOkJankoBoards() {
         val kendokuBoard = loadKendokuData()
-        println("board, score, times, brute-forces, regions")
+        println("board, difficulty, score, times, brute-forces, regions")
         for (board in kendokuBoard) testJankoBoard(board)
     }
 
@@ -321,11 +321,12 @@ class KendokuUnitTest {
         val numBruteForces = kendoku.score.getBruteForceValue()
 
         assert(correctBoard) {
+            println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
             println("Board: ${board.boardId} is incorrect")
             println("Actual board:\n${kendoku.printStartBoard()}\n" +
                     "Expected board:\n${kendoku.printCompletedBoard()}")
         }
 
-        println("${board.boardId}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
+        println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
     }
 }
