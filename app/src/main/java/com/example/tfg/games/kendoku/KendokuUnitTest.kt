@@ -286,39 +286,46 @@ class KendokuUnitTest {
     }
 
     @Test
+    fun testOkJankoBoard() {
+        val boardId = 34
+        val kendokuBoard = loadKendokuData()
+        println("board, score, times, brute-forces, regions")
+        val board = kendokuBoard.find { it.boardId == boardId } !!
+        testJankoBoard(board)
+    }
+
+        @Test
     fun testOkJankoBoards() {
         val kendokuBoard = loadKendokuData()
-        val seed = (Math.random()*10000000000).toLong()
-
         println("board, score, times, brute-forces, regions")
+        for (board in kendokuBoard) testJankoBoard(board)
+    }
 
-        for (board in kendokuBoard) {
-            val regions = board.getRegions()
+    private fun testJankoBoard(board: KendokuBoard, seed: Long = (Math.random()*10000000000).toLong()) {
+        val regions = board.getRegions()
 
-            val startTime = System.currentTimeMillis()
-            val kendoku = Kendoku.solveBoard(
-                seed = seed,
-                size = sqrt(regions.size.toDouble()).toInt(),
-                startBoard = board.getStartBoard(),
-                completedBoard = board.getCompletedBoard(),
-                regions = regions,
-                operationPerRegion = board.getOperationsPerRegion(regions),
-                operationResultPerRegion = board.getOperationResultPerRegion(regions)
-            )
-            val endTime = System.currentTimeMillis()
+        val startTime = System.currentTimeMillis()
+        val kendoku = Kendoku.solveBoard(
+            seed = seed,
+            size = sqrt(regions.size.toDouble()).toInt(),
+            startBoard = board.getStartBoard(),
+            completedBoard = board.getCompletedBoard(),
+            regions = regions,
+            operationPerRegion = board.getOperationsPerRegion(regions),
+            operationResultPerRegion = board.getOperationResultPerRegion(regions)
+        )
+        val endTime = System.currentTimeMillis()
 
 
-            val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
-            val numBruteForces = kendoku.score.getBruteForceValue()
+        val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
+        val numBruteForces = kendoku.score.getBruteForceValue()
 
-            assert(correctBoard) {
-                println("Board: ${board.boardId} is incorrect")
-                println("Actual board:\n${kendoku.printStartBoard()}\n" +
-                        "Expected board:\n${kendoku.printCompletedBoard()}")
-            }
-
-            println("${board.boardId}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
-
+        assert(correctBoard) {
+            println("Board: ${board.boardId} is incorrect")
+            println("Actual board:\n${kendoku.printStartBoard()}\n" +
+                    "Expected board:\n${kendoku.printCompletedBoard()}")
         }
+
+        println("${board.boardId}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
     }
 }
