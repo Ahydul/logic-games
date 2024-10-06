@@ -263,10 +263,11 @@ abstract class AbstractGame(
             possibleValues[position].remove(chosenValue)
 
             // If we have the completed board we can check the value early
-            val realValue = completedBoard[position]
-            val earlyContradiction = realValue != 0 && realValue != chosenValue
-            val result = if (earlyContradiction) BruteForceResult.contradiction()
-                else bruteForceAValue(chosenValue, position, boardData.clone(), amountOfBruteForces)
+            //val realValue = completedBoard[position]
+            //val earlyContradiction = realValue != 0 && realValue != chosenValue
+            //val result = if (earlyContradiction) BruteForceResult.contradiction()
+            //    else bruteForceAValue(chosenValue, position, boardData.clone(), amountOfBruteForces)
+            val result = bruteForceAValue(chosenValue, position, boardData.clone(), amountOfBruteForces)
 
             // Filter contradictions
             if (!result.gotContradiction()) {
