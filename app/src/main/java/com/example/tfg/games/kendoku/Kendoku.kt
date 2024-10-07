@@ -293,12 +293,12 @@ class Kendoku(
 
 
         for ((regionID, region) in regions.entries) {
-            val values = region.map {
+            val regionValues = region.map {
                 val possVal = possibleValues[it]
                 if (possVal.isEmpty()) listOf(actualValues[it])
                 else possVal
             }.toTypedArray()
-            if (values.all { it.size == 1 }) continue //Region is completed
+            if (regionValues.all { it.size == 1 }) continue //Region is completed
 
             val operationRes = operationResultPerRegion[regionID]!!
             val operation = knownOperations.getOrDefault(regionID, null)
@@ -306,10 +306,10 @@ class Kendoku(
                 ?: continue
             var combinations = regionCombinations.getOrDefault(regionID, null)
                 ?: getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
-
-            combinations = reduceCombinations(combinations, values)
-
+            combinations = reduceCombinations(combinations, regionValues)
             boardData.setRegionCombinations(regionID, combinations)
+
+            cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
             val numValuesRemoved = reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
             score.addCombinations(numValuesRemoved)
         }
@@ -355,7 +355,63 @@ class Kendoku(
         return operation
     }
 
-    private fun reduceCombinations(combinations: MutableList<IntArray>, values: Array<List<Int>>): MutableList<IntArray> {
+    // If a number appears in a combination and that number forms a line we can delete that number from
+    // the other positions in that line
+    internal fun cleanCageUnitOverlap(
+        regionID: Int,
+        region: MutableList<Int>,
+        combinations: MutableList<IntArray>,
+        possibleValues: Array<MutableList<Int>>
+    ): Int {
+        var result = 0
+
+        val numberFrequency = IntArray(size)
+        val numberRegionPositions = Array(size){ mutableSetOf<Int>() }
+        combinations.forEach { combination ->
+            val numberAppears = BooleanArray(size)
+            combination.forEachIndexed { regionIndex, number ->
+                if (!numberAppears[number-1]){
+                    numberAppears[number-1] = true
+                    numberFrequency[number-1] ++
+                }
+                val position = region[regionIndex]
+                numberRegionPositions[number-1].add(position)
+            }
+        }
+
+        val deleteNumberFromLinePossibleValues = { number: Int, line: IntProgression ->
+            var possibleValuesChanged = false
+            line.filter { getRegionId(it) != regionID }.forEach {
+                val res = possibleValues[it].remove(number)
+                possibleValuesChanged = possibleValuesChanged || res
+            }
+            possibleValuesChanged
+        }
+
+        for ((index, frequency) in numberFrequency.withIndex()) {
+            val regionPositions = numberRegionPositions[index]
+
+            // We skip if the number doesn't appear in all combinations or appears only in one position
+            if (frequency < combinations.size || regionPositions.size < 2) continue
+
+            val number = index + 1
+            val positions = regionPositions.drop(1)
+
+            val coordinate = Coordinate.fromIndex(regionPositions.first(), size, size)
+            val possibleValuesChanged =
+                if (positions.all { coordinate.row == Coordinate.getRow(it, size) }) { // Same row
+                    deleteNumberFromLinePossibleValues(number, getRowPositions(coordinate.row))
+                } else if(positions.all { coordinate.column == Coordinate.getColumn(it, size) }) { // Same column
+                    deleteNumberFromLinePossibleValues(number, getColumnPositions(coordinate.column))
+                } else false
+
+            if (possibleValuesChanged) result ++
+        }
+
+        return result
+    }
+
+    private fun reduceCombinations(combinations: List<IntArray>, values: Array<List<Int>>): MutableList<IntArray> {
         return combinations.filter { combination -> combination.withIndex().all { (index, value) ->
             values[index].contains(value)
         } }.toMutableList()
