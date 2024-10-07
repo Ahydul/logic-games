@@ -309,7 +309,9 @@ class Kendoku(
             combinations = reduceCombinations(combinations, regionValues)
             boardData.setRegionCombinations(regionID, combinations)
 
-            cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
+            val numCUO = cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
+            score.addCageUnitOverlap(numCUO)
+
             val numValuesRemoved = reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
             score.addCombinations(numValuesRemoved)
         }
