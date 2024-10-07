@@ -44,7 +44,7 @@ class KendokuUnitTest {
         return region.split(";").map { it.toInt() }.toMutableList()
     }
     private fun parsePossibleValues(possibleValues: String): Array<MutableList<Int>> {
-        return possibleValues.split(";").map { it.split("").drop(1).dropLast(1).map { it.toInt() }.toMutableList() }.toTypedArray()
+        return possibleValues.split(";").map { it.split("").drop(1).dropLast(1).map { i -> i.toInt() }.toMutableList() }.toTypedArray()
     }
     private fun createBoard(possibleValues: Array<MutableList<Int>>): IntArray {
         return IntArray(possibleValues.size) {
@@ -237,6 +237,37 @@ class KendokuUnitTest {
         println(numberSPT.toList())
         assert(foldResult == expectedResult)
         assert(numberSPT.toList() == expectedSPT.split(";").map { it.toInt() })
+    }
+
+    private fun parseCombinations(combinations: String): MutableList<IntArray> {
+        return combinations.split(";").map { it.split("").drop(1).dropLast(1).map { i -> i.toInt() }.toIntArray() }.toMutableList()
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "3, ;123;123;;;123;123;123;123, 0;3;4, 323;321;231, 1, ;123;123;;;123;13;123;123",
+        "3, ;123;123;;;123;123;123;123, 0;3;4, 321;213, 2, ;123;123;;;23;13;123;123",
+        "6, ;;;123456;123456;123456;;;;123456;123456;123456, 0;1;2;6;7;8, 654321;653321;562231;346321;246321, 1, ;;;12345;12345;12345;;;;123456;123456;123456",
+        "6, ;;;123456;123456;123456;;;;123456;123456;123456, 0;1;2;6;7;8, 654321;653312;562231;346321;246321, 2, ;;;12345;12345;12345;;;;23456;23456;23456",
+        "6, ;;;123456;123456;123456;;;;123456;123456;123456, 0;1;2;6;7;8, 654321;652321;562231;546321;246312, 3, ;;;12345;12345;12345;;;;2456;2456;2456",
+        "6, ;;;12345;12345;12345;;;;2456;2456;2456, 0;1;2;6;7;8, 654321;652321;562231;546321;246312, 0, ;;;12345;12345;12345;;;;2456;2456;2456",
+        "4, ;;;123456;;123456;123456;123456;123456;123456;123456;123456;123456;123456;123456;123456, 0;1;2;4, 4123;4213;1234, 3, ;;;3456;;123456;123456;123456;12356;123456;123456;123456;12356;123456;123456;123456",
+    )
+    fun testCleanCageUnitOverlap(size: Int, possibleValuesInput: String, regionInput: String, combinationsInput: String, expectedNumber: Int, expectedResult: String) {
+        val kendoku = Kendoku(0, size,0L)
+
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+        val region = parseRegion(regionInput)
+        val regionID = 1 // Must be any number != 0
+        region.forEach { kendoku.boardRegions[it] = regionID }
+        val combinations = parseCombinations(combinationsInput)
+
+        val number = kendoku.cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
+
+        val foldResult = foldResult(possibleValues)
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        assert(number == expectedNumber)
     }
 
 
