@@ -744,7 +744,7 @@ class Kendoku(
             arraySyntax[index] = value
         }
 
-        if (filteredRegion.isEmpty()) return mutableListOf()
+        if (filteredRegion.isEmpty() || filteredRegion.any { possibleValues[it].isEmpty() }) return mutableListOf()
 
         val addFilteredValuesBack = { combinations: MutableList<IntArray> ->
             combinations.replaceAll { arr ->
