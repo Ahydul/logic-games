@@ -57,7 +57,7 @@ data class Coordinate(val row: Int, val column: Int) {
 
 
     companion object {
-        private fun getRow(index: Int, numColumns: Int) = index / numColumns
+        fun getRow(index: Int, numColumns: Int) = index / numColumns
 
         fun getColumn(index: Int, numColumns: Int) = index % numColumns
 
