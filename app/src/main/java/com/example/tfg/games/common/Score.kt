@@ -19,6 +19,7 @@ abstract class Score(
 
     open fun add(s: Score?) {
         score += s?.score ?: 0
+        bruteForce += s?.bruteForce ?: 0
     }
 
     fun addScoreNewValue() {
