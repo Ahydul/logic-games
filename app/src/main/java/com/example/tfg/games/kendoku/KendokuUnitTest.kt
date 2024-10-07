@@ -63,6 +63,8 @@ class KendokuUnitTest {
         "5678;;;19;789;, 0;3;4, 25, 898",
         "123456789;;;123456789;123456789;, 0;3;4, 26, 989",
         "123456789;;;123456789;123456789;, 0;3;4, 27, None",
+        ";;;;;, 0;3;4, 27, None",
+        "1;2;3;;;, 0;3;4, 27, None",
     )
     fun testGetRegionSumCombinations(possibleValuesInput: String, regionInput: String, sum: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 3,0L)
@@ -83,6 +85,7 @@ class KendokuUnitTest {
         "123456789;123456789, 0;1, 7, 81;18;92;29",
         "12356789;4, 0;1, 2, 64;24",
         "123456789;123456789, 0;1, 10, None",
+        ";, 0;1, 10, None",
     )
     fun testGetRegionSubtractCombinations(possibleValuesInput: String, regionInput: String, subtraction: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
@@ -106,6 +109,8 @@ class KendokuUnitTest {
         "12346789;12346789;;12346789;, 0;1;3, 3, 311",
         "12346789;12346789;;12346789;, 0;1;3, 8, 811;421;412;241;214;142;124",
         "12346789;236789;3, 0;1;2, 12, None",
+        ";;, 0;1;2, 12, None",
+        "1;2;, 0;1;2, 12, None",
     )
     fun testGetRegionMultiplicationCombinations(possibleValuesInput: String, regionInput: String, multiplication: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 3,0L)
@@ -132,6 +137,7 @@ class KendokuUnitTest {
         "13456789;2, 0;1, 4, 82",
         "13456789;2, 0;1, 2, 12;42",
         "123456789;123456789, 0;1, 1, None",
+        ";, 0;1, 1, None",
     )
     fun testGetRegionDivideCombinations(possibleValuesInput: String, regionInput: String, division: Int, expectedResult: String) {
         val kendoku = Kendoku(0, 9,0L)
