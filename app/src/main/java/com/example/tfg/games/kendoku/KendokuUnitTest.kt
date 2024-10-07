@@ -324,14 +324,14 @@ class KendokuUnitTest {
 
     @Test
     fun testOkJankoBoard() {
-        val boardId = 34
+        val boardId = 50
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, brute-forces, regions")
         val board = kendokuBoard.find { it.boardId == boardId } !!
         testJankoBoard(board)
     }
 
-        @Test
+    @Test
     fun testOkJankoBoards() {
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, brute-forces, regions")
