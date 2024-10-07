@@ -28,6 +28,10 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += numValuesRemoved
     }
 
+    fun addCageUnitOverlap(numCUO: Int) {
+        score += numCUO
+    }
+
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
         TODO("Not yet implemented")
     }
