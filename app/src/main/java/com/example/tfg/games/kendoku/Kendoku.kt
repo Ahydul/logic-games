@@ -420,7 +420,7 @@ class Kendoku(
         return result
     }
 
-    private fun biValueAttackOnRegion(
+    internal fun biValueAttackOnRegion(
         region: MutableList<Int>, 
         possibleValues: Array<MutableList<Int>>, 
         combinations: MutableList<IntArray>
