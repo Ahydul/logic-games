@@ -160,6 +160,9 @@ class KendokuUnitTest {
     private fun foldResult(line: Array<MutableList<Int>>): String {
         return line.joinToString(separator = ";") { it.joinToString(separator = "") }
     }
+    private fun foldResult(line: MutableList<IntArray>): String {
+        return line.joinToString(separator = ";") { it.joinToString(separator = "") }
+    }
 
     @ParameterizedTest
     @CsvSource(
@@ -258,7 +261,7 @@ class KendokuUnitTest {
         "6, ;;;123456;123456;123456;;;;123456;123456;123456, 0;1;2;6;7;8, 654321;653312;562231;346321;246321, 2, ;;;12345;12345;12345;;;;23456;23456;23456",
         "6, ;;;123456;123456;123456;;;;123456;123456;123456, 0;1;2;6;7;8, 654321;652321;562231;546321;246312, 3, ;;;12345;12345;12345;;;;2456;2456;2456",
         "6, ;;;12345;12345;12345;;;;2456;2456;2456, 0;1;2;6;7;8, 654321;652321;562231;546321;246312, 0, ;;;12345;12345;12345;;;;2456;2456;2456",
-        "4, ;;;123456;;123456;123456;123456;123456;123456;123456;123456;123456;123456;123456;123456, 0;1;2;4, 4123;4213;1234, 3, ;;;3456;;123456;123456;123456;12356;123456;123456;123456;12356;123456;123456;123456",
+        "4, ;;;1234;;1234;1234;1234;1234;1234;1234;1234;1234;1234;1234;1234, 0;1;2;4, 4123;4213;1234, 3, ;;;34;;1234;1234;1234;123;1234;1234;1234;123;1234;1234;1234",
     )
     fun testCleanCageUnitOverlap(size: Int, possibleValuesInput: String, regionInput: String, combinationsInput: String, expectedNumber: Int, expectedResult: String) {
         val kendoku = Kendoku(0, size,0L)
