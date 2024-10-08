@@ -32,6 +32,10 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += numCUO
     }
 
+    fun addBiValueAttack(numChanges: Int) {
+        score += numChanges
+    }
+
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
         TODO("Not yet implemented")
     }

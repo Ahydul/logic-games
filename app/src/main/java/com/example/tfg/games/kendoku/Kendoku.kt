@@ -296,19 +296,23 @@ class Kendoku(
         for ((regionID, region) in regions.entries) {
             val regionValues = region.map {
                 val possVal = possibleValues[it]
-                if (possVal.isEmpty()) listOf(actualValues[it])
+                if (possVal.isEmpty()) mutableListOf(actualValues[it])
                 else possVal
             }.toTypedArray()
             if (regionValues.all { it.size == 1 }) continue //Region is completed
 
             val operationRes = operationResultPerRegion[regionID]!!
-            val operation = knownOperations.getOrDefault(regionID, null)
+            val operation = knownOperations[regionID]
                 ?: deduceOperation(regionID, region, boardData, operationRes)
                 ?: continue
-            var combinations = regionCombinations.getOrDefault(regionID, null)
+            var combinations = regionCombinations[regionID]
                 ?: getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
+
             combinations = reduceCombinations(combinations, regionValues)
             boardData.setRegionCombinations(regionID, combinations)
+
+            val numChanges = biValueAttackOnRegion(region, possibleValues, combinations)
+            score.addBiValueAttack(numChanges)
 
             val numCUO = cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
             score.addCageUnitOverlap(numCUO)
@@ -414,7 +418,43 @@ class Kendoku(
         return result
     }
 
-    private fun reduceCombinations(combinations: List<IntArray>, values: Array<List<Int>>): MutableList<IntArray> {
+    private fun biValueAttackOnRegion(
+        region: MutableList<Int>, 
+        possibleValues: Array<MutableList<Int>>, 
+        combinations: MutableList<IntArray>
+    ): Int {
+        var result = 0
+        val deleteCombinationsByBiValue = { line: IntProgression, indexes: MutableList<Int> ->
+            val biValues = line
+                .filter { position -> indexes.all { index -> region[index] != position } }
+                .map { position -> possibleValues[position] }
+                .filter { it.size == 2 }
+            // Delete combinations that have biValue in more than one of the indexes of the combination
+            // As its the same line the values won't be repeated
+            biValues.forEach { biValue ->
+                val res = combinations.removeIf { combination ->
+                    indexes.filter { index -> biValue.contains(combination[index]) }.size > 1
+                }
+                if (res) {
+                    result++
+                }
+            }
+        }
+
+        val regionIndexesPerColumn = mutableMapOf<Int, MutableList<Int>>()
+        val regionIndexesPerRow = mutableMapOf<Int, MutableList<Int>>()
+        region.forEachIndexed { index, position ->
+            val coordinate = Coordinate.fromIndex(position, size, size)
+            regionIndexesPerRow.getOrPut(coordinate.row) { mutableListOf() }.add(index)
+            regionIndexesPerColumn.getOrPut(coordinate.column) { mutableListOf() }.add(index)
+        }
+        
+        regionIndexesPerRow.forEach { (row, indexes) -> deleteCombinationsByBiValue(getRowPositions(row), indexes)}
+        regionIndexesPerColumn.forEach { (column, indexes) -> deleteCombinationsByBiValue(getColumnPositions(column), indexes)}
+        return result
+    }
+
+    private fun reduceCombinations(combinations: List<IntArray>, values: Array<MutableList<Int>>): MutableList<IntArray> {
         return combinations.filter { combination -> combination.withIndex().all { (index, value) ->
             values[index].contains(value)
         } }.toMutableList()
