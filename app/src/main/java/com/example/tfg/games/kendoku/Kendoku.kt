@@ -306,10 +306,12 @@ class Kendoku(
                 ?: deduceOperation(regionID, region, boardData, operationRes)
                 ?: continue
             var combinations = regionCombinations[regionID]
-                ?: getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
 
-            combinations = reduceCombinations(combinations, regionValues)
-            boardData.setRegionCombinations(regionID, combinations)
+            if (combinations == null){
+                combinations = getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
+                boardData.setRegionCombinations(regionID, combinations)
+            }
+            else reduceCombinations(combinations, regionValues)
 
             val numChanges = biValueAttackOnRegion(region, possibleValues, combinations)
             score.addBiValueAttack(numChanges)
@@ -454,10 +456,10 @@ class Kendoku(
         return result
     }
 
-    private fun reduceCombinations(combinations: List<IntArray>, values: Array<MutableList<Int>>): MutableList<IntArray> {
-        return combinations.filter { combination -> combination.withIndex().all { (index, value) ->
+    private fun reduceCombinations(combinations: MutableList<IntArray>, values: Array<MutableList<Int>>) {
+        combinations.removeIf { combination -> !combination.withIndex().all { (index, value) ->
             values[index].contains(value)
-        } }.toMutableList()
+        } }
     }
 
     private fun reducePossibleValuesUsingCombinations(
