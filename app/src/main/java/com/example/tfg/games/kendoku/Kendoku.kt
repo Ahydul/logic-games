@@ -218,8 +218,9 @@ class Kendoku(
     override fun populateValues(boardData: BoardData): PopulateResult {
         val score = KendokuScore()
 
-        val boardData = if ((boardData as KendokuBoardData).knownOperations.isNotEmpty()) boardData
-            else KendokuBoardData.create(boardData.possibleValues, boardData.actualValues, operationPerRegion)
+        val boardData = boardData as KendokuBoardData
+        if (!boardData.isInitialized()) boardData.initialize(operationPerRegion)
+
         val possibleValues = boardData.possibleValues
         val actualValues = boardData.actualValues
         val knownOperations = boardData.knownOperations
