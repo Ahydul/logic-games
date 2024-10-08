@@ -280,6 +280,30 @@ class KendokuUnitTest {
         assert(number == expectedNumber)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "3, ;12;123;;;123;123;123;123, 0;3;4, 123;213;231, 123;213;231, 0",
+        "3, ;123;123;;;12;123;123;123, 0;3;4, 312;321;231, 231, 1",
+        "3, ;123;123;;;123;12;123;123, 0;3;4, 123;213;231, 231, 1",
+        "4, ;;;12;;1234;1234;1234;23;1234;1234;1234;1234;1234;1234;1234, 0;1;2;4, 1234;1244;1233;3412;2413;4321, 4321, 2",
+    )
+    fun testBiValueAttackOnRegion(size: Int, possibleValuesInput: String, regionInput: String, combinationsInput: String, expectedResult: String, expectedNumChanges: Int) {
+        val kendoku = Kendoku(0, size,0L)
+
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+        val region = parseRegion(regionInput)
+        val regionID = 1 // Must be any number != 0
+        region.forEach { kendoku.boardRegions[it] = regionID }
+        val combinations = parseCombinations(combinationsInput)
+
+        val numChanges = kendoku.biValueAttackOnRegion(region, possibleValues, combinations)
+
+        val foldResult = foldResult(combinations)
+
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        assert(numChanges == expectedNumChanges)
+    }
 
     /*
         Test Janko Boards
