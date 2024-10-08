@@ -5,8 +5,15 @@ import com.example.tfg.games.kendoku.KendokuBoardData
 
 open class BoardData(
     val possibleValues: Array<MutableList<Int>>,
-    val actualValues: IntArray
+    val actualValues: IntArray,
+    private var initialized: Boolean = false
 ) {
+    fun isInitialized(): Boolean = initialized
+
+    fun initialize() {
+        initialized = true
+    }
+
     open fun clone(): BoardData {
         val newPossibleValues: Array<MutableList<Int>> = Array(possibleValues.size) {
             possibleValues[it].toMutableList()

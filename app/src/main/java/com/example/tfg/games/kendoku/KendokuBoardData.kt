@@ -8,6 +8,15 @@ class KendokuBoardData private constructor(
     val knownOperations: MutableMap<Int, KnownKendokuOperation> = mutableMapOf(),
     val regionCombinations: MutableMap<Int, MutableList<IntArray>> = mutableMapOf()
 ) : BoardData(possibleValues, actualValues) {
+
+    fun initialize(operationPerRegion: MutableMap<Int, KendokuOperation>) {
+        initialize()
+        operationPerRegion.forEach {
+            val op = it.value.toKnownEnum()
+            if (op != null) knownOperations[it.key] = op
+        }
+    }
+
     override fun clone(): BoardData {
         val newBoardData = super.clone()
         return KendokuBoardData(
