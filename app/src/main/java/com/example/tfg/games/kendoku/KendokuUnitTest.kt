@@ -329,17 +329,27 @@ class KendokuUnitTest {
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, brute-forces, regions")
         val board = kendokuBoard.find { it.boardId == boardId } !!
-        testJankoBoard(board)
+
+        val result = testJankoBoard(board)
+        assert(result == "") {
+            print(result)
+        }
     }
 
     @Test
     fun testOkJankoBoards() {
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, brute-forces, regions")
-        for (board in kendokuBoard) testJankoBoard(board)
+
+        val result = kendokuBoard.map { board -> testJankoBoard(board) }
+        val resultNotOK = result.filter { it != "" }
+        assert(resultNotOK.isEmpty()) {
+            println("\nERRORS:")
+            print(resultNotOK.joinToString(separator = "\n"))
+        }
     }
 
-    private fun testJankoBoard(board: KendokuBoard, seed: Long = (Math.random()*10000000000).toLong()) {
+    private fun testJankoBoard(board: KendokuBoard, seed: Long = (Math.random()*10000000000).toLong()): String {
         val regions = board.getRegions()
 
         val startTime = System.currentTimeMillis()
@@ -358,13 +368,12 @@ class KendokuUnitTest {
         val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
         val numBruteForces = kendoku.score.getBruteForceValue()
 
-        assert(correctBoard) {
-            println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
-            println("Board: ${board.boardId} is incorrect")
-            println("Actual board:\n${kendoku.printStartBoard()}\n" +
-                    "Expected board:\n${kendoku.printCompletedBoard()}")
-        }
-
         println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
+
+        return if (correctBoard) ""
+        else "\nBoard: ${board.boardId} is incorrect" +
+            "\nActual board:\n${kendoku.printStartBoard()}" +
+            "\nExpected board:\n${kendoku.printCompletedBoard()}"
+
     }
 }
