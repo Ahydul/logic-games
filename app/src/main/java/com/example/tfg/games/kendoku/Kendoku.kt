@@ -226,6 +226,7 @@ class Kendoku(
         val knownOperations = boardData.knownOperations
         val regionCombinations = boardData.regionCombinations
 
+        //TODO: we can put all this outside the function
         val regions = mutableMapOf<Int, MutableList<Int>>()
 
         getPositions().forEach { position ->
