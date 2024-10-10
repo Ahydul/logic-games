@@ -324,6 +324,13 @@ class Kendoku(
             score.addCombinations(numValuesRemoved)
         }
 
+        // Possible values changed
+        if (score.get() > 0) return PopulateResult.success(score)
+
+
+        val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
+        score.addInniesOuties(numInniesOuties)
+
 
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
@@ -363,6 +370,74 @@ class Kendoku(
         boardData.knownOperations[regionID] = operation
 
         return operation
+    }
+
+    internal fun cleanInniesAndOuties(
+        actualValues: IntArray,
+        regions: MutableMap<Int, MutableList<Int>>,
+        possibleValues: Array<MutableList<Int>>,
+        getRegionID: (Int) -> Int = { getRegionId(it) },
+        regionIsSum: (Int) -> Boolean
+    ): Int {
+        fun clean(lines: IntRange, rectangleSum: Int, getLinePositions: (Int) -> IntProgression): Int {
+            var sum = 0
+            val unknownPositions = mutableListOf<Int>()
+            val sumRegionsInside = mutableMapOf<Int, MutableList<Int>>()
+
+            lines.forEach { line ->
+                getLinePositions(line).forEach { position ->
+                    val regionID = getRegionID(position)
+                    if (!regionIsSum(regionID)) {
+                        val actualValue = actualValues[position]
+                        sum += actualValue
+                        if (actualValue == 0) {
+                            if (possibleValues[position].isEmpty()) return 0
+                            unknownPositions.add(position)
+                        }
+                    } else {
+                        sumRegionsInside.getOrPut(regionID) { mutableListOf() }.add(position)
+                    }
+                }
+            }
+
+            if (unknownPositions.size > 3 || unknownPositions.isEmpty()) return 0
+
+            for ((regionID, positionsInside) in sumRegionsInside.entries) {
+                val positionsOutside = regions[regionID]!!.filter { !positionsInside.contains(it) }
+
+                if (positionsOutside.any { actualValues[it] == 0 }) return 0
+
+                val sumOutside = positionsOutside.sumOf { actualValues[it] }
+                sum += operationResultPerRegion[regionID]!! - sumOutside
+            }
+
+            val combSum = rectangleSum - sum
+            val combinations = getRegionSumCombinations(possibleValues, unknownPositions, combSum)
+
+            val actualCombination = unknownPositions.map { completedBoard[it] }.toIntArray()
+            if (!combinations.any { actualCombination.contentEquals(it) }) {
+                val pito = 0
+            }
+
+            return reducePossibleValuesUsingCombinations(
+                combinations,
+                unknownPositions,
+                possibleValues
+            )
+        }
+
+        var numValuesRemoved = 0
+        (1..4).forEach { numRowsColumns ->
+            (0..size-numRowsColumns).forEach { firstRowColumn ->
+                val rectangleSum = (1..size).sum() * numRowsColumns
+                val rows = (firstRowColumn..< firstRowColumn+numRowsColumns)
+                numValuesRemoved += clean(rows, rectangleSum) { int: Int -> getRowPositions(int) }
+                val columns = (firstRowColumn..< firstRowColumn+numRowsColumns)
+                numValuesRemoved += clean(columns, rectangleSum) { int: Int -> getColumnPositions(int) }
+            }
+        }
+
+        return numValuesRemoved
     }
 
     // If a number appears in a combination and that number forms a line we can delete that number from
