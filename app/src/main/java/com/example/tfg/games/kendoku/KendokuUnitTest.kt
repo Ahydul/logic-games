@@ -305,6 +305,48 @@ class KendokuUnitTest {
         assert(numChanges == expectedNumChanges)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "6, 25;46;13;12346;12346;35, 345-10, 2;6;3;12346;12346;35 3",
+        "6, 24;156;14;256;56;3;24;126;1234;36;14;5, 0167-13;23459-21, 24;156;14;256;56;3;24;126;2;36;1;5 2",
+    )
+    fun testCleanInniesAndOuties(size: Int, possibleValuesInput: String, regionSum: String, expectedResult: String, expectedNumChanges: Int) {
+        val boardRegions = IntArray(size*size) { it }
+        val possibleValues = Array(size*size) { (1..size).toMutableList() }
+        val board = createBoard(possibleValues)
+
+        val sumRegions = mutableListOf<Int>()
+        val operationResultPerRegion = mutableMapOf<Int,Int>()
+        var id = size*size
+        regionSum.split(";").forEach { s ->
+            val spl = s.split("-")
+            val opSum = spl[1].toInt()
+            val positions = spl[0].split("").drop(1).dropLast(1).map { it.toInt() }
+            positions.forEach { boardRegions[it] = id }
+            operationResultPerRegion[id] = opSum
+            sumRegions.add(id)
+            id++
+        }
+
+        val regions = mutableMapOf<Int, MutableList<Int>>()
+        parsePossibleValues(possibleValuesInput).forEachIndexed { position, ints ->
+            possibleValues[position] = ints
+            val regionID = boardRegions[position]
+            regions.getOrPut(regionID) { mutableListOf() }.add(position)
+        }
+
+        val kendoku = Kendoku(0, size,0L, regions = boardRegions, operationResultPerRegion = operationResultPerRegion)
+
+        val numChanges = kendoku.cleanInniesAndOuties(board, regions, possibleValues) { sumRegions.contains(it) }
+
+        val foldResult = foldResult(possibleValues)
+
+        println(foldResult)
+        assert(foldResult.contains(expectedResult))
+        assert(numChanges == expectedNumChanges)
+    }
+
+
     /*
         Test Janko Boards
      */
