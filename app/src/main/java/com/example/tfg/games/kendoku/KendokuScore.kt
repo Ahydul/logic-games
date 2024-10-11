@@ -40,6 +40,10 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += numInniesOuties
     }
 
+    fun addXWings(numXWings: Int) {
+        score += numXWings
+    }
+
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
         TODO("Not yet implemented")
     }
