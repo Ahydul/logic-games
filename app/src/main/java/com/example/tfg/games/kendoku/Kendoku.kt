@@ -315,6 +315,12 @@ class Kendoku(
         val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
         score.addInniesOuties(numInniesOuties)
 
+        // Possible values changed
+        if (score.get() > 0) return PopulateResult.success(score)
+
+
+        val numXWings = cleanXWing(possibleValues)
+        score.addXWings(numXWings)
 
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
@@ -365,6 +371,36 @@ class Kendoku(
         boardData.knownOperations[regionID] = operation
 
         return operation
+    }
+
+    internal fun cleanXWing(possibleValues: Array<MutableList<Int>>): Int {
+        val lockedNumbersWithColumns = mutableMapOf<Int,MutableMap<Pair<Int,Int>,MutableList<Int>>>()
+        for (rowIndex in (0..< size)) {
+            val row = getRowPositions(rowIndex).map { possibleValues[it] }.toTypedArray()
+            val columnsPerNumber = Array(size){ mutableListOf<Int>() }
+            row.forEachIndexed { column, ints -> ints.forEach { number -> columnsPerNumber[number-1].add(column) } }
+
+            //size == 2 means its a locked number, a number that appears only twice in the line
+            columnsPerNumber.withIndex().filter { it.value.size == 2 }.forEach{ (number, columns) ->
+                lockedNumbersWithColumns.getOrPut(number+1) { mutableMapOf() }
+                    .getOrPut(columns[0] to columns[1]) { mutableListOf() }.add(rowIndex)
+            }
+        }
+
+        var numChanges = 0
+        for ((lockedNumber, columnPairs) in lockedNumbersWithColumns.entries) {
+            //Find pairs that repeat and delete in those columns the lockedNumber (except the actual locked numbers in the row)
+            columnPairs.filter { (_, rows) -> rows.size == 2 }
+                .forEach { (columns, rows) -> columns.toList().forEach { columnIndex ->
+                    var changed = false
+                    getColumnPositions(columnIndex).forEachIndexed { rowIndex, i ->
+                        changed = possibleValues[i].removeIf { value -> value == lockedNumber && !rows.contains(rowIndex) } || changed
+                    }
+                    if (changed) numChanges++
+                } }
+        }
+
+        return numChanges
     }
 
     internal fun cleanInniesAndOuties(
