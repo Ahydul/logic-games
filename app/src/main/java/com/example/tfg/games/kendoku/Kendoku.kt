@@ -397,13 +397,13 @@ class Kendoku(
             for ((lockedNumber, columnPairs) in lockedNumbers.entries) {
                 //Find pairs that repeat and delete in those columns the lockedNumber (except the actual locked numbers in the row)
                 columnPairs.filter { (_, rows) -> rows.size == 2 }
-                    .forEach { (columns, rows) -> columns.toList().forEach { columnIndex ->
+                    .forEach { (columns, rows) ->
                         var changed = false
-                        line(columnIndex).forEachIndexed { rowIndex, i ->
+                        columns.toList().forEach { columnIndex -> line(columnIndex).forEachIndexed { rowIndex, i ->
                             changed = possibleValues[i].removeIf { value -> value == lockedNumber && !rows.contains(rowIndex) } || changed
-                        }
+                        }}
                         if (changed) numChanges++
-                    } }
+                    }
             }
             return numChanges
         }
