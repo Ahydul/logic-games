@@ -263,30 +263,14 @@ class Kendoku(
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
 
-
-        for (rowIndex in (0..< size)) {
-            val row = getRowPositions(rowIndex).map { possibleValues[it] }.toTypedArray()
-
-            val numPairs = cleanNakedPairsInLine(row)
+        executeLineStrategies(possibleValues) { line ->
+            val numPairs = cleanNakedPairsInLine(line)
             score.addNakedPairs(numPairs)
 
-            val numTriples = cleanNakedTriplesInLine(row)
+            val numTriples = cleanNakedTriplesInLine(line)
             score.addNakedPairs(numTriples)
 
-            val numSPT = cleanHiddenSinglesPairsTriplesInline(row)
-            score.addHiddenSPT(numSPT)
-        }
-
-        for (columnIndex in (0..< size)) {
-            val column = getColumnPositions(columnIndex).map { possibleValues[it] }.toTypedArray()
-
-            val numPairs = cleanNakedPairsInLine(column)
-            score.addNakedPairs(numPairs)
-
-            val numTriples = cleanNakedTriplesInLine(column)
-            score.addNakedTriples(numTriples)
-
-            val numSPT = cleanHiddenSinglesPairsTriplesInline(column)
+            val numSPT = cleanHiddenSinglesPairsTriplesInline(line)
             score.addHiddenSPT(numSPT)
         }
 
@@ -340,6 +324,17 @@ class Kendoku(
         return allowedOperations
             .filterNot { regionValues.size > 2 && it.isDivideOrSubtract() }
             .any { it.operate(regionValues) == operationResultPerRegion[regionID] }
+    }
+
+    private fun executeLineStrategies(possibleValues: Array<MutableList<Int>>, strategies: (Array<MutableList<Int>>) -> Unit) {
+        for (rowIndex in (0..< size)) {
+            val row = getRowPositions(rowIndex).map { possibleValues[it] }.toTypedArray()
+            strategies(row)
+        }
+        for (columnIndex in (0..< size)) {
+            val column = getColumnPositions(columnIndex).map { possibleValues[it] }.toTypedArray()
+            strategies(column)
+        }
     }
 
     private fun deduceOperation(
