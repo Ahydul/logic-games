@@ -346,6 +346,24 @@ class KendokuUnitTest {
         assert(numChanges == expectedNumChanges)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        //"5, 12;;;;12;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;23;;;;23, 12;;;;12;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;23;;;;23, 1",
+        //"5, 12;1345;1345;1345;12;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;23;1345;1345;1345;23, 12;1345;1345;1345;12;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;23;1345;1345;1345;23, 1",
+        "5, 12;;;;12;14;1235;1235;1235;14;12345;12345;12345;12345;12345;45;1235;1235;1235;45;23;;;;23, 12;;;;12;14;1235;1235;1235;14;135;124;124;124;135;45;123;123;123;45;23;;;;, 4",
+    )
+    fun testCleanXWing(size: Int, possibleValuesInput: String, expectedResult: String, expectedNumChanges: Int) {
+        val kendoku = Kendoku(0, size,0L)
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+
+        val numChanges = kendoku.cleanXWing(possibleValues)
+        val foldResult = foldResult(possibleValues)
+
+        println(foldResult)
+        assert(foldResult.contains(expectedResult))
+        assert(numChanges == expectedNumChanges)
+    }
+
 
     /*
         Test Janko Boards
@@ -410,7 +428,7 @@ class KendokuUnitTest {
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, brute-forces, regions")
 
-        val result = kendokuBoard.map { board -> testJankoBoard(board) }
+        val result = kendokuBoard/*.filter { it.boardId != 50 }*/.map { board -> testJankoBoard(board) }
         val resultNotOK = result.filter { it != "" }
         assert(resultNotOK.isEmpty()) {
             println("\nERRORS:")
