@@ -312,8 +312,8 @@ class Kendoku(
         if (score.get() > 0) return PopulateResult.success(score)
 
 
-        val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
-        score.addInniesOuties(numInniesOuties)
+        //val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
+        //score.addInniesOuties(numInniesOuties)
 
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
@@ -374,31 +374,45 @@ class Kendoku(
     }
 
     internal fun cleanXWing(possibleValues: Array<MutableList<Int>>): Int {
-        val lockedNumbersWithColumns = mutableMapOf<Int,MutableMap<Pair<Int,Int>,MutableList<Int>>>()
-        for (rowIndex in (0..< size)) {
-            val row = getRowPositions(rowIndex).map { possibleValues[it] }.toTypedArray()
-            val columnsPerNumber = Array(size){ mutableListOf<Int>() }
-            row.forEachIndexed { column, ints -> ints.forEach { number -> columnsPerNumber[number-1].add(column) } }
 
-            //size == 2 means its a locked number, a number that appears only twice in the line
-            columnsPerNumber.withIndex().filter { it.value.size == 2 }.forEach{ (number, columns) ->
-                lockedNumbersWithColumns.getOrPut(number+1) { mutableMapOf() }
-                    .getOrPut(columns[0] to columns[1]) { mutableListOf() }.add(rowIndex)
+        fun getLockedNumbers(line: (Int) -> IntProgression): MutableMap<Int, MutableMap<Pair<Int, Int>, MutableList<Int>>> {
+            val lockedNumbers = mutableMapOf<Int,MutableMap<Pair<Int,Int>,MutableList<Int>>>()
+            for (rowIndex in (0..< size)) {
+                val columnsPerNumber = Array(size){ mutableListOf<Int>() }
+                line(rowIndex).map { possibleValues[it] }.forEachIndexed { column, ints ->
+                    ints.forEach { number -> columnsPerNumber[number-1].add(column) }
+                }
+
+                //size == 2 means its a locked number, a number that appears only twice in the line
+                columnsPerNumber.withIndex().filter { it.value.size == 2 }.forEach{ (number, columns) ->
+                    lockedNumbers.getOrPut(number+1) { mutableMapOf() }
+                        .getOrPut(columns[0] to columns[1]) { mutableListOf() }.add(rowIndex)
+                }
             }
+            return lockedNumbers
         }
 
-        var numChanges = 0
-        for ((lockedNumber, columnPairs) in lockedNumbersWithColumns.entries) {
-            //Find pairs that repeat and delete in those columns the lockedNumber (except the actual locked numbers in the row)
-            columnPairs.filter { (_, rows) -> rows.size == 2 }
-                .forEach { (columns, rows) -> columns.toList().forEach { columnIndex ->
-                    var changed = false
-                    getColumnPositions(columnIndex).forEachIndexed { rowIndex, i ->
-                        changed = possibleValues[i].removeIf { value -> value == lockedNumber && !rows.contains(rowIndex) } || changed
-                    }
-                    if (changed) numChanges++
-                } }
+        fun clean(lockedNumbers: MutableMap<Int, MutableMap<Pair<Int, Int>, MutableList<Int>>>, line: (Int) -> IntProgression): Int {
+            var numChanges = 0
+            for ((lockedNumber, columnPairs) in lockedNumbers.entries) {
+                //Find pairs that repeat and delete in those columns the lockedNumber (except the actual locked numbers in the row)
+                columnPairs.filter { (_, rows) -> rows.size == 2 }
+                    .forEach { (columns, rows) -> columns.toList().forEach { columnIndex ->
+                        var changed = false
+                        line(columnIndex).forEachIndexed { rowIndex, i ->
+                            changed = possibleValues[i].removeIf { value -> value == lockedNumber && !rows.contains(rowIndex) } || changed
+                        }
+                        if (changed) numChanges++
+                    } }
+            }
+            return numChanges
         }
+
+        val lockedNumbersWithColumns = getLockedNumbers { rowIndex -> getRowPositions(rowIndex) }
+        var numChanges = clean(lockedNumbersWithColumns) { columnIndex -> getColumnPositions(columnIndex) }
+
+        val lockedNumbersWithRows = getLockedNumbers { columnIndex -> getColumnPositions(columnIndex) }
+        numChanges += clean(lockedNumbersWithRows) { rowIndex -> getRowPositions(rowIndex) }
 
         return numChanges
     }
