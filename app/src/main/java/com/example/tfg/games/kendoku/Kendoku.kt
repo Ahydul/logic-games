@@ -268,7 +268,7 @@ class Kendoku(
             score.addNakedPairs(numPairs)
 
             val numTriples = cleanNakedTriplesInLine(line)
-            score.addNakedPairs(numTriples)
+            score.addNakedTriples(numTriples)
 
             val numSPT = cleanHiddenSinglesPairsTriplesInline(line)
             score.addHiddenSPT(numSPT)
