@@ -312,8 +312,8 @@ class Kendoku(
         if (score.get() > 0) return PopulateResult.success(score)
 
 
-        //val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
-        //score.addInniesOuties(numInniesOuties)
+        val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
+        score.addInniesOuties(numInniesOuties)
 
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
