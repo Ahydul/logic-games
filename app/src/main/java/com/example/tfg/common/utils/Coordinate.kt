@@ -4,6 +4,10 @@ import com.example.tfg.common.enums.Direction
 
 
 data class Coordinate(val row: Int, val column: Int) {
+    fun sameRow(coordinate: Coordinate) = this.row == coordinate.row
+
+    fun sameColumn(coordinate: Coordinate) = this.column == coordinate.column
+
     fun moveRight(numColumns: Int, value: Int = 1): Coordinate? {
         if (column >= numColumns - value) return null
         return Coordinate(row, column + value)
