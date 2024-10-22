@@ -325,6 +325,10 @@ class Kendoku(
         val numXWings = cleanXWing(possibleValues, lockedNumbersInRows, lockedNumbersInColumns)
         score.addXWings(numXWings)
 
+        val numColoring = cleanColoring(possibleValues, lockedNumbersInRows, lockedNumbersInColumns)
+        score.addColoring(numColoring)
+
+
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
     }
@@ -410,6 +414,89 @@ class Kendoku(
         possibleValues = possibleValues,
         line = { rowIndex -> getRowPositions(rowIndex) }
     )
+
+    private fun cleanColoring(
+        possibleValues: Array<MutableList<Int>>,
+        lockedNumbersPerRow: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInRow(possibleValues = possibleValues),
+        lockedNumbersPerColumn: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInColumn(possibleValues = possibleValues)
+    ): Int {
+        data class TmpMaps(val rowMap: MutableMap<Int, MutableList<Int>> = mutableMapOf(), val columnMap: MutableMap<Int, MutableList<Int>> = mutableMapOf()) {
+            fun addToRowMap(coordinate: Coordinate) {
+                rowMap.computeIfAbsent(coordinate.row){ mutableListOf() }.add(coordinate.toIndex(size, size)!!)
+            }
+            fun addToColumnMap(coordinate: Coordinate) {
+                columnMap.computeIfAbsent(coordinate.column){ mutableListOf() }.add(coordinate.toIndex(size, size)!!)
+            }
+        }
+
+        fun searchConnectedCoordinates(
+            row: Int, column: Int,
+            lnPerColumn: MutableMap<Int, Pair<Int, Int>>,
+            lnPerRow: MutableMap<Int, Pair<Int, Int>>,
+            visitedCoordinates: MutableSet<Coordinate>,
+            tmpMaps: TmpMaps
+        ) {
+            val searchConnectedCoordinates = { row: Int, column: Int ->
+                val coordinate = Coordinate(row, column)
+                val valueAdded = visitedCoordinates.add(coordinate)
+                if (valueAdded) {
+                    lnPerRow[row]?.let { (column1, column2) ->
+                        if (column == column2) searchConnectedCoordinates(row, column1, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
+                        else searchConnectedCoordinates(row, column2, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
+                    }?.let {
+                        tmpMaps.addToColumnMap(coordinate)
+                    }
+                }
+            }
+
+            val coordinate = Coordinate(row, column)
+            val valueAdded = visitedCoordinates.add(coordinate)
+            if (!valueAdded) return
+
+
+            lnPerColumn[column]?.let { (row1, row2) ->
+                if (row == row2) searchConnectedCoordinates(row1, column)
+                else searchConnectedCoordinates(row2, column)
+            }?.let {
+                tmpMaps.addToRowMap(coordinate)
+            }
+        }
+
+        fun graphCoordinates(
+            lnPerRow: MutableMap<Int, Pair<Int, Int>>,
+            lnPerColumn: MutableMap<Int, Pair<Int, Int>>
+        ): MutableList<TmpMaps> {
+            val graph: MutableList<TmpMaps> = mutableListOf()
+            val visitedCoordinates = mutableSetOf<Coordinate>()
+            for ((row, lnColumn) in lnPerRow) {
+                val tmpMaps = TmpMaps()
+                searchConnectedCoordinates(row, lnColumn.first, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
+                searchConnectedCoordinates(row, lnColumn.second, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
+            }// No need to loop the columns because the only coordinates left wont be connected to any graph
+            return graph
+        }
+
+        var result = 0
+
+        for (value in (1.. size)) {
+            val lnPerRow = lockedNumbersPerRow[value] ?: continue
+            val lnPerColumn = lockedNumbersPerColumn[value] ?: continue
+            val graph = graphCoordinates(lnPerRow, lnPerColumn)
+
+            for (tmpMaps in graph) {
+                tmpMaps.rowMap.filterValues { it.size == 2 }.forEach { (rowIndex, positions) ->
+                    val possibleValuesChanged = cleanValueFromPossibleValues(value, from = getRowPositions(rowIndex), possibleValues, positions)
+                    if (possibleValuesChanged) result++
+                }
+                tmpMaps.columnMap.filterValues { it.size == 2 }.forEach { (columnIndex, positions) ->
+                    val possibleValuesChanged = cleanValueFromPossibleValues(value, from = getColumnPositions(columnIndex), possibleValues, positions)
+                    if (possibleValuesChanged) result++
+                }
+            }
+        }
+
+        return result
+    }
 
     private fun cleanValueFromPossibleValues(
         value: Int,
