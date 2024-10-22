@@ -498,6 +498,11 @@ class Kendoku(
         return result
     }
 
+
+    /*
+* Deletes value from the possibleValues following the positions that from returns.
+* Ignores the positions in ignorePositions and the indexes in ignoreIndexes.
+* */
     private fun cleanValueFromPossibleValues(
         value: Int,
         from: IntProgression,
