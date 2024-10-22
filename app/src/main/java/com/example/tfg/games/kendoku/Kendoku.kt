@@ -319,7 +319,10 @@ class Kendoku(
         if (score.get() > 0) return PopulateResult.success(score)
 
 
-        val numXWings = cleanXWing(possibleValues)
+        val lockedNumbersInRows = getLockedNumbersInRow(possibleValues = possibleValues)
+        val lockedNumbersInColumns = getLockedNumbersInColumn(possibleValues = possibleValues)
+
+        val numXWings = cleanXWing(possibleValues, lockedNumbersInRows, lockedNumbersInColumns)
         score.addXWings(numXWings)
 
         return if (score.get() > 0) PopulateResult.success(score)
@@ -373,12 +376,15 @@ class Kendoku(
         return operation
     }
 
+    /*
+    * Returns a map of values that have locked numbers.
+    * The inside map represents the line (row or column) 2 positions that are the locked numbers.
+    * */
     private fun getLockedNumbersInLine(
         possibleValues: Array<MutableList<Int>>,
-        line: (Int) -> IntProgression,
-        getCoordinate: (Int, Int) -> Coordinate
-    ): MutableMap<Int, MutableList<Coordinate>> {
-        val lockedNumbers = mutableMapOf<Int, MutableList<Coordinate>>()
+        line: (Int) -> IntProgression
+    ): MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> {
+        val lockedNumbers = mutableMapOf<Int, MutableMap<Int, Pair<Int, Int>>>()
         for (lineIndex in (0..< size)) {
             //If line is a row the index are the columns and vice versa.
             val indexesPerNumber = Array(size){ mutableListOf<Int>() }
@@ -388,41 +394,54 @@ class Kendoku(
 
             //size == 2 means its a locked number, a number that appears only twice in the line
             indexesPerNumber.withIndex().filter { it.value.size == 2 }.forEach{ (number, indexes) ->
-                val ls = lockedNumbers.getOrPut(number+1) { mutableListOf() }
-                ls.add(getCoordinate(lineIndex, indexes[0]))
-                ls.add(getCoordinate(lineIndex, indexes[1]))
+                val map = lockedNumbers.getOrPut(number+1) { mutableMapOf() }
+                map[lineIndex] = indexes[0] to indexes[1]
             }
         }
         return lockedNumbers
     }
 
+    private fun getLockedNumbersInColumn(possibleValues: Array<MutableList<Int>>) = getLockedNumbersInLine(
+        possibleValues = possibleValues,
+        line = { columnIndex -> getColumnPositions(columnIndex) }
+    )
+
+    private fun getLockedNumbersInRow(possibleValues: Array<MutableList<Int>>) = getLockedNumbersInLine(
+        possibleValues = possibleValues,
+        line = { rowIndex -> getRowPositions(rowIndex) }
+    )
+
+    private fun cleanValueFromPossibleValues(
+        value: Int,
+        from: IntProgression,
+        possibleValues: Array<MutableList<Int>>,
+        ignorePositions: List<Int> = emptyList(),
+        ignoreIndexes: List<Int> = emptyList()
+    ): Boolean {
+        var possibleValuesChanged = false
+        from.withIndex().filterNot { ignorePositions.contains(it.value) || ignoreIndexes.contains(it.index) }.forEach { (_, position) ->
+            val valuesChanged = possibleValues[position].remove(value)
+            possibleValuesChanged = possibleValuesChanged || valuesChanged
+        }
+        return possibleValuesChanged
+    }
+
+
     internal fun cleanXWing(
         possibleValues: Array<MutableList<Int>>,
-        lockedNumbersInRows: MutableMap<Int, MutableList<Coordinate>> = getLockedNumbersInLine(
-            possibleValues = possibleValues,
-            line = { rowIndex -> getRowPositions(rowIndex) },
-            getCoordinate = { row, column -> Coordinate(row = row, column = column) }
-        ),
-        lockedNumbersInColumns: MutableMap<Int, MutableList<Coordinate>> = getLockedNumbersInLine(
-            possibleValues = possibleValues,
-            line = { columnIndex -> getColumnPositions(columnIndex) },
-            getCoordinate = { column, row -> Coordinate(row = row, column = column) }
-        )
+        lockedNumbersPerRow: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInRow(possibleValues = possibleValues),
+        lockedNumbersPerColumn: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInColumn(possibleValues = possibleValues)
     ): Int {
 
-        fun clean(lockedNumbersMap:  MutableMap<Int, MutableList<Coordinate>>, cleanPossibleValues: (Int, Coordinate, Coordinate) -> Boolean): Int {
+        fun clean(lockedNumbersMap: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>>, from: (Int) -> IntProgression): Int {
             var numChanges = 0
             for ((number, lockedNumbers) in lockedNumbersMap.entries) {
-                val pairs = (0..< lockedNumbers.size step 2).map { lockedNumbers[it] to lockedNumbers[it+1] }
-                for ((drop, pair) in pairs.withIndex()) {
-                    val otherPair = pairs.drop(drop+1).find { otherPair ->
-                        pair.first.sameColumn(otherPair.first) && pair.second.sameColumn(otherPair.second) ||
-                        pair.first.sameRow(otherPair.first) && pair.second.sameRow(otherPair.second)
-                    } ?: continue
-
-                    //Found x-wing
-                    var changed = cleanPossibleValues(number, pair.first, otherPair.first)
-                    changed = cleanPossibleValues(number, pair.second, otherPair.second) || changed
+                for ((drop, entry) in lockedNumbers.entries.withIndex()) {
+                    val otherEntry = lockedNumbers.entries.drop(drop+1).find { it.value == entry.value } ?: break
+                    val ignoreIndexes = listOf(entry.key, otherEntry.key)
+                    // Found x-wing
+                    var changed = cleanValueFromPossibleValues(number, from(entry.value.first), possibleValues, ignoreIndexes = ignoreIndexes)
+                    changed = cleanValueFromPossibleValues(number, from(entry.value.second), possibleValues, ignoreIndexes = ignoreIndexes) || changed
                     if (changed) numChanges++
                 }
             }
@@ -449,8 +468,8 @@ class Kendoku(
             return res
         }
 
-        var numChanges = clean(lockedNumbersInRows) { number, c1, c2 -> cleanPossibleValuesFromColumns(number, c1, c2) }
-        numChanges += clean(lockedNumbersInColumns) { number, c1, c2 -> cleanPossibleValuesFromRows(number, c1, c2) }
+        var numChanges = clean(lockedNumbersPerRow) { getColumnPositions(it) }
+        numChanges += clean(lockedNumbersPerColumn) { getRowPositions(it) }
 
         return numChanges
     }
