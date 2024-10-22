@@ -497,11 +497,6 @@ class Kendoku(
             val combSum = rectangleSum - sum
             val combinations = getRegionSumCombinations(possibleValues, unknownPositions, combSum)
 
-            val actualCombination = unknownPositions.map { completedBoard[it] }.toIntArray()
-            if (!combinations.any { actualCombination.contentEquals(it) }) {
-                val pito = 0
-            }
-
             return reducePossibleValuesUsingCombinations(
                 combinations,
                 unknownPositions,
