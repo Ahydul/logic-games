@@ -535,26 +535,6 @@ class Kendoku(
             return numChanges
         }
 
-        fun cleanPossibleValuesFromColumns(number: Int, c1: Coordinate, c2: Coordinate): Boolean {
-            var res = false
-            getColumnPositions(c1.column).forEachIndexed { rowIndex, position ->
-                res = possibleValues[position].removeIf {
-                        value -> value == number && rowIndex != c1.row && rowIndex != c2.row
-                } || res
-            }
-            return res
-        }
-
-        fun cleanPossibleValuesFromRows(number: Int, c1: Coordinate, c2: Coordinate): Boolean {
-            var res = false
-            getRowPositions(c1.row).forEachIndexed { columnIndex, position ->
-                res = possibleValues[position].removeIf {
-                        value -> value == number && columnIndex != c1.column && columnIndex != c2.column
-                } || res
-            }
-            return res
-        }
-
         var numChanges = clean(lockedNumbersPerRow) { getColumnPositions(it) }
         numChanges += clean(lockedNumbersPerColumn) { getRowPositions(it) }
 
