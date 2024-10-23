@@ -415,7 +415,7 @@ class Kendoku(
         line = { rowIndex -> getRowPositions(rowIndex) }
     )
 
-    private fun cleanColoring(
+    internal fun cleanColoring(
         possibleValues: Array<MutableList<Int>>,
         lockedNumbersPerRow: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInRow(possibleValues = possibleValues),
         lockedNumbersPerColumn: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInColumn(possibleValues = possibleValues)
@@ -443,8 +443,8 @@ class Kendoku(
                     lnPerRow[row]?.let { (column1, column2) ->
                         if (column == column2) searchConnectedCoordinates(row, column1, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
                         else searchConnectedCoordinates(row, column2, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
-                    }?.let {
-                        tmpMaps.addToColumnMap(coordinate)
+                    } ?: run {
+                        tmpMaps.addToRowMap(coordinate)
                     }
                 }
             }
@@ -453,12 +453,11 @@ class Kendoku(
             val valueAdded = visitedCoordinates.add(coordinate)
             if (!valueAdded) return
 
-
             lnPerColumn[column]?.let { (row1, row2) ->
                 if (row == row2) searchConnectedCoordinates(row1, column)
                 else searchConnectedCoordinates(row2, column)
-            }?.let {
-                tmpMaps.addToRowMap(coordinate)
+            } ?: run {
+                tmpMaps.addToColumnMap(coordinate)
             }
         }
 
@@ -472,6 +471,7 @@ class Kendoku(
                 val tmpMaps = TmpMaps()
                 searchConnectedCoordinates(row, lnColumn.first, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
                 searchConnectedCoordinates(row, lnColumn.second, lnPerColumn, lnPerRow, visitedCoordinates, tmpMaps)
+                graph.add(tmpMaps)
             }// No need to loop the columns because the only coordinates left wont be connected to any graph
             return graph
         }
