@@ -365,6 +365,24 @@ class KendokuUnitTest {
         assert(numChanges == expectedNumChanges)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "4, 1234;123;123;1234;1234;123;1234;123;1234;1234;123;123;123;1234;1234;123, 123;123;123;1234;1234;123;1234;123;1234;1234;123;123;123;1234;1234;123, 1",
+        "5, 1234;12345;1234;1234;12345;1234;12345;1234;12345;1234;1234;12345;12345;1234;1234;1234;1234;12345;12345;1234;12345;12345;1234;1234;12345, 1234;1234;1234;1234;12345;1234;12345;1234;12345;1234;1234;12345;12345;1234;1234;1234;1234;12345;12345;1234;12345;1234;1234;1234;12345, 1",
+        "5, 1234;1345;1234;134;1345;1234;12345;134;1345;134;134;12345;12345;134;134;1234;134;1345;12345;1234;12345;1345;134;1234;12345, 1234;134;1234;134;1345;1234;12345;134;1345;134;134;12345;12345;134;134;134;134;1345;12345;1234;1345;134;134;1234;12345, 2",
+    )
+    fun testCleanColoring(size: Int, possibleValuesInput: String, expectedResult: String, expectedNumChanges: Int) {
+        val kendoku = Kendoku(0, size,0L)
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+
+        val numChanges = kendoku.cleanColoring(possibleValues)
+        val foldResult = foldResult(possibleValues)
+
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        assert(numChanges == expectedNumChanges)
+    }
+
 
     /*
         Test Janko Boards
