@@ -285,19 +285,26 @@ class Kendoku(
                 if (possVal.isEmpty()) mutableListOf(actualValues[it])
                 else possVal
             }.toTypedArray()
+
             if (regionValues.all { it.size == 1 }) continue //Region is completed
 
-            val operationRes = operationResultPerRegion[regionID]!!
-            val operation = knownOperations[regionID]
-                ?: deduceOperation(regionID, region, boardData, operationRes)
-                ?: continue
-            var combinations = regionCombinations[regionID]
 
-            if (combinations == null){
-                combinations = getRegionCombinations(possibleValues, actualValues, region, operationRes, operation)
+            var combinations = regionCombinations[regionID]
+            if (combinations != null) {
+                reduceCombinations(combinations, regionValues)
+            }
+            else {
+                val operationRes = operationResultPerRegion[regionID]!!
+                val operation = knownOperations[regionID]
+                combinations = if (operation == null) {
+                    tryGetRegionCombinations(boardData, regionID, region, operationRes) ?: continue // Couldn't get combinations
+                } else {
+                    getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationRes, operation)
+                }
+
                 boardData.setRegionCombinations(regionID, combinations)
             }
-            else reduceCombinations(combinations, regionValues)
+
 
             val numChanges = biValueAttackOnRegion(region, possibleValues, combinations)
             score.addBiValueAttack(numChanges)
@@ -349,36 +356,6 @@ class Kendoku(
             val column = getColumnPositions(columnIndex).map { possibleValues[it] }.toTypedArray()
             strategies(column)
         }
-    }
-
-    private fun deduceOperation(
-        regionID: Int,
-        region: MutableList<Int>,
-        boardData: KendokuBoardData,
-        operationResult: Int
-    ): KnownKendokuOperation? {
-
-        val operation = if (operationResult == 1) {
-            KnownKendokuOperation.SUBTRACT
-        }
-        else if (operationResult > region.size*size) {
-            KnownKendokuOperation.MULTIPLY
-        }
-        else {
-            //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 1+3+2 = 1*3*2 = 6
-            val validOperations = allowedOperations.filterNot { it.isDivideOrSubtract() && (region.size > 2 || operationResult > size) }
-                .filter {
-                val combinations = getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationResult, it)
-                combinations.isNotEmpty()
-            }
-            if (validOperations.size == 1) validOperations.first()
-
-            else return null
-        }
-
-        boardData.knownOperations[regionID] = operation
-
-        return operation
     }
 
     /*
@@ -1017,6 +994,40 @@ class Kendoku(
         return combinations
     }
 
+    private fun tryGetRegionCombinations(
+        boardData: KendokuBoardData,
+        regionID: Int,
+        region: MutableList<Int>,
+        operationResult: Int
+    ): MutableList<IntArray>? {
+        // TODO: Decide whether to use score here or not
+
+        val (operation, combinations) = if (operationResult == 1) {
+            KnownKendokuOperation.SUBTRACT to getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationResult, KnownKendokuOperation.SUBTRACT)
+        }
+        else if (operationResult > region.size*size) {
+            KnownKendokuOperation.MULTIPLY to getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationResult, KnownKendokuOperation.MULTIPLY)
+        }
+        else {
+            val validOps = allowedOperations.filterNot { it.isDivideOrSubtract() && (region.size > 2 || operationResult > size) }
+                .map { it to getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationResult, it) }
+                .filter { (_, combinations) -> combinations.isNotEmpty() }
+
+            if (validOps.size == 1 || validOps.size == 2 && validOps[0].second.withIndex().all {
+                    (index, comb) -> validOps[1].second[index].contentEquals(comb)
+                }
+            ) {
+                validOps.first()
+            }
+
+            else return null
+        }
+
+        // We save the operation but the combinations are saved later
+        boardData.knownOperations[regionID] = operation
+
+        return combinations
+    }
 
     internal fun getRegionCombinations(
         possibleValues: Array<MutableList<Int>>,
