@@ -469,6 +469,7 @@ class KendokuUnitTest {
 
     private fun testJankoBoard(board: KendokuBoard, seed: Long = (Math.random()*10000000000).toLong()): String {
         val regions = board.getRegions()
+        board.addValuesToStart = { }
 
         val startTime = System.currentTimeMillis()
         val kendoku = Kendoku.solveBoard(
