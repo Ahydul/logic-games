@@ -366,7 +366,7 @@ class Kendoku(
         }
         else {
             //TODO: Maybe this isn't exhaustive: An area can be sum or multiply but the numbers are the same 1+3+2 = 1*3*2 = 6
-            val validOperations = allowedOperations.filterNot { it.isDivideOrSubtract() && region.size > 2 && operationResult <= size }
+            val validOperations = allowedOperations.filterNot { it.isDivideOrSubtract() && (region.size > 2 || operationResult > size) }
                 .filter {
                 val combinations = getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationResult, it)
                 combinations.isNotEmpty()
