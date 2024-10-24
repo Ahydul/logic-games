@@ -195,6 +195,7 @@ class Kendoku(
         val checkedRegions = mutableListOf<Int>()
 
         for (position in (0..< numPositions())) {
+            if (board[position] != 0) continue
             val regionID = getRegionId(position)
             if (!checkedRegions.contains(regionID) && regionIsOneCell(regionID, position)) {
                 board[position] = operationResultPerRegion[regionID]!!
