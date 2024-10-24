@@ -1013,9 +1013,8 @@ class Kendoku(
                 .map { it to getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationResult, it) }
                 .filter { (_, combinations) -> combinations.isNotEmpty() }
 
-            if (validOps.size == 1 || validOps.size == 2 && validOps[0].second.withIndex().all {
-                    (index, comb) -> validOps[1].second[index].contentEquals(comb)
-                }
+            if (validOps.size == 1 || validOps.size == 2 && validOps[0].second.size == validOps[1].second.size
+                && validOps[0].second.withIndex().all {(i, comb) -> validOps[1].second[i].contentEquals(comb)}
             ) {
                 validOps.first()
             }
