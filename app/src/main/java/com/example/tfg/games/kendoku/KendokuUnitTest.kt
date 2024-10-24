@@ -388,8 +388,20 @@ class KendokuUnitTest {
         Test Janko Boards
      */
 
-    data class KendokuBoard(val boardId: Int, val difficulty: String, val size: Int, val problem: String, val areas: String, val solution: String) {
-        fun getStartBoard() = IntArray(size*size) // Janko boards are always empty
+    data class KendokuBoard(
+        val boardId: Int,
+        val difficulty: String,
+        val size: Int,
+        val problem: String,
+        val areas: String,
+        val solution: String,
+        var addValuesToStart: (startBoard: IntArray) -> Unit = {}
+    ) {
+        fun getStartBoard(): IntArray {
+            val startBoard = IntArray(size*size) // Janko boards are always empty
+            addValuesToStart(startBoard) // For debug
+            return startBoard
+        }
 
         fun getRegions() = areas.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
 
