@@ -283,6 +283,38 @@ class KendokuUnitTest {
 
     @ParameterizedTest
     @CsvSource(
+        "3, ;;12;123;123;123;123;123;123, 0;1, 12;21;13;31, 13;31, 1",
+        "4, ;;1234;1234;;1234;1234;1234;234;1234;1234;1234;234;1234;1234;1234, 0;1;4, 123;124;132;144;142;321;231;213;432;243;324;244, 123;124;132;144;142;321;231, 1",
+        "4, ;;123;123;;1234;1234;1234;234;1234;1234;1234;234;1234;1234;1234, 0;1;4, 123;124;132;144;142;321;231;213;432;243;324;244, 144;142, 2",
+    )
+    fun testCombinationHiddenSingle(size: Int, possibleValuesInput: String, regionInput: String, combinationsInput: String, expectedResult: String, expectedNumChanges: Int) {
+        val kendoku = Kendoku(0, size,0L)
+
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+        val region = parseRegion(regionInput)
+        val regionID = 1 // Must be any number != 0
+        region.forEach { kendoku.boardRegions[it] = regionID }
+        val combinations = parseCombinations(combinationsInput)
+        val regionIndexesPerColumn = mutableMapOf<Int, MutableList<Int>>()
+        val regionIndexesPerRow = mutableMapOf<Int, MutableList<Int>>()
+        region.forEachIndexed { index, position ->
+            val coordinate = Coordinate.fromIndex(position, size, size)
+            regionIndexesPerRow.getOrPut(coordinate.row) { mutableListOf() }.add(index)
+            regionIndexesPerColumn.getOrPut(coordinate.column) { mutableListOf() }.add(index)
+        }
+        val actualValues = IntArray(size*size)
+
+        val numChanges = kendoku.combinationHiddenSingle(region, combinations, actualValues, possibleValues, regionIndexesPerColumn, regionIndexesPerRow)
+
+        val foldResult = foldResult(combinations)
+
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        assert(numChanges == expectedNumChanges)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
         "3, ;12;123;;;123;123;123;123, 0;3;4, 123;213;231, 123;213;231, 0",
         "3, ;123;123;;;12;123;123;123, 0;3;4, 312;321;231, 231, 1",
         "3, ;123;123;;;123;12;123;123, 0;3;4, 123;213;231, 231, 1",
