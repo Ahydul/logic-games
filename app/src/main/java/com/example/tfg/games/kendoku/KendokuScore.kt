@@ -28,7 +28,7 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += numValuesRemoved
     }
 
-    fun addCageUnitOverlap(numCUO: Int) {
+    fun addCageUnitOverlapType2(numCUO: Int) {
         score += numCUO
     }
 
@@ -48,8 +48,8 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += numColoring
     }
 
-    fun addCombinationHiddenSingle(numChanges: Int) {
-        score += numChanges
+    fun addCageUnitOverlapType1(numCUO: Int) {
+        score += numCUO
     }
 
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {

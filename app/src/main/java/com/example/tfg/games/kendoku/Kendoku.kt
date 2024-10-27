@@ -313,14 +313,16 @@ class Kendoku(
                 regionIndexesPerColumn.getOrPut(coordinate.column) { mutableListOf() }.add(index)
             }
 
-            val numChanges = combinationHiddenSingle(region, combinations, actualValues, possibleValues, regionIndexesPerColumn, regionIndexesPerRow)
-            score.addCombinationHiddenSingle(numChanges)
+            // This reduces combinations only
+            val numCUO1 = cageUnitOverlapType1(region, combinations, actualValues, possibleValues, regionIndexesPerColumn, regionIndexesPerRow)
+            score.addCageUnitOverlapType1(numCUO1)
 
+            // This reduces combinations only
             val numChanges2 = biValueAttackOnRegion(region, possibleValues, combinations, regionIndexesPerColumn, regionIndexesPerRow)
             score.addBiValueAttack(numChanges2)
 
-            val numCUO = cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
-            score.addCageUnitOverlap(numCUO)
+            val numCUO2 = cleanCageUnitOverlapType2(regionID, region, combinations, possibleValues)
+            score.addCageUnitOverlapType2(numCUO2)
 
             val numValuesRemoved = reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
             score.addCombinations(numValuesRemoved)
@@ -599,7 +601,7 @@ class Kendoku(
 
     // If a number appears in a combination and that number forms a line we can delete that number from
     // the other positions in that line
-    internal fun cleanCageUnitOverlap(
+    internal fun cleanCageUnitOverlapType2(
         regionID: Int,
         region: MutableList<Int>,
         combinations: MutableList<IntArray>,
@@ -653,7 +655,7 @@ class Kendoku(
         return result
     }
 
-    internal fun combinationHiddenSingle(
+    internal fun cageUnitOverlapType1(
         region: MutableList<Int>,
         combinations: MutableList<IntArray>,
         actualValues: IntArray,
