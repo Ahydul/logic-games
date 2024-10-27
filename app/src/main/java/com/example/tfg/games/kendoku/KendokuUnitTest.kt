@@ -273,7 +273,7 @@ class KendokuUnitTest {
         region.forEach { kendoku.boardRegions[it] = regionID }
         val combinations = parseCombinations(combinationsInput)
 
-        val number = kendoku.cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
+        val number = kendoku.cleanCageUnitOverlapType2(regionID, region, combinations, possibleValues)
 
         val foldResult = foldResult(possibleValues)
         println(foldResult)
@@ -304,7 +304,7 @@ class KendokuUnitTest {
         }
         val actualValues = IntArray(size*size)
 
-        val numChanges = kendoku.combinationHiddenSingle(region, combinations, actualValues, possibleValues, regionIndexesPerColumn, regionIndexesPerRow)
+        val numChanges = kendoku.cageUnitOverlapType1(region, combinations, actualValues, possibleValues, regionIndexesPerColumn, regionIndexesPerRow)
 
         val foldResult = foldResult(combinations)
 
