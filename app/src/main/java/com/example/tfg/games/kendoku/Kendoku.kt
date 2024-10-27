@@ -1065,8 +1065,7 @@ class Kendoku(
             ) {
                 validOps.first()
             }
-
-            else return validOps.flatMap { it.second }.toSet().toMutableList()
+            else return validOps.flatMap { it.second }.distinctBy { it.toList() }.toMutableList()
         }
 
         // We save the operation but the combinations are saved later
