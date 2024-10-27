@@ -500,7 +500,10 @@ class KendokuUnitTest {
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, brute-forces, regions")
 
-        val result = kendokuBoard/*.filter { it.boardId != 50 }*/.map { board -> testJankoBoard(board) }
+        val result = kendokuBoard/*.filter { it.boardId != 50 }*/.map { board ->
+            board.addValuesToStart = { }
+            testJankoBoard(board)
+        }
         val resultNotOK = result.filter { it != "" }
         assert(resultNotOK.isEmpty()) {
             println("\nERRORS:")
@@ -510,7 +513,6 @@ class KendokuUnitTest {
 
     private fun testJankoBoard(board: KendokuBoard, seed: Long = (Math.random()*10000000000).toLong()): String {
         val regions = board.getRegions()
-        board.addValuesToStart = { }
 
         val startTime = System.currentTimeMillis()
         val kendoku = Kendoku.solveBoard(
