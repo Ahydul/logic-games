@@ -305,9 +305,19 @@ class Kendoku(
                 boardData.setRegionCombinations(regionID, combinations)
             }
 
+            val regionIndexesPerColumn = mutableMapOf<Int, MutableList<Int>>()
+            val regionIndexesPerRow = mutableMapOf<Int, MutableList<Int>>()
+            region.forEachIndexed { index, position ->
+                val coordinate = Coordinate.fromIndex(position, size, size)
+                regionIndexesPerRow.getOrPut(coordinate.row) { mutableListOf() }.add(index)
+                regionIndexesPerColumn.getOrPut(coordinate.column) { mutableListOf() }.add(index)
+            }
 
-            val numChanges = biValueAttackOnRegion(region, possibleValues, combinations)
-            score.addBiValueAttack(numChanges)
+            val numChanges = combinationHiddenSingle(region, combinations, actualValues, possibleValues, regionIndexesPerColumn, regionIndexesPerRow)
+            score.addCombinationHiddenSingle(numChanges)
+
+            val numChanges2 = biValueAttackOnRegion(region, possibleValues, combinations, regionIndexesPerColumn, regionIndexesPerRow)
+            score.addBiValueAttack(numChanges2)
 
             val numCUO = cleanCageUnitOverlap(regionID, region, combinations, possibleValues)
             score.addCageUnitOverlap(numCUO)
@@ -336,6 +346,10 @@ class Kendoku(
         val numColoring = cleanColoring(possibleValues, lockedNumbersInRows, lockedNumbersInColumns)
         score.addColoring(numColoring)
 
+
+        if (score.get() == 0) {
+            val pito = 0
+        }
 
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
@@ -643,10 +657,50 @@ class Kendoku(
         return result
     }
 
+    internal fun combinationHiddenSingle(
+        region: MutableList<Int>,
+        combinations: MutableList<IntArray>,
+        actualValues: IntArray,
+        possibleValues: Array<MutableList<Int>>,
+        regionIndexesPerColumn: MutableMap<Int, MutableList<Int>>,
+        regionIndexesPerRow: MutableMap<Int, MutableList<Int>>
+    ): Int {
+
+        fun reduceCombinations(linePositions: IntProgression, regionIndexes: MutableList<Int>): Int {
+            val regionPositions = regionIndexes.map { index -> region[index] }
+                .filterNot { position -> actualValues[position] != 0 }
+
+            if (regionPositions.size < 2) return 0
+
+            val numberAppearances = BooleanArray(size)
+            linePositions.filterNot { position -> regionPositions.contains(position) }
+                .forEach {
+                    possibleValues[it].forEach { number -> numberAppearances[number-1] = true }
+                    val v = actualValues[it]
+                    if (v != 0) numberAppearances[v-1] = true
+                }
+            val values = numberAppearances.withIndex().filterNot { (_, b) -> b }.map { (index, _) -> index + 1 }
+
+            if (values.isEmpty()) return 0
+
+            return if (combinations.removeIf { comb -> !regionIndexes.any { index -> values.contains(comb[index]) } }) 1 else 0
+        }
+
+        var result = regionIndexesPerColumn
+            .map { (column, regionIndexes) -> reduceCombinations(getColumnPositions(column), regionIndexes) }
+            .sum()
+        result += regionIndexesPerRow
+            .map { (row, regionIndexes) -> reduceCombinations(getRowPositions(row), regionIndexes) }
+            .sum()
+        return result
+    }
+
     internal fun biValueAttackOnRegion(
         region: MutableList<Int>, 
         possibleValues: Array<MutableList<Int>>, 
-        combinations: MutableList<IntArray>
+        combinations: MutableList<IntArray>,
+        regionIndexesPerColumn: MutableMap<Int, MutableList<Int>>,
+        regionIndexesPerRow: MutableMap<Int, MutableList<Int>>
     ): Int {
         var result = 0
         val deleteCombinationsByBiValue = { line: IntProgression, indexes: MutableList<Int> ->
@@ -666,14 +720,6 @@ class Kendoku(
             }
         }
 
-        val regionIndexesPerColumn = mutableMapOf<Int, MutableList<Int>>()
-        val regionIndexesPerRow = mutableMapOf<Int, MutableList<Int>>()
-        region.forEachIndexed { index, position ->
-            val coordinate = Coordinate.fromIndex(position, size, size)
-            regionIndexesPerRow.getOrPut(coordinate.row) { mutableListOf() }.add(index)
-            regionIndexesPerColumn.getOrPut(coordinate.column) { mutableListOf() }.add(index)
-        }
-        
         regionIndexesPerRow.forEach { (row, indexes) -> deleteCombinationsByBiValue(getRowPositions(row), indexes)}
         regionIndexesPerColumn.forEach { (column, indexes) -> deleteCombinationsByBiValue(getColumnPositions(column), indexes)}
         return result

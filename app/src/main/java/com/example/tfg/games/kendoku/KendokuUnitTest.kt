@@ -1,5 +1,6 @@
 package com.example.tfg.games.kendoku
 
+import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.CustomTestWatcher
 import com.google.gson.Gson
@@ -295,8 +296,15 @@ class KendokuUnitTest {
         val regionID = 1 // Must be any number != 0
         region.forEach { kendoku.boardRegions[it] = regionID }
         val combinations = parseCombinations(combinationsInput)
+        val regionIndexesPerColumn = mutableMapOf<Int, MutableList<Int>>()
+        val regionIndexesPerRow = mutableMapOf<Int, MutableList<Int>>()
+        region.forEachIndexed { index, position ->
+            val coordinate = Coordinate.fromIndex(position, size, size)
+            regionIndexesPerRow.getOrPut(coordinate.row) { mutableListOf() }.add(index)
+            regionIndexesPerColumn.getOrPut(coordinate.column) { mutableListOf() }.add(index)
+        }
 
-        val numChanges = kendoku.biValueAttackOnRegion(region, possibleValues, combinations)
+        val numChanges = kendoku.biValueAttackOnRegion(region, possibleValues, combinations, regionIndexesPerColumn, regionIndexesPerRow)
 
         val foldResult = foldResult(combinations)
 

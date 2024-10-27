@@ -48,6 +48,10 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += numColoring
     }
 
+    fun addCombinationHiddenSingle(numChanges: Int) {
+        score += numChanges
+    }
+
     override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
         TODO("Not yet implemented")
     }
