@@ -297,7 +297,7 @@ class Kendoku(
                 val operationRes = operationResultPerRegion[regionID]!!
                 val operation = knownOperations[regionID]
                 combinations = if (operation == null) {
-                    tryGetRegionCombinations(boardData, regionID, region, operationRes) ?: continue // Couldn't get combinations
+                    forceGetRegionCombinations(boardData, regionID, region, operationRes)
                 } else {
                     getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationRes, operation)
                 }
@@ -1038,12 +1038,15 @@ class Kendoku(
         return combinations
     }
 
-    private fun tryGetRegionCombinations(
+    /*
+    * Tries to deduce the operation. If it can't, return all the combinations using all the valid operations
+    * */
+    private fun forceGetRegionCombinations(
         boardData: KendokuBoardData,
         regionID: Int,
         region: MutableList<Int>,
         operationResult: Int
-    ): MutableList<IntArray>? {
+    ): MutableList<IntArray> {
         // TODO: Decide whether to use score here or not
 
         val (operation, combinations) = if (operationResult == 1) {
@@ -1063,7 +1066,7 @@ class Kendoku(
                 validOps.first()
             }
 
-            else return null
+            else return validOps.flatMap { it.second }.toSet().toMutableList()
         }
 
         // We save the operation but the combinations are saved later
