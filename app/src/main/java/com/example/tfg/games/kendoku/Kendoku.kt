@@ -347,10 +347,6 @@ class Kendoku(
         score.addColoring(numColoring)
 
 
-        if (score.get() == 0) {
-            val pito = 0
-        }
-
         return if (score.get() > 0) PopulateResult.success(score)
         else PopulateResult.noChangesFound()
     }
