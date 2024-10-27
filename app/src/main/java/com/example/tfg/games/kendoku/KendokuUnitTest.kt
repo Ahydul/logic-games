@@ -487,6 +487,7 @@ class KendokuUnitTest {
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, brute-forces, regions")
         val board = kendokuBoard.find { it.boardId == boardId } !!
+        board.addValuesToStart = { }
 
         val result = testJankoBoard(board)
         assert(result == "") {
