@@ -289,21 +289,14 @@ class Kendoku(
             if (regionValues.all { it.size == 1 }) continue //Region is completed
 
 
-            var combinations = regionCombinations[regionID]
-            if (combinations != null) {
-                reduceCombinations(combinations, regionValues)
-            }
-            else {
-                val operationRes = operationResultPerRegion[regionID]!!
-                val operation = knownOperations[regionID]
-                combinations = if (operation == null) {
-                    forceGetRegionCombinations(boardData, regionID, region, operationRes)
-                } else {
-                    getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationRes, operation)
-                }
+            val combinations = regionCombinations[regionID] ?.also { reduceCombinations(it, regionValues) }
+                ?: run {
+                    val operationRes = operationResultPerRegion[regionID]!!
+                    knownOperations[regionID]
+                        ?.let { getRegionCombinations(boardData.possibleValues, boardData.actualValues, region, operationRes, it) }
+                        ?: run { forceGetRegionCombinations(boardData, regionID, region, operationRes) }
+                }.also { boardData.setRegionCombinations(regionID, it) }
 
-                boardData.setRegionCombinations(regionID, combinations)
-            }
 
             val regionIndexesPerColumn = mutableMapOf<Int, MutableList<Int>>()
             val regionIndexesPerRow = mutableMapOf<Int, MutableList<Int>>()
