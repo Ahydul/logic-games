@@ -388,6 +388,41 @@ class KendokuUnitTest {
 
     @ParameterizedTest
     @CsvSource(
+        "4, 0;1-2;3, 14;41;23;32-12;21;32;23;43;34, 14;41-32;23, 2",
+        "4, 0;1-2;3, 21;21;34;43-12;21;13;31;24;42, 34;43-12;21, 2",
+        "6, 0;1-2;3-4;5, 16;61;14;41;23;32-12;21;13;31;14;41;25;52;36;63-12;21;13;31;14;41;25;52;36;63, 14;41-25;52;36;63-25;52;36;63, 2",
+        "6, 0;6-1;2-3;4-5;10;11, 14;41-12;21;13;31;15;51;24;42;36;63-12;21;13;31;15;51;24;42;36;63-661;334;236;263;326;362;623;632, 41-15;51;36;63-15;51;36;63-236;263, 2",
+    )
+    fun testCombinationComparison(size: Int, regionPositions: String, combinationsInput: String, expectedResult: String, expectedNumChanges: Int) {
+        val parsePositions = { index: Int ->
+            regionPositions.split("-")[index].split(";").map { it.toInt() }.toMutableList()
+        }
+        val regions = mutableMapOf<Int, MutableList<Int>>()
+        val regionCombinations = mutableMapOf<Int, MutableList<IntArray>>()
+        val regions2 = IntArray(size*size)
+        var regionID = 0
+
+        combinationsInput.split("-").forEachIndexed { index, input ->
+            val positions = parsePositions(index)
+            regions[regionID] = positions
+            regionCombinations[regionID] = parseCombinations(input)
+            positions.forEach { position -> regions2[position] = regionID }
+
+            regionID++
+        }
+
+        val kendoku = Kendoku(0, size,0L, regions = regions2)
+        kendoku.combinationComparison((0..< size), regions, regionCombinations)
+
+        val foldResult = regionCombinations.values.joinToString(separator = "-") { combinations -> foldResult(combinations) }
+
+        println(foldResult)
+        assert(foldResult == expectedResult)
+        //assert(numChanges == expectedNumChanges)
+    }
+
+        @ParameterizedTest
+    @CsvSource(
         "5, 12;;;;12;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;23;;;;23, 12;;;;12;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;23;;;;23, 1",
         "5, 12;1345;1345;1345;12;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;23;1345;1345;1345;23, 12;1345;1345;1345;12;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;23;1345;1345;1345;23, 1",
         "5, 12;;;;12;14;1235;1235;1235;14;12345;12345;12345;12345;12345;45;1235;1235;1235;45;23;;;;23, 12;;;;12;14;1235;1235;1235;14;135;124;124;124;135;45;123;123;123;45;23;;;;, 4",
