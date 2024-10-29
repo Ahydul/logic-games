@@ -264,14 +264,15 @@ class Kendoku(
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
 
-        executeLineStrategies(possibleValues) { line ->
-            val numPairs = cleanNakedPairsInLine(line)
+        executeForEachLine { line ->
+            val linePossibleValues = line.map { possibleValues[it] }.toTypedArray()
+            val numPairs = cleanNakedPairsInLine(linePossibleValues)
             score.addNakedPairs(numPairs)
 
-            val numTriples = cleanNakedTriplesInLine(line)
+            val numTriples = cleanNakedTriplesInLine(linePossibleValues)
             score.addNakedTriples(numTriples)
 
-            val numSPT = cleanHiddenSinglesPairsTriplesInline(line)
+            val numSPT = cleanHiddenSinglesPairsTriplesInline(linePossibleValues)
             score.addHiddenSPT(numSPT)
         }
 
@@ -286,7 +287,10 @@ class Kendoku(
                 else possVal
             }.toTypedArray()
 
-            if (regionValues.all { it.size == 1 }) continue //Region is completed
+            if (regionValues.all { it.size == 1 }) { //Region is completed
+                regionCombinations.remove(regionID)
+                continue
+            }
 
 
             val combinations = regionCombinations[regionID] ?.also { reduceCombinations(it, regionValues) }
@@ -325,6 +329,14 @@ class Kendoku(
         if (score.get() > 0) return PopulateResult.success(score)
 
 
+        executeForEachLine { line ->
+            combinationComparison(line, regions, regionCombinations)
+        }
+
+        // Possible values changed
+        if (score.get() > 0) return PopulateResult.success(score)
+
+
         val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
         score.addInniesOuties(numInniesOuties)
 
@@ -352,14 +364,12 @@ class Kendoku(
             .any { it.operate(regionValues) == operationResultPerRegion[regionID] }
     }
 
-    private fun executeLineStrategies(possibleValues: Array<MutableList<Int>>, strategies: (Array<MutableList<Int>>) -> Unit) {
+    private fun executeForEachLine(strategies: (IntProgression) -> Unit) {
         for (rowIndex in (0..< size)) {
-            val row = getRowPositions(rowIndex).map { possibleValues[it] }.toTypedArray()
-            strategies(row)
+            strategies(getRowPositions(rowIndex))
         }
         for (columnIndex in (0..< size)) {
-            val column = getColumnPositions(columnIndex).map { possibleValues[it] }.toTypedArray()
-            strategies(column)
+            strategies(getColumnPositions(columnIndex))
         }
     }
 
@@ -527,6 +537,64 @@ class Kendoku(
         numChanges += clean(lockedNumbersPerColumn) { getRowPositions(it) }
 
         return numChanges
+    }
+
+    internal fun combinationComparison(
+        line: IntProgression,
+        regions: MutableMap<Int, MutableList<Int>>,
+        regionCombinations: MutableMap<Int, MutableList<IntArray>>
+    ) {
+        val lineCombinations = mutableListOf<MutableList<IntArray>>()
+        val combinationsIndexes = mutableListOf<MutableList<Int>>()
+
+        fun foundContradiction(indexes: List<Int>, values: List<Int>): Boolean {
+            if (indexes.isEmpty()) return false
+
+            val index = indexes.first()
+            val combIndexes = combinationsIndexes[index]
+            val combinations = lineCombinations[index].filterNot { combination ->
+                combIndexes.any { i -> values.contains(combination[i]) }
+            }
+
+            return combinations.isEmpty() || combinations.all { combination ->
+                foundContradiction(indexes.drop(1), combination.filterIndexed { i, _ -> combIndexes.contains(i) }.plus(values))
+            }
+        }
+
+        // Initialize lineCombinations and combinationsIndexes
+        var position = line.first
+        while (position <= line.last) {
+            val regionID = getRegionId(position)
+            val positions = regions[regionID]!!
+            val combinations = regionCombinations[regionID]
+
+            if (combinations == null){
+                position += line.step
+                continue
+            }
+
+            //if (combinations.size > 9) return
+
+            lineCombinations.add(combinations)
+
+            val indexes = mutableListOf<Int>()
+            var index = positions.indexOf(position)
+            while (index != -1) {
+                indexes.add(index)
+                position += line.step
+                index = positions.indexOf(position)
+            }
+            combinationsIndexes.add(indexes)
+        }
+
+        val indexes = lineCombinations.map { it.size }.withIndex().sortedBy { it.value }.map { it.index }
+        indexes.forEach { index ->
+            val combinations = lineCombinations[index]
+            val combIndexes = combinationsIndexes[index]
+            combinations.removeIf { combination ->
+                foundContradiction(indexes.filter { it != index }, combination.filterIndexed { i, _ -> combIndexes.contains(i) })
+            }
+        }
     }
 
     internal fun cleanInniesAndOuties(
