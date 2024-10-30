@@ -421,7 +421,7 @@ class KendokuUnitTest {
         //assert(numChanges == expectedNumChanges)
     }
 
-        @ParameterizedTest
+    @ParameterizedTest
     @CsvSource(
         "5, 12;;;;12;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;23;;;;23, 12;;;;12;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;23;;;;23, 1",
         "5, 12;1345;1345;1345;12;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;12345;23;1345;1345;1345;23, 12;1345;1345;1345;12;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;1345;12345;12345;12345;1345;23;1345;1345;1345;23, 1",
@@ -439,6 +439,22 @@ class KendokuUnitTest {
         assert(foldResult.contains(expectedResult))
         assert(numChanges == expectedNumChanges)
     }
+
+    @ParameterizedTest
+    @CsvSource(
+        "4, 12;23;134;134;1234;13;1234;1234;1234;124;1234;1234;1234;124;1234;1234, 12;23;134;134;234;13;1234;1234;1234;124;1234;1234;1234;124;1234;1234",
+    )
+    fun testCleanYWing(size: Int, possibleValuesInput: String, expectedResult: String, expectedNumChanges: Int) {
+        val kendoku = Kendoku(0, size,0L)
+        val possibleValues = parsePossibleValues(possibleValuesInput)
+
+        kendoku.cleanYWing(possibleValues)
+        val foldResult = foldResult(possibleValues)
+
+        println(foldResult)
+        assert(foldResult.contains(expectedResult))
+    }
+
 
     @ParameterizedTest
     @CsvSource(
