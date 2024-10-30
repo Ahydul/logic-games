@@ -415,10 +415,10 @@ class Kendoku(
     ): Int {
         data class TmpMaps(val rowMap: MutableMap<Int, MutableList<Int>> = mutableMapOf(), val columnMap: MutableMap<Int, MutableList<Int>> = mutableMapOf()) {
             fun addToRowMap(coordinate: Coordinate) {
-                rowMap.computeIfAbsent(coordinate.row){ mutableListOf() }.add(coordinate.toIndex(size, size)!!)
+                rowMap.computeIfAbsent(coordinate.row){ mutableListOf() }.add(coordinate.toIndex(size))
             }
             fun addToColumnMap(coordinate: Coordinate) {
-                columnMap.computeIfAbsent(coordinate.column){ mutableListOf() }.add(coordinate.toIndex(size, size)!!)
+                columnMap.computeIfAbsent(coordinate.column){ mutableListOf() }.add(coordinate.toIndex(size))
             }
         }
 

@@ -47,6 +47,10 @@ data class Coordinate(val row: Int, val column: Int) {
         return row * numColumns + column
     }
 
+    fun toIndex(numColumns: Int): Int {
+        return row * numColumns + column
+    }
+
     fun isOutOfBounds(numRows: Int, numColumns: Int): Boolean {
         return (row < 0 || column < 0 || row >= numRows || column >= numColumns)
     }

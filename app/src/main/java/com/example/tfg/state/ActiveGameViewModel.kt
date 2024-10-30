@@ -683,12 +683,12 @@ class ActiveGameViewModel(
     }
 
     private fun setCell(coordinate: Coordinate, newCell: Cell) {
-        setCell(index = coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!, newCell = newCell)
+        setCell(index = coordinate.toIndex(getNumColumns()), newCell = newCell)
     }
 
     private fun setCellsNotes(note: Int, coordinates: List<Coordinate>, ordered: Boolean) {
         coordinates.forEach {
-            val index = it.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+            val index = it.toIndex(getNumColumns())
             if (ordered) setCellNote(index = index, note = note, noteIndex = note - 1)
             else setCellNote(index = index, note = note)
         }
@@ -696,7 +696,7 @@ class ActiveGameViewModel(
 
     private fun eraseCells(coordinates: List<Coordinate>) {
         coordinates.forEach {
-            val index = it.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+            val index = it.toIndex(getNumColumns())
             eraseValue(index)
         }
     }
@@ -827,7 +827,7 @@ class ActiveGameViewModel(
 
             if (newCell == previousCell) null
             else{
-                val position = coordinate.toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+                val position = coordinate.toIndex(getNumColumns())
                 Action(
                     newCell = newCell,
                     previousCell = previousCell,
@@ -937,7 +937,7 @@ class ActiveGameViewModel(
             addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
         }
         else if (coordinates.size == 1) {
-            val position = coordinates.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+            val position = coordinates.first().toIndex(getNumColumns())
 
             setCellValue(value = value, index = position)
 
@@ -1073,7 +1073,7 @@ class ActiveGameViewModel(
     }
 
     private fun getPosition(coordinate: Coordinate): Int {
-        return coordinate.toIndex(numColumns = getNumColumns(), numRows = getNumRows())!!
+        return coordinate.toIndex(getNumColumns())
     }
 
     private fun getPositions() = (0..< getNumCells())
@@ -1094,7 +1094,7 @@ class ActiveGameViewModel(
         //If only one value left refuse to allow player to "win"
         if (noCluesLeft() || oneOrNoCellsLeft()) return
 
-        val position = if (selectedTiles.size == 1) selectedTiles.first().toIndex(numRows = getNumRows(), numColumns = getNumColumns())!!
+        val position = if (selectedTiles.size == 1) selectedTiles.first().toIndex(numColumns = getNumColumns())
         else getRandomPosition()
 
         if (getCellValue(position) != 0) return
