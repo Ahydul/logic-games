@@ -539,6 +539,41 @@ class Kendoku(
         return numChanges
     }
 
+    // TODO: This doesn't improve the solver one bit. Find any possible error
+    internal fun cleanYWing(
+        possibleValues: Array<MutableList<Int>>,
+        lockedNumbersInRows: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInRow(possibleValues = possibleValues),
+        lockedNumbersInColumns: MutableMap<Int, MutableMap<Int, Pair<Int, Int>>> = getLockedNumbersInColumn(possibleValues = possibleValues)
+    ) {
+        for ((numberA, data) in lockedNumbersInRows) {
+            for ((row, columns) in data) {
+                val (columnB, columnC) = columns
+                val possValuesB = possibleValues[Coordinate(row, columnB).toIndex(size)]
+                val possValuesC = possibleValues[Coordinate(row, columnC).toIndex(size)]
+                val numberB = possValuesB.find { it != numberA }!!
+                val numberC = possValuesC.find { it != numberA }!!
+
+                if (numberB == numberC || possValuesB.size > 2 || possValuesC.size > 2) continue
+
+                val cleanYWing = { number1: Int, column1: Int, number2: Int, column2: Int ->
+                    lockedNumbersInColumns[number1]?.get(column1)
+                        ?.let { if (it.first == row) it.second else it.first }
+                        ?.let { row2 ->
+                            val possValuesB2 = possibleValues[Coordinate(row2, column1).toIndex(size)]
+                            if (possValuesB2.size == 2 && possValuesB2.contains(number2)) {
+                                //Found Y-Wing. We can delete numberC from (rowB, columnC)
+                                val removed = possibleValues[Coordinate(row2, column2).toIndex(size)].remove(number2)
+                                removed
+                            } else false
+                        }
+                }
+                cleanYWing(numberB, columnB, numberC, columnC)
+                cleanYWing(numberC, columnC, numberB, columnB)
+            }
+        }
+
+    }
+
     internal fun combinationComparison(
         line: IntProgression,
         regions: MutableMap<Int, MutableList<Int>>,
