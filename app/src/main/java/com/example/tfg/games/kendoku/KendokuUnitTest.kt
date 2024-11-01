@@ -3,12 +3,14 @@ package com.example.tfg.games.kendoku
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.CustomTestWatcher
+import com.example.tfg.games.common.Difficulty
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -479,7 +481,7 @@ class KendokuUnitTest {
         Test Janko Boards
      */
 
-    data class KendokuBoard(
+    data class JankoKendokuBoard(
         val boardId: Int,
         val difficulty: String,
         val size: Int,
@@ -527,9 +529,9 @@ class KendokuUnitTest {
         }
     }
 
-    private fun loadKendokuData(): List<KendokuBoard> {
+    private fun loadKendokuData(): List<JankoKendokuBoard> {
         val file = File("src/test/testdata/kendoku-data.json")
-        return Gson().fromJson(file.readText(), object : TypeToken<List<KendokuBoard?>?>() {}.type)
+        return Gson().fromJson(file.readText(), object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
     }
 
     @Test
@@ -562,7 +564,40 @@ class KendokuUnitTest {
         }
     }
 
-    private fun testJankoBoard(board: KendokuBoard, seed: Long = (Math.random()*10000000000).toLong()): String {
+    @Test
+    fun testOkSeededBoard() {
+        println("size, seed, difficulty, score, times, brute-forces, regions")
+        val size = 9
+        val seed = 905536739L
+        val difficulty = Difficulty.MASTER
+        val printBoards = false
+
+        val result = testBoard(size, difficulty, printBoards, seed)
+
+        assert(result == "") {
+            print(result)
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9])
+    fun testOkBoards(size: Int) {
+        println("size, seed, difficulty, score, times, brute-forces, regions")
+        val repeat = 100
+        val difficulty = Difficulty.MASTER
+        val printBoards = false
+
+        val result = (1..repeat).map { testBoard(size, difficulty, printBoards) }
+
+        val resultNotOK = result.filter { it != "" }
+        assert(resultNotOK.isEmpty()) {
+            println("\nERRORS:")
+            print(resultNotOK.joinToString(separator = "\n"))
+        }
+    }
+
+
+    private fun testJankoBoard(board: JankoKendokuBoard, seed: Long = (Math.random()*10000000000).toLong()): String {
         val regions = board.getRegions()
 
         val startTime = System.currentTimeMillis()
@@ -577,7 +612,6 @@ class KendokuUnitTest {
         )
         val endTime = System.currentTimeMillis()
 
-
         val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
         val numBruteForces = kendoku.score.getBruteForceValue()
 
@@ -587,6 +621,29 @@ class KendokuUnitTest {
         else "\nBoard: ${board.boardId} is incorrect" +
             "\nActual board:\n${kendoku.printStartBoard()}" +
             "\nExpected board:\n${kendoku.printCompletedBoard()}"
+    }
 
+    private fun testBoard(
+        size: Int,
+        difficulty: Difficulty,
+        printBoards: Boolean = false,
+        seed: Long = (Math.random()*10000000000).toLong()
+    ): String {
+        val startTime = System.currentTimeMillis()
+        val kendoku = Kendoku.create(
+            size = size,
+            seed = seed,
+            difficulty = difficulty
+        )
+        val endTime = System.currentTimeMillis()
+
+        val boardResult = kendoku.boardMeetsRulesStr()
+        val numBruteForces = kendoku.score.getBruteForceValue()
+
+        println("${size}x${size}, ${seed}, ${difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
+
+        if (printBoards) println(kendoku.printStartBoardHTML())
+
+        return boardResult
     }
 }
