@@ -1,15 +1,34 @@
 package com.example.tfg.games.kendoku
 
-import com.example.tfg.games.common.Difficulty
-import com.example.tfg.games.common.Games
+import com.example.tfg.games.common.DifficultyValues
 import com.example.tfg.games.common.Score
+import com.google.gson.Gson
 import com.google.gson.JsonElement
 
-class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
 
-    fun addScoreRule2() {
-        score += 4
-    }
+private val difficultyValues = DifficultyValues(
+    MIN_BEGINNER = 1,
+    MAX_BEGINNER = 100,
+
+    MIN_EASY = 100,
+    MAX_EASY = 300,
+
+    MIN_MEDIUM = 300,
+    MAX_MEDIUM = 600,
+
+    MIN_HARD = 600,
+    MAX_HARD = 1400,
+
+    MIN_EXPERT = 1100,
+    MAX_EXPERT = 3000,
+    MAX_EXPERT_BRUTE_FORCES = 1,
+
+    MIN_MASTER = 1900,
+    MAX_MASTER = 5000,
+    MAX_MASTER_BRUTE_FORCES = 3,
+)
+
+class KendokuScore(score: Int = 0, bruteForce: Int = 0) : Score(score, bruteForce, difficultyValues) {
 
     //TODO: Complete score
     fun addNakedPairs(numPairs: Int) {
@@ -52,23 +71,7 @@ class KendokuScore(game: Games = Games.HAKYUU) : Score(game) {
         score += numCUO
     }
 
-    override fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun isTooHighForDifficulty(difficulty: Difficulty): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun getMaxBruteForceValue(difficulty: Difficulty): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun getDifficulty(): Difficulty {
-        TODO("Not yet implemented")
-    }
-
     override fun serialize(): JsonElement {
-        TODO("Not yet implemented")
+        return Gson().toJsonTree(this).asJsonObject
     }
 }
