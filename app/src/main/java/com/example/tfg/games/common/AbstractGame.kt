@@ -333,10 +333,18 @@ abstract class AbstractGame(
         return !board.any { it == 0 }
     }
 
-    private fun boardPopulatedPrintingInfo(board: IntArray): Boolean {
+    private fun boardPopulatedStr(board: IntArray): String {
         val res = board.withIndex().filter { it.value == 0 }
         if (res.isNotEmpty()){
-            println("The next positions were empty ${res.joinToString(separator = ", "){ it.index.toString() }}")
+            return "The next positions were empty ${res.joinToString(separator = ", "){ it.index.toString() }}"
+        }
+        return ""
+    }
+
+    private fun boardPopulatedPrintingInfo(board: IntArray): Boolean {
+        val res = boardPopulatedStr(board)
+        if (res != ""){
+            println(res)
             return false
         }
         return true
@@ -344,6 +352,10 @@ abstract class AbstractGame(
 
     fun boardMeetsRulesPrintingInfo(): Boolean {
         return boardMeetsRulesPrintingInfo(completedBoard) && boardPopulatedPrintingInfo(completedBoard)
+    }
+
+    fun boardMeetsRulesStr(): String {
+        return boardMeetsRulesStr(completedBoard) + boardPopulatedStr(completedBoard)
     }
 
     protected abstract fun boardMeetsRulesStr(board: IntArray): String
