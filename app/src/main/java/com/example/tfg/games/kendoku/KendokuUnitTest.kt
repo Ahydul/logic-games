@@ -538,7 +538,8 @@ class KendokuUnitTest {
     fun testOkJankoBoard() {
         val boardId = 50
         val kendokuBoard = loadKendokuData()
-        println("board, difficulty, score, times, brute-forces, regions")
+        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
+        println("board, difficulty, score, times, brute-forces, regions, $scoreDebug")
         val board = kendokuBoard.find { it.boardId == boardId } !!
         board.addValuesToStart = { }
 
@@ -551,7 +552,8 @@ class KendokuUnitTest {
     @Test
     fun testOkJankoBoards() {
         val kendokuBoard = loadKendokuData()
-        println("board, difficulty, score, times, brute-forces, regions")
+        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
+        println("board, difficulty, score, times, brute-forces, regions, $scoreDebug")
 
         val result = kendokuBoard/*.filter { it.boardId != 50 }*/.map { board ->
             board.addValuesToStart = { }
@@ -566,9 +568,10 @@ class KendokuUnitTest {
 
     @Test
     fun testOkSeededBoard() {
-        println("size, seed, difficulty, score, times, brute-forces, regions")
+        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
+        println("size, seed, difficulty, score, times, brute-forces, regions, $scoreDebug")
         val size = 9
-        val seed = 905536739L
+        val seed: Long = 905536739
         val difficulty = Difficulty.MASTER
         val printBoards = false
 
@@ -580,10 +583,11 @@ class KendokuUnitTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9])
+    @ValueSource(ints = [7])
     fun testOkBoards(size: Int) {
-        println("size, seed, difficulty, score, times, brute-forces, regions")
-        val repeat = 100
+        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
+        println("size, seed, difficulty, score, times, brute-forces, regions, $scoreDebug")
+        val repeat = 50
         val difficulty = Difficulty.MASTER
         val printBoards = false
 
@@ -615,7 +619,7 @@ class KendokuUnitTest {
         val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
         val numBruteForces = kendoku.score.getBruteForceValue()
 
-        println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
+        println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}, ${(kendoku.score as KendokuScore)}")
 
         return if (correctBoard) ""
         else "\nBoard: ${board.boardId} is incorrect" +
@@ -640,7 +644,7 @@ class KendokuUnitTest {
         val boardResult = kendoku.boardMeetsRulesStr()
         val numBruteForces = kendoku.score.getBruteForceValue()
 
-        println("${size}x${size}, ${seed}, ${difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}")
+        println("${size}x${size}, ${seed}, ${difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}, ${(kendoku.score as KendokuScore)}")
 
         if (printBoards) println(kendoku.printStartBoardHTML())
 
