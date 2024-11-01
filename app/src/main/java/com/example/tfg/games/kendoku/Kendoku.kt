@@ -1269,16 +1269,16 @@ class Kendoku(
 
 
     companion object {
+        // For testing
         fun create(
             size: Int,
             seed: Long,
             difficulty: Difficulty,
-            printEachBoardState: Boolean = false
         ): Kendoku {
             val kendoku = Kendoku(
+                id = 0,
                 size = size,
-                seed = seed,
-                printEachBoardState = printEachBoardState
+                seed = seed
             )
 
             kendoku.createGame(difficulty)
