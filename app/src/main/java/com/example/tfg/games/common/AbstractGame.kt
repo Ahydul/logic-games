@@ -138,7 +138,6 @@ abstract class AbstractGame(
         }
 
         maxAmountOfBruteForces = score.getMaxBruteForceValue(difficulty)
-        var actualScore: Score? = null
 
         while (remainingPositions.isNotEmpty()) {
             // Remove random value from startBoard
@@ -147,7 +146,6 @@ abstract class AbstractGame(
             startBoard[randomPosition] = 0
 
             val tmpBoard = startBoard.clone()
-
             val res = solveBoard(tmpBoard)
 
             if (res == null || res.isTooHighForDifficulty(difficulty)) {
@@ -155,11 +153,9 @@ abstract class AbstractGame(
                 startBoard[randomPosition] = completedBoard[randomPosition]
             }
             else {
-                actualScore = res
+                score = res
             }
         }
-
-        score.add(actualScore)
     }
 
     /**

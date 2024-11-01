@@ -29,8 +29,6 @@ class Kendoku(
     // Helper variables
     @Ignore
     private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf(),
-    @Ignore
-    private var printEachBoardState: Boolean = false
 ): AbstractGame(
     id = id,
     type = Games.HAKYUU,
@@ -53,9 +51,7 @@ class Kendoku(
 
     override fun createGame(difficulty: Difficulty) {
         super.createGame(difficulty)
-        score.reset()
 
-        var actualScore: Score? = null
         val knownOperationsPerRegion = operationPerRegion.filterValues { !it.isUnknown() }.toMutableMap()
         while (knownOperationsPerRegion.isNotEmpty()) {
             // Remove random value from remainingOperationsPerRegion
@@ -66,7 +62,6 @@ class Kendoku(
             operationPerRegion[randomRegion] = operationPerRegion[randomRegion]!!.reverse()
 
             val tmpBoard = startBoard.clone()
-
             val res = solveBoard(tmpBoard)
 
             if (res == null || res.isTooHighForDifficulty(difficulty)) {
@@ -74,11 +69,9 @@ class Kendoku(
                 operationPerRegion[randomRegion] = operationPerRegion[randomRegion]!!.reverse()
             }
             else {
-                actualScore = res
+                score = res
             }
         }
-
-        score.add(actualScore)
     }
 
     override fun createCompleteBoard(remainingPositions: MutableSet<Int>) {
@@ -98,7 +91,12 @@ class Kendoku(
 
         // Create operations
 
-        boardRegions.groupBy { it }.forEach { (regionID, values) ->
+        val regions = mutableMapOf<Int, MutableList<Int>>()
+        getPositions().forEach { position ->
+            regions.getOrPut(getRegionId(position)) { mutableListOf() }.add(completedBoard[position])
+        }
+
+        regions.forEach { (regionID, values) ->
             val operation = if (values.size == 1) KendokuOperation.SUM_UNKNOWN
                 else allowedOperations.filterNot {
                         // Subtractions can't have more than 2 operands
@@ -128,10 +126,6 @@ class Kendoku(
 
         for (index in 1..numPropagations) {
             propagateOnce(remainingPositions = remainingPositions, region = region)
-        }
-
-        if (printEachBoardState) {
-            print(printBoardHTML(completedBoard, boardRegions, true))
         }
     }
 
