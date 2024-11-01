@@ -1212,31 +1212,24 @@ class Kendoku(
             positions.forEach { Utils.addToMapList(getRegionId(it), it, regions) }
         }
 
-        val tmp = IntArray(size)
-        val fillTmpArray = { (0..< size).forEach { tmp[it] = it + 1 } }
-        val deleteValuesFromTmp = { indexes: IntProgression -> indexes.forEach { tmp[board[it]] = 0 } }
-        val tmpArrayIsNotZero = { tmp.sum() != 0 }
+        val foundRepeatValue = { positions: IntProgression ->
+            val tmp = BooleanArray(size*size)
+            fillRegions(positions)
+            positions.any { position ->
+                val res = tmp[board[position]]
+                if (!res) tmp[board[position]] = true
+                res
+            }
+        }
 
         for (rowIndex in (0..< size)) {
-            val rowIndexes = getRowPositions(rowIndex)
-
-            fillTmpArray()
-            deleteValuesFromTmp(rowIndexes)
-
-            fillRegions(rowIndexes)
-
-            if (tmpArrayIsNotZero()) return "Row: $rowIndex is not made of unique values. Indexes: $rowIndexes"
+            val rowPositions = getRowPositions(rowIndex)
+            if (foundRepeatValue(rowPositions)) return "Row: $rowIndex is not made of unique values. Positions: $rowPositions"
         }
 
         for (columnIndex in (0..< size)) {
             val columnIndexes = getColumnPositions(columnIndex)
-
-            fillTmpArray()
-            deleteValuesFromTmp(columnIndexes)
-
-            fillRegions(columnIndexes)
-
-            if (tmpArrayIsNotZero()) return "Column: $columnIndex is not made of unique values. Indexes: $columnIndexes"
+            if (foundRepeatValue(columnIndexes)) return "Column: $columnIndex is not made of unique values. Indexes: $columnIndexes"
         }
 
         for ((regionID, positions) in regions) {
