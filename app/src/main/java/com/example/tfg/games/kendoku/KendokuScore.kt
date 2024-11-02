@@ -63,6 +63,7 @@ class KendokuScore(
         mainCombinationReduces += s.mainCombinationReduces
         biValueAttacks += s.biValueAttacks
         inniesOuties += s.inniesOuties
+        xWings += s.xWings
         simpleColoring += s.simpleColoring
     }
 
