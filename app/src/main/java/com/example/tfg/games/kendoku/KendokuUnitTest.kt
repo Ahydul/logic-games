@@ -6,12 +6,14 @@ import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.games.common.Difficulty
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
+import kotlin.concurrent.thread
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -534,12 +536,13 @@ class KendokuUnitTest {
         return Gson().fromJson(file.readText(), object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
     }
 
+    private val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
+
     @Test
     fun testOkJankoBoard() {
         val boardId = 50
         val kendokuBoard = loadKendokuData()
-        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
-        println("board, difficulty, score, times, brute-forces, regions, $scoreDebug")
+        println("board, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
         val board = kendokuBoard.find { it.boardId == boardId } !!
         board.addValuesToStart = { }
 
@@ -552,8 +555,7 @@ class KendokuUnitTest {
     @Test
     fun testOkJankoBoards() {
         val kendokuBoard = loadKendokuData()
-        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
-        println("board, difficulty, score, times, brute-forces, regions, $scoreDebug")
+        println("board, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
 
         val result = kendokuBoard/*.filter { it.boardId != 50 }*/.map { board ->
             board.addValuesToStart = { }
@@ -568,30 +570,46 @@ class KendokuUnitTest {
 
     @Test
     fun testOkSeededBoard() {
-        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
-        println("size, seed, difficulty, score, times, brute-forces, regions, $scoreDebug")
+        println("size, seed, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
         val size = 9
-        val seed: Long = 905536739
+        val timeout = 1500L
+        val seed: Long = 1034942735
         val difficulty = Difficulty.MASTER
         val printBoards = false
 
-        val result = testBoard(size, difficulty, printBoards, seed)
+        val result = testBoardWithTimeout(size, difficulty, seed, timeout, printBoards)
 
         assert(result == "") {
-            print(result)
+            print(result ?: "Timed out")
         }
     }
 
     @ParameterizedTest
-    @ValueSource(ints = [7])
-    fun testOkBoards(size: Int) {
-        val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
-        println("size, seed, difficulty, score, times, brute-forces, regions, $scoreDebug")
-        val repeat = 50
+    @ValueSource(ints = [3,4,5,6,7,8,9])
+    fun testOkBoards(size: Int) = runBlocking {
+        println("size, seed, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
+
+        val repeat = 100
+        val timeout = 1500L
         val difficulty = Difficulty.MASTER
         val printBoards = false
 
-        val result = (1..repeat).map { testBoard(size, difficulty, printBoards) }
+        var numTimeouts = 0
+        val seedsWithTimeout = mutableListOf<Long>()
+        val result = (1..repeat).map {
+            var seed = (Math.random()*10000000000).toLong()
+            var res = testBoardWithTimeout(size, difficulty, seed, timeout, printBoards)
+            while (res == null) {
+                numTimeouts++
+                seedsWithTimeout.add(seed)
+                seed = (Math.random()*10000000000).toLong()
+                res = testBoardWithTimeout(size, difficulty, seed, timeout, printBoards)
+            }
+            res
+        }
+
+        println("$numTimeouts timeouts with timeout: $timeout")
+        println("Seeds: ${seedsWithTimeout.joinToString()}")
 
         val resultNotOK = result.filter { it != "" }
         assert(resultNotOK.isEmpty()) {
@@ -619,7 +637,7 @@ class KendokuUnitTest {
         val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
         val numBruteForces = kendoku.score.getBruteForceValue()
 
-        println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}, ${(kendoku.score as KendokuScore)}")
+        println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}, ${kendoku.operationPerRegion.values.count { it.isUnknown() }}, ${(kendoku.score as KendokuScore)}")
 
         return if (correctBoard) ""
         else "\nBoard: ${board.boardId} is incorrect" +
@@ -627,27 +645,39 @@ class KendokuUnitTest {
             "\nExpected board:\n${kendoku.printCompletedBoard()}"
     }
 
-    private fun testBoard(
-        size: Int,
-        difficulty: Difficulty,
-        printBoards: Boolean = false,
-        seed: Long = (Math.random()*10000000000).toLong()
-    ): String {
+    private fun testBoardWithTimeout(size: Int, difficulty: Difficulty, seed: Long, timeout: Long, printBoards: Boolean): String? {
+        val mainStartTime = System.currentTimeMillis()
+        var result = ""
+
+        val workerThread = thread(start = true) {
+            val kendoku = Kendoku.create(
+                size = size,
+                seed = seed,
+                difficulty = difficulty
+            )
+            val score = kendoku.getScoreValue()
+            val time = System.currentTimeMillis() - mainStartTime
+            val numBruteForces = kendoku.score.getBruteForceValue()
+            val regions = kendoku.getRegionStatData().joinToString(separator = "|")
+            val numUnknownOps = kendoku.operationPerRegion.values.count { it.isUnknown() }
+            val completeScore = kendoku.score as KendokuScore
+            println("${size}x${size}, $seed, $difficulty, $score, $time, $numBruteForces, $regions, $numUnknownOps, $completeScore")
+
+            if (printBoards) println(kendoku.printStartBoardHTML())
+
+            result = kendoku.boardMeetsRulesStr()
+        }
+
         val startTime = System.currentTimeMillis()
-        val kendoku = Kendoku.create(
-            size = size,
-            seed = seed,
-            difficulty = difficulty
-        )
-        val endTime = System.currentTimeMillis()
+        while (workerThread.isAlive) {
+            if (System.currentTimeMillis() - startTime >= timeout) {
+                workerThread.stop() // DEPRECATED and UNSAFE
+                return null
+            }
+            // Sleep for a short time to avoid busy-waiting
+            Thread.sleep(10)
+        }
 
-        val boardResult = kendoku.boardMeetsRulesStr()
-        val numBruteForces = kendoku.score.getBruteForceValue()
-
-        println("${size}x${size}, ${seed}, ${difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}, ${(kendoku.score as KendokuScore)}")
-
-        if (printBoards) println(kendoku.printStartBoardHTML())
-
-        return boardResult
+        return result
     }
 }

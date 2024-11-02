@@ -23,7 +23,7 @@ class Kendoku(
     completedBoard: IntArray = IntArray(size * size),
     startBoard: IntArray = IntArray(size * size),
     regions: IntArray = IntArray(size * size),
-    private val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
+    val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
     private val allowedOperations: Array<KnownKendokuOperation> = KnownKendokuOperation.allOperations(),
 
     // Helper variables
