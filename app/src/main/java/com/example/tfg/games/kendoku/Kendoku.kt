@@ -26,10 +26,6 @@ class Kendoku @JvmOverloads constructor(
     boardRegions: IntArray = IntArray(numColumns * numRows),
     var operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
     var allowedOperations: Array<KnownKendokuOperation> = KnownKendokuOperation.allOperations(),
-
-    // Helper variables
-    @Ignore
-    var operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf(),
 ): AbstractGame(
     id = id,
     type = Games.KENDOKU,
@@ -51,6 +47,20 @@ class Kendoku @JvmOverloads constructor(
     private var currentID = 0
     @Ignore
     private val primes = listOf(1,2,3,5,7,11,13,17,19).takeWhile { it <= size }
+
+    @Ignore
+    var positionsPerRegion = initPositionsPerRegion()
+
+    private fun initPositionsPerRegion() = getPositions().groupBy(::getRegionId)
+
+    @Ignore
+    val operationResultPerRegion = initOperationResultPerRegion()
+
+    private fun initOperationResultPerRegion(): MutableMap<Int, Int> {
+        return operationPerRegion.mapValues { (regionID, operation) ->
+            operation.operate(positionsPerRegion[regionID]!!.map { completedBoard[it] })
+        }.toMutableMap()
+    }
 
     override fun maxRegionSize(): Int = size
 
@@ -93,6 +103,9 @@ class Kendoku @JvmOverloads constructor(
                 completedBoard[row*size + column] = value
             }
         }
+
+        // Reinitialize positionsPerRegion
+        positionsPerRegion = initPositionsPerRegion()
 
         // Create operations
 
@@ -226,13 +239,6 @@ class Kendoku @JvmOverloads constructor(
         val knownOperations = boardData.knownOperations
         val regionCombinations = boardData.regionCombinations
 
-        //TODO: we can put all this outside the function
-        val regions = mutableMapOf<Int, MutableList<Int>>()
-
-        getPositions().forEach { position ->
-            regions.getOrPut(getRegionId(position)) { mutableListOf() }.add(position)
-        }
-
         for (position in getPositions()) {
             if (actualValues[position] != 0) continue
 
@@ -250,7 +256,7 @@ class Kendoku @JvmOverloads constructor(
 
                 // When brute force has been used the value may be wrong. We check the region
                 val regionID = getRegionId(position)
-                val regionValues = regions[regionID]!!.map { actualValues[it] }
+                val regionValues = positionsPerRegion[regionID]!!.map { actualValues[it] }
                 if (regionValues.all { it != 0 } && !checkRegionIsOk(regionValues, regionID)) {
                     return PopulateResult.contradiction()
                 }
@@ -279,7 +285,7 @@ class Kendoku @JvmOverloads constructor(
         if (score.get() > 0) return PopulateResult.success(score)
 
 
-        for ((regionID, region) in regions.entries) {
+        for ((regionID, region) in positionsPerRegion.entries) {
             val regionValues = region.map {
                 val possVal = possibleValues[it]
                 if (possVal.isEmpty()) mutableListOf(actualValues[it])
@@ -329,14 +335,14 @@ class Kendoku @JvmOverloads constructor(
 
 
         executeForEachLine { line ->
-            combinationComparison(line, regions, regionCombinations)
+            combinationComparison(line, positionsPerRegion, regionCombinations)
         }
 
         // Possible values changed
         if (score.get() > 0) return PopulateResult.success(score)
 
 
-        val numInniesOuties = cleanInniesAndOuties(actualValues, regions, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
+        val numInniesOuties = cleanInniesAndOuties(actualValues, positionsPerRegion, possibleValues) { regionID -> knownOperations[regionID] == KnownKendokuOperation.SUM }
         score.addInniesOuties(numInniesOuties)
 
         // Possible values changed
@@ -575,7 +581,7 @@ class Kendoku @JvmOverloads constructor(
 
     internal fun combinationComparison(
         line: IntProgression,
-        regions: MutableMap<Int, MutableList<Int>>,
+        regions: Map<Int, List<Int>>,
         regionCombinations: MutableMap<Int, MutableList<IntArray>>
     ) {
         val lineCombinations = mutableListOf<MutableList<IntArray>>()
@@ -633,7 +639,7 @@ class Kendoku @JvmOverloads constructor(
 
     internal fun cleanInniesAndOuties(
         actualValues: IntArray,
-        regions: MutableMap<Int, MutableList<Int>>,
+        regions: Map<Int, List<Int>>,
         possibleValues: Array<MutableList<Int>>,
         getRegionID: (Int) -> Int = { getRegionId(it) },
         regionIsSum: (Int) -> Boolean
@@ -698,7 +704,7 @@ class Kendoku @JvmOverloads constructor(
     // the other positions in that line
     internal fun cleanCageUnitOverlapType2(
         regionID: Int,
-        region: MutableList<Int>,
+        region: List<Int>,
         combinations: MutableList<IntArray>,
         possibleValues: Array<MutableList<Int>>
     ): Int {
@@ -751,7 +757,7 @@ class Kendoku @JvmOverloads constructor(
     }
 
     internal fun cageUnitOverlapType1(
-        region: MutableList<Int>,
+        region: List<Int>,
         combinations: MutableList<IntArray>,
         actualValues: IntArray,
         possibleValues: Array<MutableList<Int>>,
@@ -789,7 +795,7 @@ class Kendoku @JvmOverloads constructor(
     }
 
     internal fun biValueAttackOnRegion(
-        region: MutableList<Int>, 
+        region: List<Int>,
         possibleValues: Array<MutableList<Int>>, 
         combinations: MutableList<IntArray>,
         regionIndexesPerColumn: MutableMap<Int, MutableList<Int>>,
@@ -826,7 +832,7 @@ class Kendoku @JvmOverloads constructor(
 
     private fun reducePossibleValuesUsingCombinations(
         combinations: MutableList<IntArray>,
-        region: MutableList<Int>,
+        region: List<Int>,
         possibleValues: Array<MutableList<Int>>
     ): Int {
         val possibleValuesToKeep = Array(region.size) { mutableSetOf<Int>()  }
@@ -1139,7 +1145,7 @@ class Kendoku @JvmOverloads constructor(
     private fun forceGetRegionCombinations(
         boardData: KendokuBoardData,
         regionID: Int,
-        region: MutableList<Int>,
+        region: List<Int>,
         operationResult: Int
     ): MutableList<IntArray> {
         // TODO: Decide whether to use score here or not
@@ -1315,8 +1321,7 @@ class Kendoku @JvmOverloads constructor(
             startBoard: IntArray,
             completedBoard: IntArray,
             regions: IntArray,
-            operationPerRegion: MutableMap<Int, KendokuOperation>,
-            operationResultPerRegion: MutableMap<Int, Int>
+            operationPerRegion: MutableMap<Int, KendokuOperation>
         ): Kendoku {
             val kendoku = Kendoku(
                 id = 0,
@@ -1326,8 +1331,7 @@ class Kendoku @JvmOverloads constructor(
                 boardRegions = regions,
                 startBoard = startBoard,
                 completedBoard = completedBoard,
-                operationPerRegion = operationPerRegion,
-                operationResultPerRegion = operationResultPerRegion
+                operationPerRegion = operationPerRegion
             )
 
             val score = kendoku.solveBoard(kendoku.startBoard)

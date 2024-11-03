@@ -83,7 +83,8 @@ object Converters {
     @TypeConverter
     fun toKendokuMap(value: String?): MutableMap<Int, KendokuOperation>? {
         return value?.let {
-            Gson().fromJson(it, MutableMap::class.java) as MutableMap<Int, KendokuOperation>
+            (Gson().fromJson(it, MutableMap::class.java) as MutableMap<String, String>)
+                .map { (key, value) ->  key.toInt() to KendokuOperation.valueOf(value) }.toMap().toMutableMap()
         }
     }
 
