@@ -42,7 +42,7 @@ class GameFactory(private val gameDao: GameDao) {
             abstractGame = abstractGame,
             difficulty = abstractGame.score.getDifficulty(),
             numColumns = numColumns,
-            numRows = numRows
+            numRows = if (chosenGame == Games.KENDOKU) numColumns else numRows
         )
     }
 
