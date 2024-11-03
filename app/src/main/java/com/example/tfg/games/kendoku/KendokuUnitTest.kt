@@ -379,7 +379,7 @@ class KendokuUnitTest {
             regions.getOrPut(regionID) { mutableListOf() }.add(position)
         }
 
-        val kendoku = Kendoku(0, size, size,0L, boardRegions = boardRegions, operationResultPerRegion = operationResultPerRegion)
+        val kendoku = Kendoku(0, size, size,0L, boardRegions = boardRegions)
 
         val numChanges = kendoku.cleanInniesAndOuties(board, regions, possibleValues) { sumRegions.contains(it) }
 
@@ -632,8 +632,7 @@ class KendokuUnitTest {
             startBoard = board.getStartBoard(),
             completedBoard = board.getCompletedBoard(),
             regions = regions,
-            operationPerRegion = board.getOperationsPerRegion(regions),
-            operationResultPerRegion = board.getOperationResultPerRegion(regions)
+            operationPerRegion = board.getOperationsPerRegion(regions)
         )
         val endTime = System.currentTimeMillis()
 
