@@ -1,34 +1,35 @@
 package com.example.tfg.games.hakyuu
 
 import com.example.tfg.games.common.DifficultyValues
+import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.Score
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 
 
 private val difficultyValues = DifficultyValues(
-    MIN_BEGINNER = 1,
-    MAX_BEGINNER = 100,
+    minBeginner = 1,
+    maxBeginner = 100,
 
-    MIN_EASY = 100,
-    MAX_EASY = 300,
+    minEasy = 100,
+    maxEasy = 300,
 
-    MIN_MEDIUM = 300,
-    MAX_MEDIUM = 600,
+    minMedium = 300,
+    maxMedium = 600,
 
-    MIN_HARD = 600,
-    MAX_HARD = 1400,
+    minHard = 600,
+    maxHard = 1400,
 
-    MIN_EXPERT = 1100,
-    MAX_EXPERT = 3000,
-    MAX_EXPERT_BRUTE_FORCES = 1,
+    minExpert = 1100,
+    maxExpert = 3000,
+    maxExpertBruteForces = 1,
 
-    MIN_MASTER = 1900,
-    MAX_MASTER = 5000,
-    MAX_MASTER_BRUTE_FORCES = 3,
+    minMaster = 1900,
+    maxMaster = 5000,
+    maxMasterBruteForces = 3,
 )
 
-class HakyuuScore(score: Int = 0, bruteForce: Int = 0) : Score(score, bruteForce, difficultyValues) {
+class HakyuuScore(score: Int = 0, bruteForce: Int = 0) : Score(Games.HAKYUU, score, mutableMapOf(), bruteForce, difficultyValues) {
 
     override fun add(s: Score?) {
         super.add(s)
