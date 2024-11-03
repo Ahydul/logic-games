@@ -1,34 +1,37 @@
 package com.example.tfg.games.common
 
 import androidx.room.Ignore
+import com.example.tfg.games.hakyuu.HakyuuScore
 import com.example.tfg.games.kendoku.KendokuScore
 import com.google.gson.JsonElement
 
 class DifficultyValues(
-    val MIN_BEGINNER: Int,
-    val MAX_BEGINNER: Int,
+    val minBeginner: Int,
+    val maxBeginner: Int,
 
-    val MIN_EASY: Int,
-    val MAX_EASY: Int,
+    val minEasy: Int,
+    val maxEasy: Int,
 
-    val MIN_MEDIUM: Int,
-    val MAX_MEDIUM: Int,
+    val minMedium: Int,
+    val maxMedium: Int,
 
-    val MIN_HARD: Int,
-    val MAX_HARD: Int,
+    val minHard: Int,
+    val maxHard: Int,
 
-    val MIN_EXPERT: Int,
-    val MAX_EXPERT: Int,
-    val MAX_EXPERT_BRUTE_FORCES: Int,
+    val minExpert: Int,
+    val maxExpert: Int,
+    val maxExpertBruteForces: Int,
 
-    val MIN_MASTER: Int,
-    val MAX_MASTER: Int,
-    val MAX_MASTER_BRUTE_FORCES: Int
+    val minMaster: Int,
+    val maxMaster: Int,
+    val maxMasterBruteForces: Int
 )
 
 
 abstract class Score(
+    val game: Games,
     var score: Int = 0,
+    val strategies: MutableMap<String, Int>,
     var bruteForce: Int = 0,
     @Ignore
     val difficultyValues: DifficultyValues
@@ -56,48 +59,43 @@ abstract class Score(
         score += 1000
     }
 
-    open fun reset() {
-        score = 0
-        bruteForce = 0
-    }
-
     fun isTooLowForDifficulty(difficulty: Difficulty): Boolean {
         return when(difficulty){
-            Difficulty.BEGINNER -> this.get() < difficultyValues.MIN_BEGINNER
-            Difficulty.EASY -> this.get() < difficultyValues.MIN_EASY
-            Difficulty.MEDIUM -> this.get() < difficultyValues.MIN_MEDIUM
-            Difficulty.HARD -> this.get() < difficultyValues.MIN_HARD
-            Difficulty.EXPERT -> this.get() < difficultyValues.MIN_EXPERT
-            Difficulty.MASTER -> this.get() < difficultyValues.MIN_MASTER
+            Difficulty.BEGINNER -> this.get() < difficultyValues.minBeginner
+            Difficulty.EASY -> this.get() < difficultyValues.minEasy
+            Difficulty.MEDIUM -> this.get() < difficultyValues.minMedium
+            Difficulty.HARD -> this.get() < difficultyValues.minHard
+            Difficulty.EXPERT -> this.get() < difficultyValues.minExpert
+            Difficulty.MASTER -> this.get() < difficultyValues.minMaster
         }
     }
 
     fun isTooHighForDifficulty(difficulty: Difficulty): Boolean {
         return when(difficulty){
-            Difficulty.BEGINNER -> this.get() > difficultyValues.MAX_BEGINNER
-            Difficulty.EASY -> this.get() > difficultyValues.MAX_EASY
-            Difficulty.MEDIUM -> this.get() > difficultyValues.MAX_MEDIUM
-            Difficulty.HARD -> this.get() > difficultyValues.MAX_HARD || this.bruteForce > 0
-            Difficulty.EXPERT -> this.get() > difficultyValues.MAX_EXPERT || this.bruteForce > difficultyValues.MAX_EXPERT_BRUTE_FORCES
-            Difficulty.MASTER -> this.get() > difficultyValues.MAX_MASTER || this.bruteForce > difficultyValues.MAX_MASTER_BRUTE_FORCES
+            Difficulty.BEGINNER -> this.get() > difficultyValues.maxBeginner
+            Difficulty.EASY -> this.get() > difficultyValues.maxEasy
+            Difficulty.MEDIUM -> this.get() > difficultyValues.maxMedium
+            Difficulty.HARD -> this.get() > difficultyValues.maxHard || this.bruteForce > 0
+            Difficulty.EXPERT -> this.get() > difficultyValues.maxExpert || this.bruteForce > difficultyValues.maxExpertBruteForces
+            Difficulty.MASTER -> this.get() > difficultyValues.maxMaster || this.bruteForce > difficultyValues.maxMasterBruteForces
         }
     }
     fun getMaxBruteForceValue(difficulty: Difficulty): Int {
         return when(difficulty) {
-            Difficulty.EXPERT -> difficultyValues.MAX_EXPERT_BRUTE_FORCES
-            Difficulty.MASTER -> difficultyValues.MAX_MASTER_BRUTE_FORCES
+            Difficulty.EXPERT -> difficultyValues.maxExpertBruteForces
+            Difficulty.MASTER -> difficultyValues.maxMasterBruteForces
             else -> 0
         }
     }
 
     fun getDifficulty(): Difficulty {
         return when (this.get()) {
-            in (difficultyValues.MIN_BEGINNER .. difficultyValues.MAX_BEGINNER) -> Difficulty.BEGINNER
-            in (difficultyValues.MIN_EASY..difficultyValues.MAX_EASY) -> Difficulty.EASY
-            in (difficultyValues.MIN_MEDIUM..difficultyValues.MAX_MEDIUM) -> Difficulty.MEDIUM
-            in (difficultyValues.MIN_HARD..difficultyValues.MAX_HARD) -> Difficulty.HARD
-            in (difficultyValues.MIN_EXPERT..difficultyValues.MAX_EXPERT) -> Difficulty.EXPERT
-            in (difficultyValues.MIN_MASTER..difficultyValues.MAX_MASTER) -> Difficulty.MASTER
+            in (difficultyValues.minBeginner .. difficultyValues.maxBeginner) -> Difficulty.BEGINNER
+            in (difficultyValues.minEasy..difficultyValues.maxEasy) -> Difficulty.EASY
+            in (difficultyValues.minMedium..difficultyValues.maxMedium) -> Difficulty.MEDIUM
+            in (difficultyValues.minHard..difficultyValues.maxHard) -> Difficulty.HARD
+            in (difficultyValues.minExpert..difficultyValues.maxExpert) -> Difficulty.EXPERT
+            in (difficultyValues.minMaster..difficultyValues.maxMaster) -> Difficulty.MASTER
             else -> throw Error("Invalid score $this used to get the difficulty")
         }
 
@@ -108,7 +106,8 @@ abstract class Score(
     companion object {
         fun create(gameType: Games): Score {
             return when(gameType){
-                Games.HAKYUU -> KendokuScore()
+                Games.HAKYUU -> HakyuuScore()
+                Games.KENDOKU -> KendokuScore()
             }
         }
     }
