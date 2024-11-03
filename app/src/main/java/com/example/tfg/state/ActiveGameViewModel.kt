@@ -139,6 +139,8 @@ class ActiveGameViewModel(
         if (playerWon) addOneToActualWinningStreak()
         else endActualWinningStreak(endDate)
 
+        deleteLastPlayedGameFromDataStore()
+
         _gameCompleted.value = true
     }
 
@@ -1130,6 +1132,13 @@ class ActiveGameViewModel(
         if (status) checkErrors()
     }
 
+    fun deleteLastPlayedGameFromDataStore() {
+        viewModelScope.launch {
+            dataStore?.edit { preferences ->
+                preferences.remove(DataStorePreferences.LAST_PLAYED_GAME)
+            }
+        }
+    }
 
     private fun findRegionID(coordinate: Coordinate): Int? {
         for (entry in getRegions().entries)
