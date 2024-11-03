@@ -15,36 +15,41 @@ import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
 
 @Entity
-class Kendoku(
+class Kendoku @JvmOverloads constructor(
     id: Long = IdGenerator.generateId("kendokuGame"),
-    size: Int,
+    numColumns: Int,
+    numRows: Int,
     seed: Long,
-    score: KendokuScore = KendokuScore(),
-    completedBoard: IntArray = IntArray(size * size),
-    startBoard: IntArray = IntArray(size * size),
-    regions: IntArray = IntArray(size * size),
-    val operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
-    private val allowedOperations: Array<KnownKendokuOperation> = KnownKendokuOperation.allOperations(),
+    score: Score = KendokuScore(),
+    completedBoard: IntArray = IntArray(numColumns * numRows),
+    startBoard: IntArray = IntArray(numColumns * numRows),
+    boardRegions: IntArray = IntArray(numColumns * numRows),
+    var operationPerRegion: MutableMap<Int, KendokuOperation> = mutableMapOf(),
+    var allowedOperations: Array<KnownKendokuOperation> = KnownKendokuOperation.allOperations(),
 
     // Helper variables
     @Ignore
-    private val operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf(),
+    var operationResultPerRegion: MutableMap<Int, Int> = mutableMapOf(),
 ): AbstractGame(
     id = id,
-    type = Games.HAKYUU,
-    numColumns = size,
-    numRows = size,
+    type = Games.KENDOKU,
+    numColumns = numColumns,
+    numRows = numRows,
     seed = seed,
     score = score,
     completedBoard = completedBoard,
     startBoard = startBoard,
-    boardRegions = regions
+    boardRegions = boardRegions
 ) {
+
     // Use this instead of numColumns or numRows
+    @Ignore
     private val size = numColumns
 
     // Helper variables
+    @Ignore
     private var currentID = 0
+    @Ignore
     private val primes = listOf(1,2,3,5,7,11,13,17,19).takeWhile { it <= size }
 
     override fun maxRegionSize(): Int = size
@@ -1269,15 +1274,32 @@ class Kendoku(
 
 
     companion object {
-        // For testing
         fun create(
             size: Int,
             seed: Long,
             difficulty: Difficulty,
         ): Kendoku {
             val kendoku = Kendoku(
+                numColumns = size,
+                numRows = size,
+                seed = seed
+            )
+
+            kendoku.createGame(difficulty)
+
+            return kendoku
+        }
+
+        // For testing
+        fun createTesting(
+            size: Int,
+            seed: Long,
+            difficulty: Difficulty,
+        ): Kendoku {
+            val kendoku = Kendoku(
                 id = 0,
-                size = size,
+                numColumns = size,
+                numRows = size,
                 seed = seed
             )
 
@@ -1298,9 +1320,10 @@ class Kendoku(
         ): Kendoku {
             val kendoku = Kendoku(
                 id = 0,
-                size = size,
+                numColumns = size,
+                numRows = size,
                 seed = seed,
-                regions = regions,
+                boardRegions = regions,
                 startBoard = startBoard,
                 completedBoard = completedBoard,
                 operationPerRegion = operationPerRegion,
