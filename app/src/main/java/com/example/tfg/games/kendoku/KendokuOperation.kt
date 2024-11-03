@@ -1,10 +1,12 @@
 package com.example.tfg.games.kendoku
 
-enum class KnownKendokuOperation {
-    SUM,
-    SUBTRACT,
-    MULTIPLY,
-    DIVIDE;
+import com.example.tfg.R
+
+enum class KnownKendokuOperation(val icon: Int) {
+    SUM(R.drawable.add_operation),
+    SUBTRACT(R.drawable.minus_operation),
+    MULTIPLY(R.drawable.outline_close_24),
+    DIVIDE(R.drawable.percent_operation);
 
     fun toGeneralEnum(): KendokuOperation {
         return when(this) {

@@ -23,13 +23,14 @@ import androidx.compose.ui.unit.dp
 import com.example.tfg.R
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.hakyuu.NumberValue
+import com.example.tfg.games.kendoku.KendokuOperation
 import com.example.tfg.state.ActiveGameViewModel
 import com.example.tfg.ui.components.common.GridLayout
 
 
 @Composable
 fun Cell(
-    cornerNumber: Int? = null,
+    corner: Pair<Int, KendokuOperation>? = null,
     viewModel: ActiveGameViewModel,
     coordinate: Coordinate
 ) {
@@ -56,13 +57,23 @@ fun Cell(
 
     Box(modifier = modifier.background(backgroundColor)) {
         Column {
-            if (cornerNumber != null) {
+            if (corner != null) {
+                val cornerValue = corner.first
                 Row(modifier.weight(0.25f)) {
-                    for (value in NumberValue.getBigNumber(cornerNumber)) {
+                    for (value in NumberValue.getBigNumber(cornerValue)) {
                         Icon(
                             painter = painterResource(id = value.icon),
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            contentDescription = "Value $cornerNumber",
+                            contentDescription = "Value $cornerValue",
+                            modifier = modifier.padding(start = 1.dp, top = 1.dp)
+                        )
+                    }
+                    val cornerOperation = corner.second.toKnownEnum()
+                    if (cornerOperation != null) {
+                        Icon(
+                            painter = painterResource(id = cornerOperation.icon),
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            contentDescription = "Operation $cornerOperation",
                             modifier = modifier.padding(start = 1.dp, top = 1.dp)
                         )
                     }
@@ -80,7 +91,7 @@ fun Cell(
                         painter = painterResource(id = NumberValue.get(value).icon),
                         tint = iconColor,
                         contentDescription = "Value $value",
-                        modifier = modifier.padding(if (cornerNumber != null) 2.dp else 6.dp)
+                        modifier = modifier.padding(if (corner != null) 2.dp else 6.dp)
                     )
                 }
                 //Notes

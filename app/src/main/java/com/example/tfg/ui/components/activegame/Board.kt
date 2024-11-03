@@ -87,7 +87,7 @@ fun Board(
         ) {
             (0..< viewModel.getNumCells()).forEach { index ->
                 val coordinate = Coordinate.fromIndex(index = index, numRows = numRows, numColumns = numColumns)
-                Cell (viewModel = viewModel, coordinate = coordinate)
+                Cell(corner = viewModel.getCorner(index), viewModel = viewModel, coordinate = coordinate)
             }
         }
     }

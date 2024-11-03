@@ -301,7 +301,7 @@ abstract class AbstractGame(
             }
     }
 
-    protected fun getRegionId(position: Int): Int {
+    fun getRegionId(position: Int): Int {
         return boardRegions[position]
     }
 
