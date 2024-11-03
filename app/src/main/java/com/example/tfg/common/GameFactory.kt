@@ -14,6 +14,7 @@ import com.example.tfg.games.kendoku.Kendoku
 
 class GameFactory(private val gameDao: GameDao) {
 
+    //TODO: Implement a timeout when creating a new board
     suspend fun createGame(
         chosenGame: Games,
         difficulty: Difficulty,
