@@ -16,19 +16,14 @@ import com.example.tfg.games.common.Score
 
 @Entity
 class Hakyuu @JvmOverloads constructor(
-    id: Long = IdGenerator.generateId("kendokuGame"),
+    id: Long = IdGenerator.generateId("hakyuuGame"),
     numColumns: Int,
     numRows: Int,
     seed: Long,
-    score: HakyuuScore = HakyuuScore(),
+    score: Score = HakyuuScore(),
     completedBoard: IntArray = IntArray(numColumns * numRows),
     startBoard: IntArray = IntArray(numColumns * numRows),
     boardRegions: IntArray = IntArray(numColumns * numRows),
-
-    @Ignore
-    var iterations: Int = 1,
-    @Ignore
-    var printEachBoardState: Boolean = false
 ): AbstractGame(
     id = id,
     type = Games.HAKYUU,
@@ -142,9 +137,6 @@ class Hakyuu @JvmOverloads constructor(
                 propagateRandomRegion(remainingPositions = remainingPositions, iterations = iterations+1)
             }
         }
-        else {
-            this.iterations += iterations
-        }
     }
 
     private fun randomPropagationNumber(): Int {
@@ -177,17 +169,6 @@ class Hakyuu @JvmOverloads constructor(
         }.sortedBy { it.second.size }.toMap()
 
         val (valuesPerPosition, result) = assignValues(possibleValuesPerPosition = possibleValuesPerPosition)
-
-        if (printEachBoardState) {
-            val newRegions = boardRegions.clone()
-            val newBoard = completedBoard.clone()
-
-            for (position in possibleValuesPerPosition.keys) {
-                newRegions[position] = currentID + 1
-                newBoard[position] = valuesPerPosition[position] ?: -1
-                print(printBoardHTML(newBoard, newRegions, true))
-            }
-        }
 
         if (result) finalizeRegion(remainingPositions = remainingPositions, valuesPerPosition = valuesPerPosition)
 
@@ -508,13 +489,12 @@ class Hakyuu @JvmOverloads constructor(
         }
 
         // For testing
-        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty, printEachBoardState: Boolean): Hakyuu {
+        fun createTesting(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
             val hakyuu = Hakyuu(
                 id = 0,
                 numRows = numRows,
                 numColumns = numColumns,
-                seed = seed,
-                printEachBoardState = printEachBoardState
+                seed = seed
             )
 
             hakyuu.createGame(difficulty)
@@ -523,7 +503,7 @@ class Hakyuu @JvmOverloads constructor(
         }
 
         // For testing
-        fun create(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String, reverse: Boolean = false): Hakyuu {
+        fun createTesting(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String, reverse: Boolean = false): Hakyuu {
             val start = Hakyuu.parseBoardString(startBoard)
             val completed = Hakyuu.parseBoardString(completedBoard)
             val regions = Hakyuu.parseRegionString(boardRegions, reverse)
