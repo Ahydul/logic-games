@@ -1260,20 +1260,24 @@ class Kendoku @JvmOverloads constructor(
         if (value == 0) return res
 
         //Check row for same value
-        for (rowIndex in (0..< size)) {
-            getRowPositions(rowIndex)
-                .filterNot { it == position }
-                .filter { actualValues[it] == value }
-                .forEach { res.add(it) }
-        }
+        getRowPositions(Coordinate.getRow(position, size))
+            .filterNot { it == position }
+            .filter { actualValues[it] == value }
+            .forEach { res.add(it) }
 
         //Check column for same value
-        for (columnIndex in (0..< size)) {
-            getColumnPositions(columnIndex)
-                .filterNot { it == position }
-                .filter { actualValues[it] == value }
-                .forEach { res.add(it) }
+        getColumnPositions(Coordinate.getColumn(position, size))
+            .filterNot { it == position }
+            .filter { actualValues[it] == value }
+            .forEach { res.add(it) }
+
+        val regionID = getRegionId(position)
+        var sum = 0
+        for (value2 in positionsPerRegion[regionID]!!.map { actualValues[it] }) {
+            if (value2 == 0) return res
+            sum += value2
         }
+        if (sum != operationResultPerRegion[regionID]) res.add(position)
 
         return res
     }
