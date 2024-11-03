@@ -98,13 +98,15 @@ fun BottomActionRow(
                 val value = viewModel.getValue(v)
                 val iconColor = if(viewModel.isNote()) colorResource(id = R.color.note_color)
                                 else MaterialTheme.colorScheme.onPrimary
+                val insideModifier = Modifier.padding(if (v==-1) 0.dp else 5.dp)
 
                 CustomIconButton(
                     onClick = { viewModel.noteOrWriteAction(value.value) },
-                    painter =  painterResource(id = value.icon),
+                    painter = painterResource(id = value.icon),
                     iconColor = iconColor,
                     contentDescription = null,
                     modifier = modifierValueButtons,
+                    insideModifier = insideModifier,
                     enabled = viewModel.buttonShouldBeEnabled()
                 )
             }

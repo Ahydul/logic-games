@@ -56,6 +56,7 @@ import com.example.tfg.common.utils.Utils
 @Composable
 fun CustomIconButton(
     modifier: Modifier = Modifier,
+    insideModifier: Modifier = Modifier,
     onClick: () -> Unit,
     painter: Painter,
     contentDescription: String? = null,
@@ -71,7 +72,7 @@ fun CustomIconButton(
             tint = iconColor,
             painter = painter,
             contentDescription = contentDescription,
-            modifier = modifier.fillMaxSize()
+            modifier = insideModifier.fillMaxSize()
         )
     }
 }
