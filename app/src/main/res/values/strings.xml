@@ -22,6 +22,7 @@
     <string name="always">Always</string>
     <string name="num_columns">Number of columns</string>
     <string name="num_rows">Number of rows</string>
+    <string name="size">Size</string>
     <string name="seed">Seed</string>
     <string name="custom_board">Custom board</string>
     <string name="create">Create</string>
@@ -126,4 +127,9 @@
     <string name="janko_page">https://www.janko.at/Raetsel/Hakyuu/index.htm</string>
     <string name="completed">Completed</string>
     <string name="text_copied_to_clipboard">Text copied to clipboard</string>
+    <string name="kendoku_page">https://www.janko.at/Raetsel/Kendoku/index.htm</string>
+    <string name="kendoku_rule_1">1. Enter a number between 1 and N n each cell of the grid of size NxN.</string>
+    <string name="kendoku_rule_2">2. Every number must appear exactly once in each row and column.</string>
+    <string name="kendoku_rule_3">3. In each regions it must be possible to calculate the given value from the cell values using the given operation (addition, subtraction, multiplication, division).</string>
+    <string name="kendoku_rule_4">4. If no operation is given any operation may be used.</string>
 </resources>

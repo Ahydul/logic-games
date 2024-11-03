@@ -21,6 +21,7 @@ import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.hakyuu.Hakyuu
+import com.example.tfg.games.kendoku.Kendoku
 import java.time.LocalDateTime
 
 @Dao
@@ -62,6 +63,11 @@ interface GameDao {
     suspend fun getHakyuuGame(abstractGameId: Long): Hakyuu
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertHakyuuGame(hakyuu: Hakyuu)
+
+    @Query("SELECT * from Kendoku WHERE id = :abstractGameId")
+    suspend fun getKendokuGame(abstractGameId: Long): Kendoku
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertKendokuGame(kendoku: Kendoku)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)

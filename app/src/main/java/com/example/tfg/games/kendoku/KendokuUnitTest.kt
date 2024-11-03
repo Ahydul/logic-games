@@ -72,7 +72,7 @@ class KendokuUnitTest {
         "1;2;3;;;, 0;3;4, 27, None",
     )
     fun testGetRegionSumCombinations(possibleValuesInput: String, regionInput: String, sum: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, 3,0L)
+        val kendoku = Kendoku(0, 3, 3,0L)
         val possibleValues = parsePossibleValues(possibleValuesInput)
         val board = createBoard(possibleValues)
         val region = parseRegion(regionInput)
@@ -93,7 +93,7 @@ class KendokuUnitTest {
         ";, 0;1, 10, None",
     )
     fun testGetRegionSubtractCombinations(possibleValuesInput: String, regionInput: String, subtraction: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, 9,0L)
+        val kendoku = Kendoku(0, 9, 9,0L)
 
         val possibleValues = parsePossibleValues(possibleValuesInput)
         val board = createBoard(possibleValues)
@@ -118,7 +118,7 @@ class KendokuUnitTest {
         "1;2;, 0;1;2, 12, None",
     )
     fun testGetRegionMultiplicationCombinations(possibleValuesInput: String, regionInput: String, multiplication: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, 3,0L)
+        val kendoku = Kendoku(0, 3, 3,0L)
 
         val possibleValues = parsePossibleValues(possibleValuesInput)
         val board = createBoard(possibleValues)
@@ -145,7 +145,7 @@ class KendokuUnitTest {
         ";, 0;1, 1, None",
     )
     fun testGetRegionDivideCombinations(possibleValuesInput: String, regionInput: String, division: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, 9,0L)
+        val kendoku = Kendoku(0, 9, 9,0L)
 
         val possibleValues = parsePossibleValues(possibleValuesInput)
         val board = createBoard(possibleValues)
@@ -177,7 +177,7 @@ class KendokuUnitTest {
         "1;2;345;6;345;345;7, 0, 1;2;345;6;345;345;7",
     )
     fun testCleanHiddenSingles(input: String, expectedNumSingles: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, 7,0L)
+        val kendoku = Kendoku(0, 7, 7,0L)
         val line = parsePossibleValues(input)
 
         val numberSingles = kendoku.cleanHiddenSingles(line)
@@ -195,7 +195,7 @@ class KendokuUnitTest {
         "12;12;34;34;56;56;1234567, 3, 12;12;34;34;56;56;7",
     )
     fun testCleanNakedPairs(input: String, expectedNumPairs: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, 6,0L)
+        val kendoku = Kendoku(0, 6, 6,0L)
         val line = parsePossibleValues(input)
 
         val numPairs = kendoku.cleanNakedPairsInLine(line)
@@ -214,7 +214,7 @@ class KendokuUnitTest {
         "123;23;24;43;1234567;1234567;1234567, 1, 1;23;24;43;1567;1567;1567",
     )
     fun testCleanNakedTriples(input: String, expectedNumTriples: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, 7,0L)
+        val kendoku = Kendoku(0, 7, 7,0L)
         val line = parsePossibleValues(input)
 
         val numTriples = kendoku.cleanNakedTriplesInLine(line)
@@ -241,7 +241,7 @@ class KendokuUnitTest {
         "4, 124;124;124;, 0;0;0, 124;124;124;",
     )
     fun testCleanHiddenSinglesPairsTriples(size: Int, input: String, expectedSPT: String, expectedResult: String) {
-        val kendoku = Kendoku(0, size,0L)
+        val kendoku = Kendoku(0, size, size,0L)
         val line = parsePossibleValues(input)
 
         val numberSPT = kendoku.cleanHiddenSinglesPairsTriplesInline(line)
@@ -269,7 +269,7 @@ class KendokuUnitTest {
         "4, ;;;1234;;1234;1234;1234;1234;1234;1234;1234;1234;1234;1234;1234, 0;1;2;4, 4123;4213;1234, 3, ;;;34;;1234;1234;1234;123;1234;1234;1234;123;1234;1234;1234",
     )
     fun testCleanCageUnitOverlap(size: Int, possibleValuesInput: String, regionInput: String, combinationsInput: String, expectedNumber: Int, expectedResult: String) {
-        val kendoku = Kendoku(0, size,0L)
+        val kendoku = Kendoku(0, size, size,0L)
 
         val possibleValues = parsePossibleValues(possibleValuesInput)
         val region = parseRegion(regionInput)
@@ -292,7 +292,7 @@ class KendokuUnitTest {
         "4, ;;123;123;;1234;1234;1234;234;1234;1234;1234;234;1234;1234;1234, 0;1;4, 123;124;132;144;142;321;231;213;432;243;324;244, 144;142, 2",
     )
     fun testCombinationHiddenSingle(size: Int, possibleValuesInput: String, regionInput: String, combinationsInput: String, expectedResult: String, expectedNumChanges: Int) {
-        val kendoku = Kendoku(0, size,0L)
+        val kendoku = Kendoku(0, size, size,0L)
 
         val possibleValues = parsePossibleValues(possibleValuesInput)
         val region = parseRegion(regionInput)
@@ -325,7 +325,7 @@ class KendokuUnitTest {
         "4, ;;;12;;1234;1234;1234;23;1234;1234;1234;1234;1234;1234;1234, 0;1;2;4, 1234;1244;1233;3412;2413;4321, 4321, 2",
     )
     fun testBiValueAttackOnRegion(size: Int, possibleValuesInput: String, regionInput: String, combinationsInput: String, expectedResult: String, expectedNumChanges: Int) {
-        val kendoku = Kendoku(0, size,0L)
+        val kendoku = Kendoku(0, size, size,0L)
 
         val possibleValues = parsePossibleValues(possibleValuesInput)
         val region = parseRegion(regionInput)
@@ -379,7 +379,7 @@ class KendokuUnitTest {
             regions.getOrPut(regionID) { mutableListOf() }.add(position)
         }
 
-        val kendoku = Kendoku(0, size,0L, regions = boardRegions, operationResultPerRegion = operationResultPerRegion)
+        val kendoku = Kendoku(0, size, size,0L, boardRegions = boardRegions, operationResultPerRegion = operationResultPerRegion)
 
         val numChanges = kendoku.cleanInniesAndOuties(board, regions, possibleValues) { sumRegions.contains(it) }
 
@@ -415,7 +415,7 @@ class KendokuUnitTest {
             regionID++
         }
 
-        val kendoku = Kendoku(0, size,0L, regions = regions2)
+        val kendoku = Kendoku(0, size, size,0L, boardRegions = regions2)
         kendoku.combinationComparison((0..< size), regions, regionCombinations)
 
         val foldResult = regionCombinations.values.joinToString(separator = "-") { combinations -> foldResult(combinations) }
@@ -433,7 +433,7 @@ class KendokuUnitTest {
         "3, 123;123;123;123;123;123;123;123;123, 123;123;123;123;123;123;123;123;123, 0",
     )
     fun testCleanXWing(size: Int, possibleValuesInput: String, expectedResult: String, expectedNumChanges: Int) {
-        val kendoku = Kendoku(0, size,0L)
+        val kendoku = Kendoku(0, size, size,0L)
         val possibleValues = parsePossibleValues(possibleValuesInput)
 
         val numChanges = kendoku.cleanXWing(possibleValues)
@@ -449,7 +449,7 @@ class KendokuUnitTest {
         "4, 12;23;134;134;1234;13;1234;1234;1234;124;1234;1234;1234;124;1234;1234, 12;23;134;134;234;13;1234;1234;1234;124;1234;1234;1234;124;1234;1234",
     )
     fun testCleanYWing(size: Int, possibleValuesInput: String, expectedResult: String, expectedNumChanges: Int) {
-        val kendoku = Kendoku(0, size,0L)
+        val kendoku = Kendoku(0, size, size,0L)
         val possibleValues = parsePossibleValues(possibleValuesInput)
 
         kendoku.cleanYWing(possibleValues)
@@ -467,7 +467,7 @@ class KendokuUnitTest {
         "5, 1234;1345;1234;134;1345;1234;12345;134;1345;134;134;12345;12345;134;134;1234;134;1345;12345;1234;12345;1345;134;1234;12345, 1234;134;1234;134;1345;1234;12345;134;1345;134;134;12345;12345;134;134;134;134;1345;12345;1234;1345;134;134;1234;12345, 2",
     )
     fun testCleanColoring(size: Int, possibleValuesInput: String, expectedResult: String, expectedNumChanges: Int) {
-        val kendoku = Kendoku(0, size,0L)
+        val kendoku = Kendoku(0, size, size,0L)
         val possibleValues = parsePossibleValues(possibleValuesInput)
 
         val numChanges = kendoku.cleanColoring(possibleValues)
@@ -536,13 +536,16 @@ class KendokuUnitTest {
         return Gson().fromJson(file.readText(), object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
     }
 
-    private val scoreDebug = "nakedPairs, nakedTriples, hiddenSingles, hiddenPairs, hiddenTriples, mainCombinationReduces, cageUnitOverlapsType1, cageUnitOverlapsType2, biValueAttacks, inniesOuties, xWings, simpleColoring"
+    private val scoreDebug = KendokuStrategy.entries.joinToString(", ") { strat ->
+        strat.name.split("_").joinToString("") { s -> s.replaceFirstChar { it.uppercase() } }
+    }
 
     @Test
     fun testOkJankoBoard() {
-        val boardId = 50
+        // 47 paso de 1 a 2 brute forces
+        val boardId = 3 //38 67 13 74 28 219 414 406 80 224
         val kendokuBoard = loadKendokuData()
-        println("board, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
+        println("board, difficulty, score, times, bruteForces, regions, numUnknownOperations, $scoreDebug")
         val board = kendokuBoard.find { it.boardId == boardId } !!
         board.addValuesToStart = { }
 
@@ -650,7 +653,7 @@ class KendokuUnitTest {
         var result = ""
 
         val workerThread = thread(start = true) {
-            val kendoku = Kendoku.create(
+            val kendoku = Kendoku.createTesting(
                 size = size,
                 seed = seed,
                 difficulty = difficulty

@@ -32,6 +32,7 @@ class GameInstance(
             val abstractGame = runBlocking {
                 when(game.gameType) {
                     Games.HAKYUU -> gameDao.getHakyuuGame(game.abstractGameId)
+                    Games.KENDOKU -> gameDao.getKendokuGame(game.abstractGameId)
                 }
             }
             val gameStateId = gameStateIds[0]
