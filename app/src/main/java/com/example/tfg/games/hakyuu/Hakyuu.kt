@@ -83,8 +83,6 @@ class Hakyuu @JvmOverloads constructor(
     override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
         val res = mutableSetOf<Int>()
 
-        if (value == 0) return res
-
         val positions = getRegionPositions(regionId = getRegionId(position = position))
 
         //Check rule 1

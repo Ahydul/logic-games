@@ -1257,8 +1257,6 @@ class Kendoku @JvmOverloads constructor(
     override fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int> {
         val res = mutableSetOf<Int>()
 
-        if (value == 0) return res
-
         //Check row for same value
         getRowPositions(Coordinate.getRow(position, size))
             .filterNot { it == position }

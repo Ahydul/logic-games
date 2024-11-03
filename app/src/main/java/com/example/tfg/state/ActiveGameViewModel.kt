@@ -39,7 +39,6 @@ import com.example.tfg.games.common.Games
 import com.example.tfg.games.hakyuu.Hakyuu
 import com.example.tfg.games.kendoku.Kendoku
 import com.example.tfg.games.kendoku.KendokuOperation
-import com.example.tfg.games.kendoku.KnownKendokuOperation
 import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -913,7 +912,7 @@ class ActiveGameViewModel(
     }
 
     private fun checkValue(position: Int, value: Int): Set<Int> {
-        return if (isError(position, value))
+        return if (value != 0 && isError(position, value))
             getAbstractGame().checkValue(
                 position = position,
                 value = value,
@@ -1020,50 +1019,49 @@ class ActiveGameViewModel(
         coordinates: MutableList<Coordinate> = mutableListOf(),
         previousCells: MutableList<Cell> = mutableListOf()
     ) {
-        val backgroundErrors = mutableSetOf<Int>()
-        val valueErrors = mutableListOf<Int>()
-        var noEmptyValues = true
-
-        getPositions().forEach { position ->
-            val value = getCellValue(position)
-            val errors = checkValue(position = position, value = value)
-            backgroundErrors.addAll(errors)
-
-            //Has error
-            if (isError(position, value)) {
-                if (value == 0) noEmptyValues = false
-                else valueErrors.add(position)
-            }
-        }
-
+        var noErrorsFound = true
+        val errorstmp = mutableSetOf<Int>()
+        //Set errors
         getPositions().forEach { position ->
             val cell = getCell(position)
             val coordinate = getCoordinate(position)
-
-            if (!previousCells.any { it.cellId == cell.cellId }) {
+            if (previousCells.all { it.cellId != cell.cellId }) {
                 previousCells.add(cell)
                 coordinates.add(coordinate)
             }
 
-            val hadBGError = cell.hasErrorBackground()
-            val hasBGError = backgroundErrors.contains(position)
-            val setBackground = hasBGError != hadBGError
-
+            val value = cell.value
             val wasError = cell.isError
-            val isError = valueErrors.contains(position)
-            val setError = wasError != isError
+            var isError = isError(position, value)
 
-            if (setError) {
-                setCellError(position, isError,
-                    if (setBackground) Cell.ERROR_CELL_BACKGROUND_COLOR
-                    else null
-                )
-            } else if (setBackground) {
+            noErrorsFound = !isError
+
+            // If error changed we set it
+            if (wasError != isError && getCellValue(position) != 0) {
+                errorstmp.add(position)
+                setCellError(position, isError)
+            }
+        }
+
+        // The background errors must be found after the cell errors
+        val backgroundErrors = mutableSetOf<Int>()
+        getPositions().forEach { position ->
+            val value = getCellValue(position)
+            val errors = checkValue(position = position, value = value)
+            backgroundErrors.addAll(errors)
+        }
+
+        getPositions().forEach { position ->
+            val hadBGError = getCell(position).hasErrorBackground()
+            val hasBGError = backgroundErrors.contains(position)
+
+            // If the background error changed we set it
+            if (hadBGError != hasBGError) {
                 setCellBackgroundColor(position, Cell.ERROR_CELL_BACKGROUND_COLOR)
             }
         }
 
-        if (noEmptyValues && valueErrors.isEmpty()) {
+        if (noErrorsFound) {
             gameCompletedFun(true)
         }
         else {

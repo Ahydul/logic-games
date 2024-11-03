@@ -368,7 +368,7 @@ abstract class AbstractGame(
 
     abstract fun checkValue(position: Int, value: Int, actualValues: IntArray): Set<Int>
     fun isError(position: Int, value: Int): Boolean {
-        return completedBoard[position] != value
+        return completedBoard[position] != 0 && completedBoard[position] != value
     }
 
     fun getValue(value: Int): GameValue {
