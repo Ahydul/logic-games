@@ -36,7 +36,10 @@ fun ActiveGameScreen(viewModel: ActiveGameViewModel, modifier: Modifier = Modifi
     Column(modifier = modifier.blur(animatedBlur)) {
         TopSection(
             viewModel = viewModel,
-            onConfigurationClick = { configurationExpandedStates.targetState = true },
+            onConfigurationClick = {
+                viewModel.pauseGame()
+                configurationExpandedStates.targetState = true
+            },
             modifier = modifier
                 .weight(1.2f)
                 .padding(horizontal = 5.dp)

@@ -58,7 +58,6 @@ fun TopSection(
             CustomIconButton(
                 onClick = onConfigurationClick,
                 painter = painterResource(id = R.drawable.gear),
-                enabled = viewModel.buttonShouldBeEnabled(),
                 contentDescription = "Game configuration",
             )
         }
