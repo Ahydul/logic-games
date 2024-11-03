@@ -35,7 +35,11 @@ import com.example.tfg.data.DataStorePreferences
 import com.example.tfg.data.GameDao
 import com.example.tfg.games.common.BoardData
 import com.example.tfg.games.common.GameValue
+import com.example.tfg.games.common.Games
 import com.example.tfg.games.hakyuu.Hakyuu
+import com.example.tfg.games.kendoku.Kendoku
+import com.example.tfg.games.kendoku.KendokuOperation
+import com.example.tfg.games.kendoku.KnownKendokuOperation
 import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -1160,6 +1164,17 @@ class ActiveGameViewModel(
             left = drawDividerLeft(coordinate),
             right = drawDividerRight(coordinate)
         )
+    }
+
+    fun getCorner(position: Int): Pair<Int, KendokuOperation>? {
+        val regionID = getAbstractGame().getRegionId(position)
+        val position2 = getRegions()[regionID]!!.first().toIndex(getNumColumns())
+        return if (getGameType() == Games.KENDOKU && position == position2) {
+            val number = (getAbstractGame() as Kendoku).operationResultPerRegion[regionID]!!
+            val operation = (getAbstractGame() as Kendoku).operationPerRegion[regionID]!!
+            number to operation
+        }
+            else null
     }
 
 }
