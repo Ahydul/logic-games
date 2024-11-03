@@ -252,12 +252,11 @@ class HakyuuUnitTest {
         val size = 6
         val seed = 234234242342L
 
-        val gameType = Hakyuu.create(
+        val gameType = Hakyuu.createTesting(
             numColumns = size,
             numRows = size,
             seed = seed,
-            difficulty = Difficulty.EXPERT,
-            printEachBoardState = true
+            difficulty = Difficulty.EXPERT
         )
 
         // Input this in the console in the browser to make the button work
@@ -311,7 +310,7 @@ class HakyuuUnitTest {
         val seed = 234234242342L
 
         val getGameType = {
-            Hakyuu.create(numColumns = size, numRows = size, seed = seed, difficulty = Difficulty.EXPERT, printEachBoardState = false)
+            Hakyuu.createTesting(numColumns = size, numRows = size, seed = seed, difficulty = Difficulty.EXPERT)
         }
 
         testHakyuuBoard(getGameType, print = false)
@@ -339,7 +338,6 @@ class HakyuuUnitTest {
 
         println("Test with sizes ${gameType.numRows}x${gameType.numColumns}")
         println("Time: ${endTime - startTime} ms")
-        println("Iterations: ${gameType.iterations}")
         println("Score: ${gameType.score.get()}")
 
         assert(getTest(gameType)) { "Failed with seed: ${gameType.seed} " }
@@ -442,7 +440,7 @@ class HakyuuUnitTest {
 
         val getGameType = { _: Int ->
             val seed = (Math.random()*10000000000).toLong()
-            val res = Hakyuu.create(numColumns = numColumns, numRows = numColumns, seed = seed, difficulty = Difficulty.MASTER, printEachBoardState = false)
+            val res = Hakyuu.createTesting(numColumns = numColumns, numRows = numColumns, seed = seed, difficulty = Difficulty.MASTER)
             res
         }
         val getTest = { gameType: Hakyuu, _: Int ->
@@ -472,7 +470,7 @@ class HakyuuUnitTest {
         val repeat = 100
 
         val getGameType = { _: Int ->
-            val res = Hakyuu.create(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong(), difficulty = Difficulty.MASTER, printEachBoardState = false)
+            val res = Hakyuu.createTesting(numColumns = numColumns, numRows = numRows, seed = (Math.random()*10000000000).toLong(), difficulty = Difficulty.MASTER)
             res
         }
         val getTest = { gameType: Hakyuu, _: Int ->
@@ -521,7 +519,6 @@ class HakyuuUnitTest {
 
             boards[iteration] = if (printCompleted) gameType.printCompletedBoardHTML() else gameType.printStartBoardHTML()
             scores[iteration] = gameType.getScoreValue()
-            iterations[iteration] = gameType.iterations
             times[iteration] = endTime - startTime
             seeds[iteration] = gameType.seed
             gameType.getRegionStatData().forEachIndexed{ regionSize, value ->

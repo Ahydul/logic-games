@@ -82,8 +82,8 @@ fun GamesScreen(
     goStatsScreen: (Games) -> Unit
 ) {
     var onGoing = remember { mutableStateOf(onGoing) }
-    var chosenGame =  Games.HAKYUU
-    var chosenGameAction = remember { mutableStateOf(Action.CREATE) }
+    val chosenGame = remember { mutableStateOf(Games.HAKYUU) }
+    val chosenGameAction = remember { mutableStateOf(Action.CREATE) }
     val expandedStates = remember { MutableTransitionState(false) }
     val animatedBlur by animateBlur(expandedStates)
 
@@ -101,21 +101,22 @@ fun GamesScreen(
     ) {
         MainHeader(viewModel = viewModel, modifier = modifier)
         val mod = Modifier
-        val gameHakyuu = Games.HAKYUU
         val theme by viewModel.themeUserSetting.collectAsState(initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE)
         val imageID = if (theme.equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
-        else R.drawable.hakyuu_light
-        ChooseGameButton(
-            game = gameHakyuu.title,
-            imageID = imageID,
-            goStatsScreen = { goStatsScreen(gameHakyuu) },
-            onClickButton = { action: Action ->
-                chosenGame = gameHakyuu
-                chosenGameAction.value = action
-                expandedStates.targetState = true
-            },
-            modifier = mod
-        )
+            else R.drawable.hakyuu_light
+        Games.entries.forEach { game ->
+            ChooseGameButton(
+                game = game.title,
+                imageID = imageID,
+                goStatsScreen = { goStatsScreen(game) },
+                onClickButton = { action: Action ->
+                    chosenGame.value = game
+                    chosenGameAction.value = action
+                    expandedStates.targetState = true
+                },
+                modifier = mod
+            )
+        }
 
         Spacer(modifier = mod.height(20.dp))
 
@@ -132,7 +133,7 @@ fun GamesScreen(
 @Composable
 private fun ChosenGame(
     expandedStates: MutableTransitionState<Boolean>,
-    chosenGame: Games,
+    chosenGame: MutableState<Games>,
     chosenGameAction: MutableState<Action>,
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
@@ -148,22 +149,22 @@ private fun ChosenGame(
             verticalArrangement = Arrangement.SpaceAround
         ) {
             if (chosenGameAction.value != Action.IN_PROGRESS_NO_GAME)
-                Text(text = "${chosenGame.title}", fontSize = 25.sp, color = color, modifier = modifier.padding(top = 16.dp))
+                Text(text = "${chosenGame.value.title}", fontSize = 25.sp, color = color, modifier = modifier.padding(top = 16.dp))
             when(chosenGameAction.value){
                 Action.CREATE -> {
                     TextFields(
                         textColor = color,
                         backgroundColor = MaterialTheme.colorScheme.secondary,
                         modifier = modifier.padding(vertical = 8.dp),
-                        chosenGame = chosenGame,
+                        chosenGame = chosenGame.value,
                         viewModel = viewModel
                     )
                 }
                 //TODO: Someday implement LazyColumn somehow
-                Action.IN_PROGRESS -> BoardsInfo(modifier = modifier, chosenGame = chosenGame, viewModel = viewModel)
+                Action.IN_PROGRESS -> BoardsInfo(modifier = modifier, chosenGame = chosenGame.value, viewModel = viewModel)
                 Action.IN_PROGRESS_NO_GAME -> BoardsInfo(modifier = modifier, viewModel = viewModel)
-                Action.RULES -> Rules(modifier = modifier, chosenGame = chosenGame)
-                Action.COMPLETED -> BoardsInfo(modifier = modifier, isCompleted = true, chosenGame = chosenGame, viewModel = viewModel)
+                Action.RULES -> Rules(modifier = modifier, chosenGame = chosenGame.value)
+                Action.COMPLETED -> BoardsInfo(modifier = modifier, isCompleted = true, chosenGame = chosenGame.value, viewModel = viewModel)
             }
 
         }
@@ -281,8 +282,8 @@ private fun TextFields(
     val initialValue = "6"
     val numColumns = remember { mutableStateOf(initialValue) }
     val numRows = remember { mutableStateOf(initialValue) }
-    val maxValue = 13
-    val minValue = 3
+    val maxValue = chosenGame.maxSize
+    val minValue = chosenGame.minSize
     val range = (minValue..maxValue).map { it.toString() }
     val seed = remember { mutableStateOf("") }
 
@@ -296,25 +297,40 @@ private fun TextFields(
         modifier = modifier.padding(top = 10.dp)
     )
 
-    val numColumnsLabel = stringResource(id = R.string.num_columns)
-    CustomTextField(
-        state = numColumns,
-        range = range,
-        color = textColor,
-        backgroundColor = backgroundColor,
-        label = { Text(text = numColumnsLabel, color = textColor) },
-        modifier = modifier
-    )
+    when (chosenGame) {
+        Games.KENDOKU -> {
+            val sizeLabel = stringResource(id = R.string.size)
+            CustomTextField(
+                state = numColumns,
+                range = range,
+                color = textColor,
+                backgroundColor = backgroundColor,
+                label = { Text(text = sizeLabel, color = textColor) },
+                modifier = modifier
+            )
+        }
+        else -> {
+            val numColumnsLabel = stringResource(id = R.string.num_columns)
+            CustomTextField(
+                state = numColumns,
+                range = range,
+                color = textColor,
+                backgroundColor = backgroundColor,
+                label = { Text(text = numColumnsLabel, color = textColor) },
+                modifier = modifier
+            )
 
-    val numRowsLabel = stringResource(id = R.string.num_rows)
-    CustomTextField(
-        state = numRows,
-        range = range,
-        color = textColor,
-        backgroundColor = backgroundColor,
-        label = { Text(text = numRowsLabel, color = textColor) },
-        modifier = modifier
-    )
+            val numRowsLabel = stringResource(id = R.string.num_rows)
+            CustomTextField(
+                state = numRows,
+                range = range,
+                color = textColor,
+                backgroundColor = backgroundColor,
+                label = { Text(text = numRowsLabel, color = textColor) },
+                modifier = modifier
+            )
+        }
+    }
 
     val seedLabel = stringResource(id = R.string.seed)
     CustomTextField(
@@ -386,7 +402,7 @@ private fun ChooseGameButton(
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
         shape = RoundedCornerShape(8.dp),
         borderStroke = BorderStroke(0.5.dp, color = MaterialTheme.colorScheme.outline),
-        modifier = modifier.padding(horizontal = 10.dp)
+        modifier = modifier.padding(horizontal = 10.dp, vertical = 5.dp)
     ) {
         Image(
             painter = painterResource(id = imageID),

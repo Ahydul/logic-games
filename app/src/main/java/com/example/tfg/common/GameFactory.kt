@@ -10,6 +10,7 @@ import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.hakyuu.Hakyuu
+import com.example.tfg.games.kendoku.Kendoku
 
 class GameFactory(private val gameDao: GameDao) {
 
@@ -20,12 +21,18 @@ class GameFactory(private val gameDao: GameDao) {
         numRows: Int,
         seed: Long? = (Math.random() * 10000000000).toLong()
     ): Long {
+        val seed = seed ?: (Math.random() * 10000000000).toLong()
         // Initialize gameType
         val abstractGame: AbstractGame = when (chosenGame) {
             Games.HAKYUU -> Hakyuu.create(
                 numRows = numRows,
                 numColumns = numColumns,
-                seed = seed ?: (Math.random() * 10000000000).toLong(),
+                seed = seed,
+                difficulty = difficulty
+            )
+            Games.KENDOKU -> Kendoku.create(
+                size = numColumns,
+                seed = seed,
                 difficulty = difficulty
             )
         }
@@ -43,6 +50,7 @@ class GameFactory(private val gameDao: GameDao) {
         // Insert AbstractGame
         when (chosenGame) {
             Games.HAKYUU -> gameDao.insertHakyuuGame(abstractGame as Hakyuu)
+            Games.KENDOKU -> gameDao.insertKendokuGame(abstractGame as Kendoku)
         }
 
         // Create game
@@ -59,7 +67,7 @@ class GameFactory(private val gameDao: GameDao) {
             numColumns = numColumns,
             gameStateId = gameState.gameStateId
         )
-       gameDao.insertBoard(board)
+        gameDao.insertBoard(board)
 
         // Initialize cells
         val cells = abstractGame.startBoard.map { Cell.initializeBoardCell(it) }.toTypedArray()
@@ -80,7 +88,7 @@ class GameFactory(private val gameDao: GameDao) {
 
             val seed = 1L
 
-            return Hakyuu.create(
+            return Hakyuu.createTesting(
                 numRows = numRows,
                 numColumns = numColumns,
                 seed = seed,

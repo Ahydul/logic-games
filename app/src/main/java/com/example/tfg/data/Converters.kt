@@ -4,6 +4,8 @@ import androidx.room.TypeConverter
 import com.example.tfg.games.common.Score
 import com.example.tfg.games.common.ScoreDeserializer
 import com.example.tfg.games.common.ScoreSerializer
+import com.example.tfg.games.kendoku.KendokuOperation
+import com.example.tfg.games.kendoku.KnownKendokuOperation
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
@@ -68,6 +70,36 @@ object Converters {
         }
     }
 
+
+    // Kendoku converters
+
+    @TypeConverter
+    fun fromKendokuMap(value: MutableMap<Int, KendokuOperation>?): String? {
+        return value?.let {
+            Gson().toJson(it)
+        }
+    }
+
+    @TypeConverter
+    fun toKendokuMap(value: String?): MutableMap<Int, KendokuOperation>? {
+        return value?.let {
+            Gson().fromJson(it, MutableMap::class.java) as MutableMap<Int, KendokuOperation>
+        }
+    }
+
+    @TypeConverter
+    fun fromKendokuArray(value: Array<KnownKendokuOperation>?): String? {
+        return value?.let {
+            Gson().toJson(it)
+        }
+    }
+
+    @TypeConverter
+    fun toKendokuArray(value: String?): Array<KnownKendokuOperation>? {
+        return value?.let {
+            Gson().fromJson(it, Array<KnownKendokuOperation>::class.java)
+        }
+    }
 
     // Score converters
 

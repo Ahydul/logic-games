@@ -17,12 +17,14 @@ import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.games.hakyuu.Hakyuu
+import com.example.tfg.games.kendoku.Kendoku
 
 //TODO: Update schema with refactor changes
 @Database(
     entities = [
         Game::class,
         Hakyuu::class,
+        Kendoku::class,
         GameState::class,
         Move::class,
         Action::class,

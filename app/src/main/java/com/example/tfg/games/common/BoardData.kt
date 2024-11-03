@@ -30,7 +30,8 @@ open class BoardData(
     companion object {
         fun create(possibleValues: Array<MutableList<Int>>, board: IntArray, type: Games): BoardData {
             return when(type){
-                Games.HAKYUU -> KendokuBoardData.create(possibleValues, board)
+                Games.KENDOKU -> KendokuBoardData.create(possibleValues, board)
+                else -> BoardData(possibleValues, board)
             }
         }
     }

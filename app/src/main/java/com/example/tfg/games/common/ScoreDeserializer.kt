@@ -1,10 +1,13 @@
 package com.example.tfg.games.common
 
 import com.example.tfg.games.hakyuu.HakyuuScore
+import com.example.tfg.games.kendoku.KendokuScore
+import com.google.gson.Gson
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import java.lang.reflect.Type
+
 
 class ScoreDeserializer : JsonDeserializer<Score> {
     override fun deserialize(
@@ -13,13 +16,12 @@ class ScoreDeserializer : JsonDeserializer<Score> {
         context: JsonDeserializationContext?
     ): Score {
         val jsonObject = json.asJsonObject
-        return when (Games.valueOf(jsonObject.get("game").asString)) {
-            Games.HAKYUU -> {
-                val score = jsonObject.get("score").asInt
-                val bruteForce = jsonObject.get("bruteForce").asInt
+        val score = jsonObject.get("score").asInt
+        val bruteForce = jsonObject.get("bruteForce").asInt
 
-                HakyuuScore(score = score, bruteForce = bruteForce)
-            }
+        return when (Games.valueOf(jsonObject.get("game").asString)) {
+            Games.HAKYUU -> Gson().fromJson(json, HakyuuScore::class.java)
+            Games.KENDOKU -> Gson().fromJson(json, KendokuScore::class.java)
         }
     }
 }
