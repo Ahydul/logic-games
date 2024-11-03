@@ -54,7 +54,6 @@ fun GameCompleted(
     expandedStates: MutableTransitionState<Boolean>,
     modifier: Modifier = Modifier
 ) {
-    //TODO: Make this more pretty
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.padding(20.dp)
