@@ -1022,7 +1022,6 @@ class ActiveGameViewModel(
         previousCells: MutableList<Cell> = mutableListOf()
     ) {
         var noErrorsFound = true
-        val errorstmp = mutableSetOf<Int>()
         //Set errors
         getPositions().forEach { position ->
             val cell = getCell(position)
@@ -1036,11 +1035,10 @@ class ActiveGameViewModel(
             val wasError = cell.isError
             var isError = isError(position, value)
 
-            noErrorsFound = !isError
+            noErrorsFound = noErrorsFound && value != 0 && !isError
 
             // If error changed we set it
-            if (wasError != isError && getCellValue(position) != 0) {
-                errorstmp.add(position)
+            if (wasError != isError) {
                 setCellError(position, isError)
             }
         }
