@@ -79,7 +79,6 @@ class MainViewModel(
 
     fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty, seed: String, context: Context) {
         showLoading()
-        val seed = if (seed == "") null else seed.toLongOrNull() ?: seed.hashCode().toLong()
         viewModelScope.launch(Dispatchers.IO) {
             val gameId = gameFactory.createGame(
                 chosenGame = chosenGame,

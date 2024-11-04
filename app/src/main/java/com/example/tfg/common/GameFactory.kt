@@ -20,10 +20,11 @@ class GameFactory(private val gameDao: GameDao) {
         difficulty: Difficulty,
         numColumns: Int,
         numRows: Int,
-        seed: Long? = (Math.random() * 10000000000).toLong()
+        seed: String
     ): Long {
-        val seed = seed ?: (Math.random() * 10000000000).toLong()
-        // Initialize gameType
+        val seed = if (seed == "") (Math.random() * 10000000000).toLong()
+            else seed.toLongOrNull() ?: seed.hashCode().toLong()
+
         val abstractGame: AbstractGame = when (chosenGame) {
             Games.HAKYUU -> Hakyuu.create(
                 numRows = numRows,
