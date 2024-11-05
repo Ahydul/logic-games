@@ -449,7 +449,7 @@ class KendokuUnitTest {
     @CsvSource(
         "4, 12;23;134;134;1234;13;1234;1234;1234;124;1234;1234;1234;124;1234;1234, 12;23;134;134;234;13;1234;1234;1234;124;1234;1234;1234;124;1234;1234",
     )
-    fun testCleanYWing(size: Int, possibleValuesInput: String, expectedResult: String, expectedNumChanges: Int) {
+    fun testCleanYWing(size: Int, possibleValuesInput: String, expectedResult: String) {
         val kendoku = Kendoku(0, size, size,0L)
         val possibleValues = parsePossibleValues(possibleValuesInput)
 
