@@ -14,18 +14,17 @@ import com.example.tfg.games.kendoku.Kendoku
 
 class GameFactory(private val gameDao: GameDao) {
 
-    //TODO: Implement a timeout when creating a new board
-    suspend fun createGame(
+    suspend fun getAbstractGame(
         chosenGame: Games,
         difficulty: Difficulty,
         numColumns: Int,
         numRows: Int,
         seed: String
-    ): Long {
+    ): AbstractGame? {
         val seed = if (seed == "") (Math.random() * 10000000000).toLong()
             else seed.toLongOrNull() ?: seed.hashCode().toLong()
 
-        val abstractGame: AbstractGame = when (chosenGame) {
+        return when (chosenGame) {
             Games.HAKYUU -> Hakyuu.create(
                 numRows = numRows,
                 numColumns = numColumns,
@@ -38,7 +37,13 @@ class GameFactory(private val gameDao: GameDao) {
                 difficulty = difficulty
             )
         }
+    }
 
+    //TODO: Implement a timeout when creating a new board
+    suspend fun createGame(abstractGame: AbstractGame): Long {
+        val chosenGame = abstractGame.type
+        val numColumns = abstractGame.numColumns
+        val numRows = abstractGame.numRows
         return create(
             chosenGame = chosenGame,
             abstractGame = abstractGame,

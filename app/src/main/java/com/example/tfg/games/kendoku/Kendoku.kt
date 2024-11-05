@@ -13,6 +13,9 @@ import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.coroutineContext
 
 @Entity
 class Kendoku @JvmOverloads constructor(
@@ -64,11 +67,13 @@ class Kendoku @JvmOverloads constructor(
 
     override fun maxRegionSize(): Int = size
 
-    override fun createGame(difficulty: Difficulty) {
+    override suspend fun createGame(difficulty: Difficulty) {
         super.createGame(difficulty)
 
         val knownOperationsPerRegion = operationPerRegion.filterValues { !it.isUnknown() }.toMutableMap()
         while (knownOperationsPerRegion.isNotEmpty()) {
+            if (!coroutineContext.isActive) return
+
             // Remove random value from remainingOperationsPerRegion
             val randomRegion = knownOperationsPerRegion.keys.random(random)
             knownOperationsPerRegion.remove(randomRegion)
@@ -1282,11 +1287,11 @@ class Kendoku @JvmOverloads constructor(
 
 
     companion object {
-        fun create(
+        suspend fun create(
             size: Int,
             seed: Long,
             difficulty: Difficulty,
-        ): Kendoku {
+        ): Kendoku? {
             val kendoku = Kendoku(
                 numColumns = size,
                 numRows = size,
@@ -1295,11 +1300,11 @@ class Kendoku @JvmOverloads constructor(
 
             kendoku.createGame(difficulty)
 
-            return kendoku
+            return if (coroutineContext.isActive) kendoku else null
         }
 
         // For testing
-        fun createTesting(
+        suspend fun createTesting(
             size: Int,
             seed: Long,
             difficulty: Difficulty,
@@ -1336,7 +1341,7 @@ class Kendoku @JvmOverloads constructor(
                 operationPerRegion = operationPerRegion
             )
 
-            val score = kendoku.solveBoard(kendoku.startBoard)
+            val score = runBlocking { kendoku.solveBoard(kendoku.startBoard) }
             kendoku.score.add(score)
 
             return kendoku

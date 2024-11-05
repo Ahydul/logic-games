@@ -2,6 +2,7 @@ package com.example.tfg.state
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -14,15 +15,18 @@ import com.example.tfg.common.utils.Utils
 import com.example.tfg.data.DataStorePreferences
 import com.example.tfg.data.LimitedGameDao
 import com.example.tfg.data.StatsDao
+import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.ui.theme.Theme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.time.LocalDateTime
 
@@ -77,19 +81,48 @@ class MainViewModel(
 
     fun isLoading() = isLoading.value
 
+    private var createGameJob: Job? = null
+
+    fun cancelCreateGame() {
+        createGameJob?.cancel()
+        createGameJob = null
+    }
+
     fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty, seed: String, context: Context) {
         showLoading()
-        viewModelScope.launch(Dispatchers.IO) {
-            val gameId = gameFactory.createGame(
-                chosenGame = chosenGame,
-                numRows = numRows,
-                numColumns = numColumns,
-                difficulty = difficulty,
-                seed = seed
-            )
-            //hideLoading()
 
-            Utils.startActiveGameActivity(context, gameId)
+        // If seed was not set we wait for 60 seconds
+        viewModelScope.launch(Dispatchers.IO) {
+            val allowRepeatedTimeout = seed == ""
+            var timeout = if (allowRepeatedTimeout) 1500L else 60000L
+            var abstractGame: AbstractGame? = null
+            do {
+                val startTime = System.currentTimeMillis()
+                Log.d("timeout", "Start")
+
+                createGameJob = viewModelScope.launch(Dispatchers.Default) {
+                    abstractGame = withTimeoutOrNull(timeout) {
+                        gameFactory.getAbstractGame(
+                            chosenGame = chosenGame,
+                            numRows = numRows,
+                            numColumns = numColumns,
+                            difficulty = difficulty,
+                            seed = seed
+                        )
+                    }
+                    timeout += 500
+                }
+                createGameJob?.join()
+
+                Log.d("timeout", "End: ${System.currentTimeMillis() - startTime}")
+            }
+            while (allowRepeatedTimeout && abstractGame == null && createGameJob != null)
+
+            if (abstractGame == null) hideLoading()
+            else {
+                val gameID = gameFactory.createGame(abstractGame!!)
+                Utils.startActiveGameActivity(context, gameID)
+            }
         }
     }
 

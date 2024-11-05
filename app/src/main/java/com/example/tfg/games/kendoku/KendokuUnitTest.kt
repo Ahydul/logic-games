@@ -7,13 +7,13 @@ import com.example.tfg.games.common.Difficulty
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
-import kotlin.concurrent.thread
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -580,7 +580,12 @@ class KendokuUnitTest {
         val difficulty = Difficulty.MASTER
         val printBoards = false
 
-        val result = testBoardWithTimeout(size, difficulty, seed, timeout, printBoards)
+        var result: String? = null
+        runBlocking {
+            result = withTimeoutOrNull(timeout) {
+                testBoard(size, difficulty, seed, printBoards)
+            }
+        }
 
         assert(result == "") {
             print(result ?: "Timed out")
@@ -597,21 +602,18 @@ class KendokuUnitTest {
         val difficulty = Difficulty.MASTER
         val printBoards = false
 
-        var numTimeouts = 0
         val seedsWithTimeout = mutableListOf<Long>()
-        val result = (1..repeat).map {
-            var seed = (Math.random()*10000000000).toLong()
-            var res = testBoardWithTimeout(size, difficulty, seed, timeout, printBoards)
-            while (res == null) {
-                numTimeouts++
-                seedsWithTimeout.add(seed)
-                seed = (Math.random()*10000000000).toLong()
-                res = testBoardWithTimeout(size, difficulty, seed, timeout, printBoards)
-            }
+        val result = runBlocking { (1..repeat).map {
+            var res: String?
+            do {
+                val seed = (Math.random()*10000000000).toLong()
+                res = withTimeoutOrNull(timeout) { testBoard(size, difficulty, seed, printBoards) }
+                if (res == null) seedsWithTimeout.add(seed)
+            } while (res == null)
             res
-        }
+        } }
 
-        println("$numTimeouts timeouts with timeout: $timeout")
+        println("${seedsWithTimeout.size} timeouts with timeout: $timeout")
         println("Seeds: ${seedsWithTimeout.joinToString()}")
 
         val resultNotOK = result.filter { it != "" }
@@ -647,39 +649,26 @@ class KendokuUnitTest {
             "\nExpected board:\n${kendoku.printCompletedBoard()}"
     }
 
-    private fun testBoardWithTimeout(size: Int, difficulty: Difficulty, seed: Long, timeout: Long, printBoards: Boolean): String? {
+    private suspend fun testBoard(size: Int, difficulty: Difficulty, seed: Long, printBoards: Boolean): String {
         val mainStartTime = System.currentTimeMillis()
-        var result = ""
 
-        val workerThread = thread(start = true) {
-            val kendoku = Kendoku.createTesting(
-                size = size,
-                seed = seed,
-                difficulty = difficulty
-            )
-            val score = kendoku.getScoreValue()
-            val time = System.currentTimeMillis() - mainStartTime
-            val numBruteForces = kendoku.score.getBruteForceValue()
-            val regions = kendoku.getRegionStatData().joinToString(separator = "|")
-            val numUnknownOps = kendoku.operationPerRegion.values.count { it.isUnknown() }
-            val completeScore = kendoku.score as KendokuScore
-            println("${size}x${size}, $seed, $difficulty, $score, $time, $numBruteForces, $regions, $numUnknownOps, $completeScore")
+        val kendoku = Kendoku.createTesting(
+            size = size,
+            seed = seed,
+            difficulty = difficulty
+        )
 
-            if (printBoards) println(kendoku.printStartBoardHTML())
+        val score = kendoku.getScoreValue()
+        val time = System.currentTimeMillis() - mainStartTime
+        val numBruteForces = kendoku.score.getBruteForceValue()
+        val regions = kendoku.getRegionStatData().joinToString(separator = "|")
+        val numUnknownOps = kendoku.operationPerRegion.values.count { it.isUnknown() }
+        val completeScore = kendoku.score as KendokuScore
 
-            result = kendoku.boardMeetsRulesStr()
-        }
+        println("${size}x${size}, $seed, $difficulty, $score, $time, $numBruteForces, $regions, $numUnknownOps, $completeScore")
 
-        val startTime = System.currentTimeMillis()
-        while (workerThread.isAlive) {
-            if (System.currentTimeMillis() - startTime >= timeout) {
-                workerThread.stop() // DEPRECATED and UNSAFE
-                return null
-            }
-            // Sleep for a short time to avoid busy-waiting
-            Thread.sleep(10)
-        }
+        if (printBoards) println(kendoku.printStartBoardHTML())
 
-        return result
+        return kendoku.boardMeetsRulesStr()
     }
 }

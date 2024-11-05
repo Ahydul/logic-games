@@ -141,6 +141,10 @@ private fun ChosenGame(
     val color = MaterialTheme.colorScheme.onPrimary
     CustomPopup(
         expandedStates = expandedStates,
+        onDismissRequest = {
+            viewModel.cancelCreateGame()
+            expandedStates.targetState = false
+        },
         offset = IntOffset(0,-100),
         modifier = modifier.fillMaxWidth(0.9f)
     ) {

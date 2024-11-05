@@ -5,6 +5,9 @@ import androidx.room.PrimaryKey
 import com.example.tfg.common.utils.Colors
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.games.hakyuu.NumberValue
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -124,7 +127,7 @@ abstract class AbstractGame(
 
     abstract fun createCompleteBoard(remainingPositions: MutableSet<Int>)
 
-    protected open fun createGame(difficulty: Difficulty) {
+    protected open suspend fun createGame(difficulty: Difficulty) {
 
         val remainingPositions = getPositions().toMutableSet()
         createCompleteBoard(remainingPositions)
@@ -140,6 +143,9 @@ abstract class AbstractGame(
         maxAmountOfBruteForces = score.getMaxBruteForceValue(difficulty)
 
         while (remainingPositions.isNotEmpty()) {
+
+            if (!coroutineContext.isActive) return
+
             // Remove random value from startBoard
             val randomPosition = remainingPositions.random(random)
             remainingPositions.remove(randomPosition)
@@ -167,7 +173,7 @@ abstract class AbstractGame(
      * **/
     protected abstract fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score
 
-    fun solveBoard(board: IntArray): Score? {
+    suspend fun solveBoard(board: IntArray): Score? {
         val possibleValues = Array(numPositions()) { mutableListOf<Int>() }
         val scoreResult = fillPossibleValues(possibleValues = possibleValues, board = board)
 
@@ -178,11 +184,13 @@ abstract class AbstractGame(
         return scoreResult
     }
 
-    private fun solveBoard(boardData: BoardData, amountOfBruteForces: Int = 0): PopulateResult {
+    private suspend fun solveBoard(boardData: BoardData, amountOfBruteForces: Int = 0): PopulateResult {
         val score = Score.create(type)
 
         while (getRemainingPositions(boardData.actualValues).isNotEmpty())
         {
+            if (!coroutineContext.isActive) return PopulateResult.maxBFOverpassed()
+
             val res = solveBoardOneStep(boardData, amountOfBruteForces).let {
                 it.get() ?: return it // Found error -> can't populate
             }
@@ -193,7 +201,7 @@ abstract class AbstractGame(
         return PopulateResult.success(score)
     }
 
-    private fun solveBoardOneStep(boardData:BoardData, amountOfBruteForces: Int): PopulateResult {
+    private suspend fun solveBoardOneStep(boardData:BoardData, amountOfBruteForces: Int): PopulateResult {
         val res = populateValues(boardData)
 
         return if (res.gotNoChangesFound()) bruteForce(boardData, amountOfBruteForces + 1)
@@ -226,10 +234,10 @@ abstract class AbstractGame(
             fillPossibleValues(boardData.possibleValues, boardData.actualValues)
         }
 
-        return solveBoardOneStep(boardData, debugAmountOfBruteForces)
+        return runBlocking { solveBoardOneStep(boardData, debugAmountOfBruteForces) }
     }
 
-    private fun bruteForceAValue(
+    private suspend fun bruteForceAValue(
         chosenValue: Int,
         position: Int,
         boardData: BoardData,
@@ -244,7 +252,7 @@ abstract class AbstractGame(
         else result.errorToBruteForceResult()
     }
 
-    private fun bruteForce(boardData: BoardData, amountOfBruteForces: Int): PopulateResult {
+    private suspend fun bruteForce(boardData: BoardData, amountOfBruteForces: Int): PopulateResult {
         if (amountOfBruteForces > maxAmountOfBruteForces) return PopulateResult.maxBFOverpassed()
 
         val possibleValues = boardData.possibleValues
@@ -258,11 +266,6 @@ abstract class AbstractGame(
         for(chosenValue in minPossibleValues.toList()) {
             possibleValues[position].remove(chosenValue)
 
-            // If we have the completed board we can check the value early
-            //val realValue = completedBoard[position]
-            //val earlyContradiction = realValue != 0 && realValue != chosenValue
-            //val result = if (earlyContradiction) BruteForceResult.contradiction()
-            //    else bruteForceAValue(chosenValue, position, boardData.clone(), amountOfBruteForces)
             val result = bruteForceAValue(chosenValue, position, boardData.clone(), amountOfBruteForces)
 
             // Filter contradictions
@@ -273,6 +276,30 @@ abstract class AbstractGame(
                 if (results.size > 1) return PopulateResult.boardNotUnique()
             }
         }
+
+        // This parallelize the loop above but it seems to be slower
+        /*
+        coroutineScope {
+            // Launch parallel tasks for each chosenValue
+            val tasks = minPossibleValues.map { chosenValue ->
+                async {
+                    val result = bruteForceAValue(chosenValue, position, boardData.clone(), amountOfBruteForces)
+                    // Return the result if no contradiction, otherwise null
+                    if (!result.gotContradiction()) result else null
+                }
+            }
+
+            for (deferred in tasks) {
+                val result = deferred.await()
+                if (result != null) {
+                    results.add(result)
+
+                    // Early return if we have found 2 valid results
+                    if (results.size == 2) return@coroutineScope PopulateResult.boardNotUnique<Score>()
+                }
+            }
+        }
+*/
 
         if (results.isEmpty()) return PopulateResult.contradiction()
 

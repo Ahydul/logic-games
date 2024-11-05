@@ -13,6 +13,9 @@ import com.example.tfg.games.common.BoardData
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.coroutineContext
 
 @Entity
 class Hakyuu @JvmOverloads constructor(
@@ -474,7 +477,7 @@ class Hakyuu @JvmOverloads constructor(
 
     companion object {
 
-        fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
+        suspend fun create(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu? {
             val hakyuu = Hakyuu(
                 numRows = numRows,
                 numColumns = numColumns,
@@ -483,11 +486,11 @@ class Hakyuu @JvmOverloads constructor(
 
             hakyuu.createGame(difficulty)
 
-            return hakyuu
+            return if (coroutineContext.isActive) hakyuu else null
         }
 
         // For testing
-        fun createTesting(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
+        suspend fun createTesting(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): Hakyuu {
             val hakyuu = Hakyuu(
                 id = 0,
                 numRows = numRows,
@@ -541,7 +544,7 @@ class Hakyuu @JvmOverloads constructor(
                 completedBoard = completed
             )
 
-            val score = hakyuu.solveBoard(hakyuu.completedBoard)
+            val score = runBlocking { hakyuu.solveBoard(hakyuu.completedBoard) }
             hakyuu.score.add(score)
 
             return hakyuu

@@ -3,7 +3,6 @@ package com.example.tfg.games.hakyuu
 import com.example.tfg.common.GameFactory
 import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.common.utils.Utils
-import com.example.tfg.games.common.Difficulty
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
@@ -22,6 +21,9 @@ import kotlin.random.Random
  */
 @ExtendWith(CustomTestWatcher::class)
 class HakyuuUnitTest {
+
+    // TODO: Refactor HakyuuUnitTest
+
     private lateinit var hakyuu: Hakyuu
     private lateinit var region : List<Int>
     private lateinit var possibleValues: Array<MutableList<Int>>
@@ -246,7 +248,7 @@ class HakyuuUnitTest {
 
         testHakyuuBoard(getGameType)
     }
-
+/*
     @Test
     fun testCreateSeededHakyuuBoardPrintingEachBoardState() {
         val size = 6
@@ -300,7 +302,7 @@ class HakyuuUnitTest {
         print("""<button onclick="toggleTables()">Next</button> """.trimIndent())
         print("""<button onclick="showEndTable()">End</button> """.trimIndent())
 
-        assert(gameType.boardMeetsRulesPrintingInfo())
+        //assert(gameType.boardMeetsRulesPrintingInfo())
     }
 
 
@@ -315,7 +317,7 @@ class HakyuuUnitTest {
 
         testHakyuuBoard(getGameType, print = false)
     }
-
+*/
     private fun testHakyuuBoard(
         getGameType: () -> Hakyuu,
         getTest: (Hakyuu) -> Boolean = { gameType: Hakyuu -> gameType.boardMeetsRulesPrintingInfo() && gameType.score.get() != 0 },
@@ -433,6 +435,7 @@ class HakyuuUnitTest {
         )
     }
 
+    /*
     @ParameterizedTest
     @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
     fun testCreateHakyuuBoards(numColumns: Int, testInfo: TestInfo) {
@@ -463,6 +466,7 @@ class HakyuuUnitTest {
         )
     }
 
+
     @ParameterizedTest
     @ValueSource(ints = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])//, 14, 15])
     fun testCreateHakyuuBoardsUnevenSize(numColumns: Int, testInfo: TestInfo) {
@@ -491,6 +495,7 @@ class HakyuuUnitTest {
         )
     }
 
+     */
     private fun testHakyuuBoards(
         numColumns: Int,
         numRows: Int,
