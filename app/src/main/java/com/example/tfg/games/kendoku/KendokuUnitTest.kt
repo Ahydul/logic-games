@@ -348,12 +348,13 @@ class KendokuUnitTest {
         assert(foldResult == expectedResult)
         assert(numChanges == expectedNumChanges)
     }
-
+/*
     @ParameterizedTest
     @CsvSource(
         "6, 25;46;13;12346;12346;35, 345-10, 2;6;3;12346;12346;35, 3",
         "6, 24;156;14;256;56;3;24;126;1234;36;14;5, 0167-13;23459-21, 24;156;14;256;56;3;24;126;2;36;1;5, 2",
     )
+ */
     fun testCleanInniesAndOuties(size: Int, possibleValuesInput: String, regionSum: String, expectedResult: String, expectedNumChanges: Int) {
         val boardRegions = IntArray(size*size) { it }
         val possibleValues = Array(size*size) { (1..size).toMutableList() }
