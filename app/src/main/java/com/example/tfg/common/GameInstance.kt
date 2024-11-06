@@ -33,6 +33,7 @@ class GameInstance(
                 when(game.gameType) {
                     Games.HAKYUU -> gameDao.getHakyuuGame(game.abstractGameId)
                     Games.KENDOKU -> gameDao.getKendokuGame(game.abstractGameId)
+                    Games.FACTORS -> gameDao.getFactorsGame(game.abstractGameId)
                 }
             }
             val gameStateId = gameStateIds[0]

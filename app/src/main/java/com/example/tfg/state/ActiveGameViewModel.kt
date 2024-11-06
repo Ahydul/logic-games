@@ -1173,7 +1173,7 @@ class ActiveGameViewModel(
     fun getCorner(position: Int): Pair<Int, KendokuOperation>? {
         val regionID = getAbstractGame().getRegionId(position)
         val position2 = getRegions()[regionID]!!.first().toIndex(getNumColumns())
-        return if (getGameType() == Games.KENDOKU && position == position2) {
+        return if (getGameType().isKendokuType() && position == position2) {
             val number = (getAbstractGame() as Kendoku).operationResultPerRegion[regionID]!!
             val operation = (getAbstractGame() as Kendoku).operationPerRegion[regionID]!!
             number to operation

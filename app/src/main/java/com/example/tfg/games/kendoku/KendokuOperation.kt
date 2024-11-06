@@ -37,8 +37,16 @@ enum class KnownKendokuOperation(val icon: Int) {
         fun allOperations(): Array<KnownKendokuOperation> {
             return KnownKendokuOperation.entries.toTypedArray()
         }
-    }
 
+        fun multiplyOperation(): Array<KnownKendokuOperation> {
+            return arrayOf(MULTIPLY)
+        }
+
+        fun sumOperation(): Array<KnownKendokuOperation> {
+            return arrayOf(MULTIPLY)
+        }
+
+    }
 }
 
 enum class KendokuOperation {

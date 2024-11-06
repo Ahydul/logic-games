@@ -29,8 +29,8 @@ open class BoardData(
 
     companion object {
         fun create(possibleValues: Array<MutableList<Int>>, board: IntArray, type: Games): BoardData {
-            return when(type){
-                Games.KENDOKU -> KendokuBoardData.create(possibleValues, board)
+            return when {
+                type.isKendokuType() -> KendokuBoardData.create(possibleValues, board)
                 else -> BoardData(possibleValues, board)
             }
         }

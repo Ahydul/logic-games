@@ -16,12 +16,10 @@ class ScoreDeserializer : JsonDeserializer<Score> {
         context: JsonDeserializationContext?
     ): Score {
         val jsonObject = json.asJsonObject
-        val score = jsonObject.get("score").asInt
-        val bruteForce = jsonObject.get("bruteForce").asInt
 
         return when (Games.valueOf(jsonObject.get("game").asString)) {
             Games.HAKYUU -> Gson().fromJson(json, HakyuuScore::class.java)
-            Games.KENDOKU -> Gson().fromJson(json, KendokuScore::class.java)
+            Games.KENDOKU, Games.FACTORS -> Gson().fromJson(json, KendokuScore::class.java)
         }
     }
 }

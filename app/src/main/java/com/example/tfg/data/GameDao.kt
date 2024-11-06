@@ -17,6 +17,7 @@ import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
+import com.example.tfg.games.Factors
 import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
@@ -68,6 +69,11 @@ interface GameDao {
     suspend fun getKendokuGame(abstractGameId: Long): Kendoku
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertKendokuGame(kendoku: Kendoku)
+
+    @Query("SELECT * from Factors WHERE id = :abstractGameId")
+    suspend fun getFactorsGame(abstractGameId: Long): Factors
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertFactorsGame(factors: Factors)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)

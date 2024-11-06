@@ -6,6 +6,7 @@ import com.example.tfg.common.entities.Game
 import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.data.GameDao
+import com.example.tfg.games.Factors
 import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
@@ -36,6 +37,11 @@ class GameFactory(private val gameDao: GameDao) {
                 seed = seed,
                 difficulty = difficulty
             )
+            Games.FACTORS -> Factors.create(
+                size = numColumns,
+                seed = seed,
+                difficulty = difficulty
+            )
         }
     }
 
@@ -58,6 +64,7 @@ class GameFactory(private val gameDao: GameDao) {
         when (chosenGame) {
             Games.HAKYUU -> gameDao.insertHakyuuGame(abstractGame as Hakyuu)
             Games.KENDOKU -> gameDao.insertKendokuGame(abstractGame as Kendoku)
+            Games.FACTORS -> gameDao.insertFactorsGame(abstractGame as Factors)
         }
 
         // Create game

@@ -7,13 +7,15 @@ import com.example.tfg.games.common.Games
 enum class Games2: Selection {
     ALL_GAMES,
     HAKYUU,
-    KENDOKU;
+    KENDOKU,
+    FACTORS;
 
     override fun toString(context: Context): String {
         return when(this){
             ALL_GAMES -> context.getString(R.string.all_games)
             HAKYUU -> "Hakyuu"
             KENDOKU -> "Kendoku"
+            FACTORS -> "Factors"
         }
     }
 
@@ -22,6 +24,7 @@ enum class Games2: Selection {
             ALL_GAMES -> null
             HAKYUU -> Games.HAKYUU
             KENDOKU -> Games.KENDOKU
+            FACTORS -> Games.FACTORS
         }
     }
 
@@ -30,6 +33,7 @@ enum class Games2: Selection {
             return when (str) {
                 HAKYUU.name -> HAKYUU
                 KENDOKU.name -> KENDOKU
+                FACTORS.name -> FACTORS
                 ALL_GAMES.name -> ALL_GAMES
                 else -> null
             }

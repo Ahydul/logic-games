@@ -15,6 +15,7 @@ import com.example.tfg.common.entities.Move
 import com.example.tfg.common.entities.WinningStreak
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
+import com.example.tfg.games.Factors
 import com.example.tfg.games.hakyuu.Hakyuu
 import com.example.tfg.games.kendoku.Kendoku
 
@@ -23,6 +24,7 @@ import com.example.tfg.games.kendoku.Kendoku
         Game::class,
         Hakyuu::class,
         Kendoku::class,
+        Factors::class,
         GameState::class,
         Move::class,
         Action::class,

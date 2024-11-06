@@ -132,4 +132,8 @@
     <string name="kendoku_rule_2">2. Every number must appear exactly once in each row and column.</string>
     <string name="kendoku_rule_3">3. In each regions it must be possible to calculate the given value from the cell values using the given operation (addition, subtraction, multiplication, division).</string>
     <string name="kendoku_rule_4">4. If no operation is given any operation may be used.</string>
+    <string name="factors_page">https://www.janko.at/Raetsel/Factors/index.htm</string>
+    <string name="factors_rule_1">1. Write a number between 1 and N in each cell of the grid of size NxN.</string>
+    <string name="factors_rule_2">2. Each number is used exactly once in each row and each column.</string>
+    <string name="factors_rule_3">3. The product of the numbers in a region must give the clue number.</string>
 </resources>

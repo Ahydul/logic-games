@@ -301,8 +301,8 @@ private fun TextFields(
         modifier = modifier.padding(top = 10.dp)
     )
 
-    when (chosenGame) {
-        Games.KENDOKU -> {
+    when {
+        chosenGame.isKendokuType() -> {
             val sizeLabel = stringResource(id = R.string.size)
             CustomTextField(
                 state = numColumns,

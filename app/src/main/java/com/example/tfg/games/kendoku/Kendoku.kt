@@ -18,11 +18,12 @@ import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.coroutineContext
 
 @Entity
-class Kendoku @JvmOverloads constructor(
+open class Kendoku @JvmOverloads constructor(
     id: Long = IdGenerator.generateId("kendokuGame"),
     numColumns: Int,
     numRows: Int,
     seed: Long,
+    type: Games = Games.KENDOKU,
     score: Score = KendokuScore(),
     completedBoard: IntArray = IntArray(numColumns * numRows),
     startBoard: IntArray = IntArray(numColumns * numRows),
@@ -31,7 +32,7 @@ class Kendoku @JvmOverloads constructor(
     var allowedOperations: Array<KnownKendokuOperation> = KnownKendokuOperation.allOperations(),
 ): AbstractGame(
     id = id,
-    type = Games.KENDOKU,
+    type = type,
     numColumns = numColumns,
     numRows = numRows,
     seed = seed,
@@ -71,7 +72,7 @@ class Kendoku @JvmOverloads constructor(
         super.createGame(difficulty)
 
         val knownOperationsPerRegion = operationPerRegion.filterValues { !it.isUnknown() }.toMutableMap()
-        while (knownOperationsPerRegion.isNotEmpty()) {
+        while (allowedOperations.size > 1 && knownOperationsPerRegion.isNotEmpty()) {
             if (!coroutineContext.isActive) return
 
             // Remove random value from remainingOperationsPerRegion
