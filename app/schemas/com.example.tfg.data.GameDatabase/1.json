@@ -2,15 +2,27 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fc1a131e92861bb95b8d18f939d345a3",
+    "identityHash": "2f5b46dbc4f19443b708b1705655f1a6",
     "entities": [
       {
         "tableName": "Game",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`gameId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `difficulty` TEXT NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT, `playerWon` INTEGER NOT NULL, `errors` TEXT NOT NULL, `numErrors` INTEGER NOT NULL, `numClues` INTEGER NOT NULL, `timer` INTEGER NOT NULL, `type` TEXT NOT NULL, `numColumns` INTEGER NOT NULL, `numRows` INTEGER NOT NULL, `seed` INTEGER NOT NULL, `score` TEXT NOT NULL, `completedBoard` TEXT NOT NULL, `boardRegions` TEXT NOT NULL, `startBoard` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`gameId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `gameType` TEXT NOT NULL, `abstractGameId` INTEGER NOT NULL, `difficulty` TEXT NOT NULL, `startDate` TEXT NOT NULL, `seed` INTEGER NOT NULL, `endDate` TEXT, `playerWon` INTEGER NOT NULL, `errors` TEXT NOT NULL, `numErrors` INTEGER NOT NULL, `numClues` INTEGER NOT NULL, `timer` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "gameId",
             "columnName": "gameId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gameType",
+            "columnName": "gameType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "abstractGameId",
+            "columnName": "abstractGameId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -24,6 +36,12 @@
             "fieldPath": "startDate",
             "columnName": "startDate",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seed",
+            "columnName": "seed",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -61,60 +79,160 @@
             "columnName": "timer",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.type",
-            "columnName": "type",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.numColumns",
-            "columnName": "numColumns",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.numRows",
-            "columnName": "numRows",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.seed",
-            "columnName": "seed",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.score",
-            "columnName": "score",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.completedBoard",
-            "columnName": "completedBoard",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.boardRegions",
-            "columnName": "boardRegions",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "gameTypeEntity.startBoard",
-            "columnName": "startBoard",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
           "autoGenerate": true,
           "columnNames": [
             "gameId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Hakyuu",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `type` TEXT NOT NULL, `numColumns` INTEGER NOT NULL, `numRows` INTEGER NOT NULL, `seed` INTEGER NOT NULL, `score` TEXT NOT NULL, `completedBoard` TEXT NOT NULL, `boardRegions` TEXT NOT NULL, `startBoard` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numColumns",
+            "columnName": "numColumns",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numRows",
+            "columnName": "numRows",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seed",
+            "columnName": "seed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "score",
+            "columnName": "score",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedBoard",
+            "columnName": "completedBoard",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boardRegions",
+            "columnName": "boardRegions",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startBoard",
+            "columnName": "startBoard",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Kendoku",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`operationPerRegion` TEXT NOT NULL, `allowedOperations` TEXT NOT NULL, `id` INTEGER NOT NULL, `type` TEXT NOT NULL, `numColumns` INTEGER NOT NULL, `numRows` INTEGER NOT NULL, `seed` INTEGER NOT NULL, `score` TEXT NOT NULL, `completedBoard` TEXT NOT NULL, `boardRegions` TEXT NOT NULL, `startBoard` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "operationPerRegion",
+            "columnName": "operationPerRegion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allowedOperations",
+            "columnName": "allowedOperations",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numColumns",
+            "columnName": "numColumns",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "numRows",
+            "columnName": "numRows",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seed",
+            "columnName": "seed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "score",
+            "columnName": "score",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedBoard",
+            "columnName": "completedBoard",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boardRegions",
+            "columnName": "boardRegions",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startBoard",
+            "columnName": "startBoard",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
           ]
         },
         "indices": [],
@@ -561,7 +679,7 @@
       },
       {
         "tableName": "WinningStreak",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`startDate` TEXT NOT NULL, `endDate` TEXT, `gameEnum` TEXT, `wins` INTEGER NOT NULL, PRIMARY KEY(`startDate`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`startDate` TEXT NOT NULL, `endDate` TEXT, `gameEnum` TEXT, `difficulty` TEXT, `wins` INTEGER NOT NULL, PRIMARY KEY(`startDate`))",
         "fields": [
           {
             "fieldPath": "startDate",
@@ -578,6 +696,12 @@
           {
             "fieldPath": "gameEnum",
             "columnName": "gameEnum",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "difficulty",
+            "columnName": "difficulty",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -601,7 +725,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fc1a131e92861bb95b8d18f939d345a3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2f5b46dbc4f19443b708b1705655f1a6')"
     ]
   }
 }
