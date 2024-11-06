@@ -40,7 +40,7 @@ enum class NumberValue(override val value: Int, override val icon: Int): GameVal
                 res.add(NumberValue.get(value % 10))
                 value /= 10
             }
-            return res
+            return res.reversed()
         }
     }
 }
