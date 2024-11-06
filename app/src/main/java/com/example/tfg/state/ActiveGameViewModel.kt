@@ -623,7 +623,6 @@ class ActiveGameViewModel(
     }
 
 
-    // Returns if setting this value completes the game
     private fun setCellValue(index: Int, value: Int, isError: Boolean = false) {
         val previousCell = getCell(index)
         val newCell = previousCell.copy(
@@ -1033,7 +1032,7 @@ class ActiveGameViewModel(
 
             val value = cell.value
             val wasError = cell.isError
-            var isError = isError(position, value)
+            var isError = value != 0 && isError(position, value)
 
             noErrorsFound = noErrorsFound && value != 0 && !isError
 
