@@ -52,6 +52,7 @@ import com.example.tfg.common.utils.Timer
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.common.utils.dateFormatter
 import com.example.tfg.games.common.Games
+import com.example.tfg.games.common.Games.*
 import com.example.tfg.state.MainViewModel
 import com.example.tfg.ui.components.common.CopyableText
 import com.example.tfg.ui.components.common.CustomButton
@@ -82,7 +83,7 @@ fun GamesScreen(
     goStatsScreen: (Games) -> Unit
 ) {
     var onGoing = remember { mutableStateOf(onGoing) }
-    val chosenGame = remember { mutableStateOf(Games.HAKYUU) }
+    val chosenGame = remember { mutableStateOf(HAKYUU) }
     val chosenGameAction = remember { mutableStateOf(Action.CREATE) }
     val expandedStates = remember { MutableTransitionState(false) }
     val animatedBlur by animateBlur(expandedStates)
@@ -101,19 +102,17 @@ fun GamesScreen(
     ) {
         MainHeader(viewModel = viewModel, modifier = modifier)
         val mod = Modifier
-        val theme by viewModel.themeUserSetting.collectAsState(initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE)
-        val imageID = if (theme.equals(Theme.DARK_MODE)) R.drawable.hakyuu_dark
-            else R.drawable.hakyuu_light
+
         Games.entries.forEach { game ->
             ChooseGameButton(
-                game = game.title,
-                imageID = imageID,
+                game = game,
                 goStatsScreen = { goStatsScreen(game) },
                 onClickButton = { action: Action ->
                     chosenGame.value = game
                     chosenGameAction.value = action
                     expandedStates.targetState = true
                 },
+                viewModel = viewModel,
                 modifier = mod
             )
         }
@@ -396,11 +395,25 @@ private fun LoadingIcon(viewModel: MainViewModel, modifier: Modifier) {
 @Composable
 private fun ChooseGameButton(
     modifier: Modifier = Modifier,
-    imageID: Int,
-    game: String,
+    viewModel: MainViewModel,
+    game: Games,
     onClickButton: (Action) -> Unit,
     goStatsScreen: () -> Unit,
 ) {
+    val theme by viewModel.themeUserSetting.collectAsState(initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE)
+    val imageID = if (theme.equals(Theme.DARK_MODE)) when (game) {
+            HAKYUU -> R.drawable.hakyuu_dark
+            KENDOKU -> R.drawable.kendoku_dark
+            FACTORS -> R.drawable.factors_dark
+            SUMDOKU -> R.drawable.sumdoku_dark
+        }
+        else when (game) {
+            HAKYUU -> R.drawable.hakyuu_light
+            KENDOKU -> R.drawable.kendoku_light
+            FACTORS -> R.drawable.factors_light
+            SUMDOKU -> R.drawable.sumdoku_light
+        }
+
     CustomButton(
         onClick = { onClickButton(Action.CREATE) },
         paddingValues = PaddingValues(12.dp, 12.dp, 0.dp, 12.dp),
@@ -420,7 +433,7 @@ private fun ChooseGameButton(
             verticalArrangement = Arrangement.Center,
             modifier = modifier.weight(4f)
         ) {
-            Text(text = "${game}", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
+            Text(text = "${game.title}", fontSize = 25.sp, color = MaterialTheme.colorScheme.onPrimary)
             val rowModifier = modifier
                 .fillMaxWidth(0.8f)
                 .height(IntrinsicSize.Min)
