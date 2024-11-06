@@ -1275,12 +1275,21 @@ class Kendoku @JvmOverloads constructor(
             .forEach { res.add(it) }
 
         val regionID = getRegionId(position)
-        var sum = 0
-        for (value2 in positionsPerRegion[regionID]!!.map { actualValues[it] }) {
-            if (value2 == 0) return res
-            sum += value2
+
+        val operation = operationPerRegion[regionID]!!
+        val regionPositions = positionsPerRegion[regionID]!!
+        if (operation.isUnknown() && regionPositions.size > 1) return res
+
+        var opResultCalculated = 0
+        var missingValues = false
+        for (value2 in regionPositions.filterNot { it == position }.map { actualValues[it] }) {
+            if (value2 == 0) missingValues = true
+            opResultCalculated = operation.operate(listOf(opResultCalculated, value2))
         }
-        if (sum != operationResultPerRegion[regionID]) res.add(position)
+
+        val operationResult = operationResultPerRegion[regionID]!!
+        if (missingValues && opResultCalculated > operationResult) res.add(position)
+        else if (!missingValues && opResultCalculated != operationResult) res.add(position)
 
         return res
     }
