@@ -479,6 +479,23 @@ class KendokuUnitTest {
         assert(numChanges == expectedNumChanges)
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "4, 0;1;2;3;4, 0;1, 2;3;4",
+        "4, 2;3;4;5;6, 2;3, 4;5;6",
+        "4, 2;3;6;9;10, 2;3, 6;10;9",
+        "4, 2;3;6;9;10;11, 2;3;6, 9;10;11",
+    )
+    fun testRegionDivide(size: Int, regionPositions: String, expectedPositions1: String, expectedPositions2: String) {
+        val parsePositions = regionPositions.split(";").map { it.toInt() }
+
+        val kendoku = Kendoku(0, size, size,0L)
+
+        val res = kendoku.divideRegion(0, parsePositions)
+        print(res)
+        assert(res[0]?.joinToString(";") == expectedPositions1 && res[1]?.joinToString(";") == expectedPositions2)
+    }
+
 
     /*
         Test Janko Boards

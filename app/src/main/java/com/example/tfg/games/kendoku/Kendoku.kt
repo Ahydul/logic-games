@@ -110,30 +110,56 @@ open class Kendoku @JvmOverloads constructor(
             }
         }
 
+        // Create operations
+
+        createOperations(initPositionsPerRegion())
+
         // Reinitialize positionsPerRegion
         positionsPerRegion = initPositionsPerRegion()
 
-        // Create operations
+    }
 
-        val regions = mutableMapOf<Int, MutableList<Int>>()
-        getPositions().forEach { position ->
-            regions.getOrPut(getRegionId(position)) { mutableListOf() }.add(completedBoard[position])
-        }
-
-        regions.forEach { (regionID, values) ->
+    private fun createOperations(regions: Map<Int, List<Int>>) {
+        for ((regionID, positions) in regions) {
+            val values = positions.map { completedBoard[it] }
             val operation = if (values.size == 1) KendokuOperation.SUM_UNKNOWN
-                else allowedOperations.filterNot {
-                        // Subtractions can't have more than 2 operands
-                    (it == KnownKendokuOperation.SUBTRACT && values.size != 2) ||
+            else allowedOperations.filterNot {
+                // Subtractions can't have more than 2 operands
+                (it == KnownKendokuOperation.SUBTRACT && values.size != 2) ||
                         // Divisions can't have more than 2 operands and must result in integers
-                    (it == KnownKendokuOperation.DIVIDE && (values.size != 2 || (values.max() % values.min() != 0))) ||
+                        (it == KnownKendokuOperation.DIVIDE && (values.size != 2 || (values.max() % values.min() != 0))) ||
                         // Multiplications can't be result in numbers higher than 1000
-                    (it == KnownKendokuOperation.MULTIPLY && (values.reduce { acc, num -> acc * num } > 1000))
-                }.map { it.toGeneralEnum() }.random(random)
+                        (it == KnownKendokuOperation.MULTIPLY && (values.reduce { acc, num -> acc * num } > 1000))
+            }.map { it.toGeneralEnum() }.randomOrNull(random)
+
+            if (operation == null) {
+                createOperations(divideRegion(regionID, positions))
+                continue
+            }
 
             operationResultPerRegion[regionID] = operation.operate(values)
             operationPerRegion[regionID] = operation
         }
+    }
+
+    internal fun divideRegion(regionID: Int, positions: List<Int>): Map<Int, List<Int>> {
+        val addIfConnected = { connectedPositions: MutableList<Int>, position: Int ->
+            if (connectedPositions.any { position2 -> Coordinate.areConnected(position, position2, size) }) connectedPositions.add(position)
+            else false
+        }
+        val connectedPositions = mutableListOf(positions.first())
+        positions.subList(1,positions.size/2).forEach { position -> addIfConnected(connectedPositions, position) }
+
+        val tmp = positions.filterNot { position -> connectedPositions.contains(position) }.toMutableList()
+        val otherConnectedPositions = mutableListOf(tmp.first())
+        tmp.drop(1).forEach { position -> addIfConnected(otherConnectedPositions, position) }
+
+        tmp.filterNot { position -> otherConnectedPositions.contains(position) }
+            .forEach { position -> if (!addIfConnected(connectedPositions, position)) addIfConnected(otherConnectedPositions, position) }
+
+        val otherID = ++currentID
+        otherConnectedPositions.forEach { position -> boardRegions[position] = otherID }
+        return mapOf(regionID to connectedPositions, otherID to otherConnectedPositions)
     }
 
     private fun propagateRandomEmptyRegion(

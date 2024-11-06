@@ -1,6 +1,7 @@
 package com.example.tfg.common.utils
 
 import com.example.tfg.common.enums.Direction
+import kotlin.math.abs
 
 
 data class Coordinate(val row: Int, val column: Int) {
@@ -130,10 +131,18 @@ data class Coordinate(val row: Int, val column: Int) {
             return newPosition
         }
 
+        private fun sameRow(position1: Int, position2: Int, numColumns: Int) = getRow(position1, numColumns) == getRow(position2, numColumns)
+
+        private fun sameColumn(position1: Int, position2: Int, numColumns: Int) = getColumn(position1, numColumns) == getColumn(position2, numColumns)
+
         fun sameColumnOrRow(position1: Int, position2: Int, numColumns: Int): Boolean {
-            return getRow(position1, numColumns) == getRow(position2, numColumns) ||
-                    getColumn(position1, numColumns) == getColumn(position2, numColumns)
+            return sameRow(position1, position2, numColumns) ||
+                    sameColumn(position1, position2, numColumns)
         }
 
+        fun areConnected(position1: Int, position2: Int, numColumns: Int): Boolean {
+            val abs = abs(position1 - position2)
+            return abs == 1 || abs == numColumns
+        }
     }
 }
