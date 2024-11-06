@@ -122,6 +122,7 @@ class MainViewModel(
             else {
                 val gameID = gameFactory.createGame(abstractGame!!)
                 Utils.startActiveGameActivity(context, gameID)
+                hideLoading()
             }
         }
     }
