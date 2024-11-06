@@ -34,6 +34,7 @@ class GameInstance(
                     Games.HAKYUU -> gameDao.getHakyuuGame(game.abstractGameId)
                     Games.KENDOKU -> gameDao.getKendokuGame(game.abstractGameId)
                     Games.FACTORS -> gameDao.getFactorsGame(game.abstractGameId)
+                    Games.SUMDOKU -> gameDao.getSumdokuGame(game.abstractGameId)
                 }
             }
             val gameStateId = gameStateIds[0]

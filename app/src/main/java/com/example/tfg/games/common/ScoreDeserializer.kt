@@ -19,7 +19,7 @@ class ScoreDeserializer : JsonDeserializer<Score> {
 
         return when (Games.valueOf(jsonObject.get("game").asString)) {
             Games.HAKYUU -> Gson().fromJson(json, HakyuuScore::class.java)
-            Games.KENDOKU, Games.FACTORS -> Gson().fromJson(json, KendokuScore::class.java)
+            Games.KENDOKU, Games.FACTORS, Games.SUMDOKU -> Gson().fromJson(json, KendokuScore::class.java)
         }
     }
 }

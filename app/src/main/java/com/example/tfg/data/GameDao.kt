@@ -18,6 +18,7 @@ import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.common.entities.relations.GameStateSnapshot
 import com.example.tfg.common.entities.relations.MoveWithActions
 import com.example.tfg.games.Factors
+import com.example.tfg.games.Sumdoku
 import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
@@ -74,6 +75,11 @@ interface GameDao {
     suspend fun getFactorsGame(abstractGameId: Long): Factors
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertFactorsGame(factors: Factors)
+
+    @Query("SELECT * from Sumdoku WHERE id = :abstractGameId")
+    suspend fun getSumdokuGame(abstractGameId: Long): Sumdoku
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertSumdokuGame(sumdoku: Sumdoku)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertGameState(gameState: GameState)

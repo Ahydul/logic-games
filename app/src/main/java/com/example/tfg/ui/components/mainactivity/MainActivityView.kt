@@ -53,7 +53,7 @@ fun MainScreen(
                 StatsScreen(
                     modifier = modifier,
                     viewModel = viewModel,
-                    chosenGame = Games2.fromString(backStackEntry.arguments?.getString("chosenGame"))
+                    chosenGame = Games2.valueOf(backStackEntry.arguments?.getString("chosenGame")!!)
                 )
             }
         }

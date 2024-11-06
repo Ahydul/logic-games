@@ -7,6 +7,7 @@ import com.example.tfg.common.entities.GameState
 import com.example.tfg.common.entities.relations.BoardCellCrossRef
 import com.example.tfg.data.GameDao
 import com.example.tfg.games.Factors
+import com.example.tfg.games.Sumdoku
 import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
@@ -42,6 +43,11 @@ class GameFactory(private val gameDao: GameDao) {
                 seed = seed,
                 difficulty = difficulty
             )
+            Games.SUMDOKU -> Sumdoku.create(
+                size = numColumns,
+                seed = seed,
+                difficulty = difficulty
+            )
         }
     }
 
@@ -65,6 +71,7 @@ class GameFactory(private val gameDao: GameDao) {
             Games.HAKYUU -> gameDao.insertHakyuuGame(abstractGame as Hakyuu)
             Games.KENDOKU -> gameDao.insertKendokuGame(abstractGame as Kendoku)
             Games.FACTORS -> gameDao.insertFactorsGame(abstractGame as Factors)
+            Games.SUMDOKU -> gameDao.insertSumdokuGame(abstractGame as Sumdoku)
         }
 
         // Create game

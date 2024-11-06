@@ -9,23 +9,20 @@ import com.example.tfg.common.utils.Utils
 enum class Games(val title: String, val minSize: Int, val maxSize: Int) {
     HAKYUU("Hakyuu", 3,13),
     KENDOKU("Kendoku", 3, 9),
-    FACTORS("Factors", 3, 9);
+    FACTORS("Factors", 3, 9),
+    SUMDOKU("Sumdoku", 3, 9);
 
     override fun toString(): String {
         return this.title
     }
 
     fun toGames2(): Games2 {
-        return when(this) {
-            HAKYUU -> Games2.HAKYUU
-            KENDOKU -> Games2.KENDOKU
-            FACTORS -> Games2.FACTORS
-        }
+        return Games2.valueOf(this.name)
     }
 
     fun isKendokuType(): Boolean {
         return when(this) {
-            KENDOKU, FACTORS -> true
+            KENDOKU, FACTORS, SUMDOKU -> true
             else -> false
         }
     }
@@ -63,8 +60,20 @@ enum class Games(val title: String, val minSize: Int, val maxSize: Int) {
                     context = context,
                     link = jankoPage,
                     linkName = jankoPage,
-                    text = context.getString(R.string.factors_rule_1) + "\n\n" +
-                            context.getString(R.string.factors_rule_2) + "\n\n" +
+                    text = context.getString(R.string.kendoku_rule_1) + "\n\n" +
+                            context.getString(R.string.kendoku_rule_2) + "\n\n" +
+                            context.getString(R.string.factors_rule_3) + "\n\n" +
+                            context.getString(R.string.rules_from) + ":\n",
+                )
+            }
+            SUMDOKU -> {
+                val jankoPage = context.getString(R.string.sumdoku_page)
+                Utils.buildStringWithLink(
+                    context = context,
+                    link = jankoPage,
+                    linkName = jankoPage,
+                    text = context.getString(R.string.kendoku_rule_1) + "\n\n" +
+                            context.getString(R.string.kendoku_rule_2) + "\n\n" +
                             context.getString(R.string.factors_rule_3) + "\n\n" +
                             context.getString(R.string.rules_from) + ":\n",
                 )

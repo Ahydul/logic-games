@@ -107,7 +107,7 @@ abstract class Score(
         fun create(gameType: Games): Score {
             return when(gameType){
                 Games.HAKYUU -> HakyuuScore()
-                Games.KENDOKU, Games.FACTORS -> KendokuScore()
+                Games.KENDOKU, Games.FACTORS, Games.SUMDOKU -> KendokuScore()
             }
         }
     }

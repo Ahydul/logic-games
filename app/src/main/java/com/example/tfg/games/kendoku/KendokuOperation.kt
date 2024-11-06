@@ -43,7 +43,7 @@ enum class KnownKendokuOperation(val icon: Int) {
         }
 
         fun sumOperation(): Array<KnownKendokuOperation> {
-            return arrayOf(MULTIPLY)
+            return arrayOf(SUM)
         }
 
     }
