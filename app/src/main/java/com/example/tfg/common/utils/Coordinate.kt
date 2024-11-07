@@ -142,7 +142,7 @@ data class Coordinate(val row: Int, val column: Int) {
 
         fun areConnected(position1: Int, position2: Int, numColumns: Int): Boolean {
             val abs = abs(position1 - position2)
-            return abs == 1 || abs == numColumns
+            return (abs == 1 && sameRow(position1, position2, numColumns)) || abs == numColumns
         }
     }
 }

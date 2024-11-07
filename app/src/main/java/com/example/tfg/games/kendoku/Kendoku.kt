@@ -148,7 +148,9 @@ open class Kendoku @JvmOverloads constructor(
             else false
         }
         val connectedPositions = mutableListOf(positions.first())
-        positions.subList(1,positions.size/2).forEach { position -> addIfConnected(connectedPositions, position) }
+        positions.drop(1).forEach { position ->
+            if (connectedPositions.size < positions.size/2) addIfConnected(connectedPositions, position)
+        }
 
         val tmp = positions.filterNot { position -> connectedPositions.contains(position) }.toMutableList()
         val otherConnectedPositions = mutableListOf(tmp.first())

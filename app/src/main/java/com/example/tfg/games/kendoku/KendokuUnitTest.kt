@@ -481,10 +481,13 @@ class KendokuUnitTest {
 
     @ParameterizedTest
     @CsvSource(
-        "4, 0;1;2;3;4, 0;1, 2;3;4",
+        "4, 0;1;2;3;4, 0;1;4, 2;3",
         "4, 2;3;4;5;6, 2;3, 4;5;6",
         "4, 2;3;6;9;10, 2;3, 6;10;9",
         "4, 2;3;6;9;10;11, 2;3;6, 9;10;11",
+        "4, 3;4;5;6, 3, 4;5;6",
+        "4, 0;4;8;12, 0;4, 8;12",
+        "4, 3;4;5;6;7;11;15, 3;7;11;15, 4;5;6",
     )
     fun testRegionDivide(size: Int, regionPositions: String, expectedPositions1: String, expectedPositions2: String) {
         val parsePositions = regionPositions.split(";").map { it.toInt() }
