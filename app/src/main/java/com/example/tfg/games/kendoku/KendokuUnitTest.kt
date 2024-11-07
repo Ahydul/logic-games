@@ -524,6 +524,9 @@ class KendokuUnitTest {
         fun getCompletedBoard() = solution.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
 
         fun getOperationsPerRegion(regions: IntArray): MutableMap<Int, KendokuOperation> {
+            val operationResultPerRegion =  getOperationResultPerRegion(regions)
+            val completedBoard = getCompletedBoard()
+            val positionsPerRegion = regions.indices.groupBy { position -> regions[position] }
             val operationsPerRegion = mutableMapOf<Int, KendokuOperation>()
             problem.replace("\n", " ").split(" ")
                 .withIndex().filterNot { it.value=="-" || it.value=="." }
@@ -533,13 +536,17 @@ class KendokuUnitTest {
                         else if (s.indexOf("-") != -1) KendokuOperation.SUBTRACT
                         else if (s.indexOf("x") != -1 || s.indexOf("*") != -1) KendokuOperation.MULTIPLY
                         else if (s.indexOf("/") != -1) KendokuOperation.DIVIDE
-                        else KendokuOperation.SUM_UNKNOWN
+                        else {
+                            KnownKendokuOperation.entries.find {
+                                it.operate(positionsPerRegion[regionID]!!.map { pos -> completedBoard[pos] }) == operationResultPerRegion[regionID]
+                            }!!.toGeneralEnum().reverse()
+                        }
                     operationsPerRegion[regionID] = operation
                 }
             return operationsPerRegion
         }
 
-        fun getOperationResultPerRegion(regions: IntArray): MutableMap<Int, Int> {
+        private fun getOperationResultPerRegion(regions: IntArray): MutableMap<Int, Int> {
             val operationResultPerRegion = mutableMapOf<Int, Int>()
             problem.replace("\n", " ").split(" ")
                 .withIndex().filterNot { it.value=="-" || it.value=="." }
@@ -564,7 +571,7 @@ class KendokuUnitTest {
     @Test
     fun testOkJankoBoard() {
         // 47 paso de 1 a 2 brute forces
-        val boardId = 3 //38 67 13 74 28 219 414 406 80 224
+        val boardId = 67 //38 67 13 74 28 219 414 406 80 224
         val kendokuBoard = loadKendokuData()
         println("board, difficulty, score, times, bruteForces, regions, numUnknownOperations, $scoreDebug")
         val board = kendokuBoard.find { it.boardId == boardId } !!
