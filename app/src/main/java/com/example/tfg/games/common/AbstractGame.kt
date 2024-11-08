@@ -34,7 +34,10 @@ abstract class AbstractGame(
     var maxAmountOfBruteForces = 20
 
     protected fun numPositions(): Int = numColumns * numRows
+
     open fun maxRegionSize(): Int = max(numColumns, numRows)
+
+    open fun maxValueSize(): Int = maxRegionSize()
 
     protected fun getPositions(): IntRange {
         return (0..< numPositions())

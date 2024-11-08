@@ -417,7 +417,7 @@ class ActiveGameViewModel(
 
     fun getValue(value: Int): GameValue = getAbstractGame().getValue(value)
 
-    fun getMaxValue() = getAbstractGame().maxRegionSize()
+    fun getMaxValue() = getAbstractGame().maxValueSize()
 
     private fun getRegions() = getAbstractGame().getRegions()
 
