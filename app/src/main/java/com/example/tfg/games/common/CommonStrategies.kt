@@ -2,7 +2,7 @@ package com.example.tfg.games.common
 
 import com.example.tfg.common.utils.Coordinate
 
-class Tmp(private val base: AbstractGame) {
+class CommonStrategies(private val base: AbstractGame) {
 
     internal fun cleanHiddenSingles(line: Array<MutableList<Int>>, size: Int): Int {
         var numSingles = 0

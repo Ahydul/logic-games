@@ -405,10 +405,29 @@ abstract class AbstractGame(
         return NumberValue.get(value)
     }
 
-    protected fun getRowPositions(rowIndex: Int): IntProgression {
+    fun getRowPositions(rowIndex: Int): IntProgression {
         val n = rowIndex * numColumns
         return (n ..< numColumns+n)
     }
 
-    protected fun getColumnPositions(columnIndex: Int) = (columnIndex..< numPositions() step numColumns)
+    fun getColumnPositions(columnIndex: Int) = (columnIndex..< numPositions() step numColumns)
+
+    protected fun executeForEachLine(strategies: (IntProgression) -> Unit) {
+        for (rowIndex in (0..< numRows)) {
+            strategies(getRowPositions(rowIndex))
+        }
+        for (columnIndex in (0..< numColumns)) {
+            strategies(getColumnPositions(columnIndex))
+        }
+    }
+
+    protected fun executeForEachLine(strategies: (IntProgression, Int) -> Unit) {
+        for (rowIndex in (0..< numRows)) {
+            strategies(getRowPositions(rowIndex), numColumns)
+        }
+        for (columnIndex in (0..< numColumns)) {
+            strategies(getColumnPositions(columnIndex), numRows)
+        }
+    }
+
 }
