@@ -132,7 +132,7 @@ class GameFactory(private val gameDao: GameDao) {
             }
         }.toTypedArray()
 
-        private const val COMPLETED_STR =
+        const val COMPLETED_STR =
             "1 4 1 2 3 1 2 1\n" +
             "3 1 2 1 4 2 1 3\n" +
             "5 2 7 3 6 1 4 5\n" +

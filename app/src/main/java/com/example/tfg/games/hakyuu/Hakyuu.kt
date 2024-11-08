@@ -523,6 +523,29 @@ class Hakyuu @JvmOverloads constructor(
 
             return hakyuu
         }
+        // For testing
+        fun solveBoard(
+            seed: Long,
+            size: Int,
+            startBoard: IntArray,
+            completedBoard: IntArray,
+            regions: IntArray
+        ): Hakyuu {
+            val hakyuu = Hakyuu(
+                id = 0,
+                numColumns = size,
+                numRows = size,
+                seed = seed,
+                boardRegions = regions,
+                startBoard = startBoard,
+                completedBoard = completedBoard
+            )
+
+            val score = runBlocking { hakyuu.solveBoard(hakyuu.startBoard) }
+            hakyuu.score.add(score)
+
+            return hakyuu
+        }
 
         // For testing
         fun solveBoard(seed: Long, boardToSolve: String, boardRegions: String, reverseCoordinates: Boolean = false): Hakyuu {

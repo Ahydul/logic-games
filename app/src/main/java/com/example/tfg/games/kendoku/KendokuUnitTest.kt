@@ -3,23 +3,99 @@ package com.example.tfg.games.kendoku
 import com.example.tfg.common.utils.Coordinate
 import com.example.tfg.common.utils.Curves
 import com.example.tfg.common.utils.CustomTestWatcher
+import com.example.tfg.games.common.AbstractGame
+import com.example.tfg.games.common.AbstractGameUnitTest
 import com.example.tfg.games.common.Difficulty
+import com.example.tfg.games.common.JankoBoard
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import kotlin.math.sqrt
 import kotlin.random.Random
 
+data class JankoKendokuBoard(
+    override val boardId: Int,
+    override val difficulty: String,
+    override val size: Int,
+    override val problem: String,
+    override val areas: String,
+    override val solution: String,
+    override var addValuesToStart: (startBoard: IntArray) -> Unit
+): JankoBoard {
+
+    fun getOperationsPerRegion(regions: IntArray): MutableMap<Int, KendokuOperation> {
+        val operationResultPerRegion =  getOperationResultPerRegion(regions)
+        val completedBoard = getCompletedBoard()
+        val positionsPerRegion = regions.indices.groupBy { position -> regions[position] }
+        val operationsPerRegion = mutableMapOf<Int, KendokuOperation>()
+        problem.replace("\n", " ").split(" ")
+            .withIndex().filterNot { it.value=="-" || it.value=="." }
+            .forEach { (index, s) ->
+                val regionID = regions[index]
+                val operation = if (s.indexOf("+") != -1) KendokuOperation.SUM
+                else if (s.indexOf("-") != -1) KendokuOperation.SUBTRACT
+                else if (s.indexOf("x") != -1 || s.indexOf("*") != -1) KendokuOperation.MULTIPLY
+                else if (s.indexOf("/") != -1) KendokuOperation.DIVIDE
+                else {
+                    KnownKendokuOperation.entries.find {
+                        it.operate(positionsPerRegion[regionID]!!.map { pos -> completedBoard[pos] }) == operationResultPerRegion[regionID]
+                    }!!.toGeneralEnum().reverse()
+                }
+                operationsPerRegion[regionID] = operation
+            }
+        return operationsPerRegion
+    }
+
+    private fun getOperationResultPerRegion(regions: IntArray): MutableMap<Int, Int> {
+        val operationResultPerRegion = mutableMapOf<Int, Int>()
+        problem.replace("\n", " ").split(" ")
+            .withIndex().filterNot { it.value=="-" || it.value=="." }
+            .forEach { (index, s) ->
+                val regionID = regions[index]
+                val result = s.toIntOrNull() ?: s.dropLast(1).toInt()
+                operationResultPerRegion[regionID] = result
+            }
+        return operationResultPerRegion
+    }
+}
+
 @ExtendWith(CustomTestWatcher::class)
-class KendokuUnitTest {
+class KendokuUnitTest : AbstractGameUnitTest(
+    enumEntries = KendokuStrategy.entries,
+    getScore = { gameBoard: AbstractGame ->
+        (gameBoard.score as KendokuScore).toString()
+    }
+) {
     private val random = Random((Math.random()*10000000000).toLong())
+
+    override fun loadJankoData(): List<JankoBoard> {
+        val file = File("src/test/testdata/kendoku-data.json")
+        return Gson().fromJson(file.readText(), object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
+    }
+
+    override suspend fun getGameBoard(size: Int, seed: Long, difficulty: Difficulty): AbstractGame {
+        return Kendoku.createTesting(
+            size = size,
+            seed = seed,
+            difficulty = difficulty
+        )
+    }
+
+    override fun getGameBoardJanko(seed: Long, jankoBoard: JankoBoard): AbstractGame {
+        val regions = jankoBoard.getRegions()
+        return Kendoku.solveBoard(
+            seed = seed,
+            size = sqrt(regions.size.toDouble()).toInt(),
+            startBoard = jankoBoard.getStartBoard(),
+            completedBoard = jankoBoard.getCompletedBoard(),
+            regions = regions,
+            operationPerRegion = (jankoBoard as JankoKendokuBoard).getOperationsPerRegion(regions)
+        )
+    }
 
     @Test
     fun curvesTest() {
@@ -356,204 +432,11 @@ class KendokuUnitTest {
         assert(res[0]?.joinToString(";") == expectedPositions1 && res[1]?.joinToString(";") == expectedPositions2)
     }
 
-
-    /*
-        Test Janko Boards
-     */
-
-    data class JankoKendokuBoard(
-        val boardId: Int,
-        val difficulty: String,
-        val size: Int,
-        val problem: String,
-        val areas: String,
-        val solution: String,
-        var addValuesToStart: (startBoard: IntArray) -> Unit = {}
-    ) {
-        fun getStartBoard(): IntArray {
-            val startBoard = IntArray(size*size) // Janko boards are always empty
-            addValuesToStart(startBoard) // For debug
-            return startBoard
-        }
-
-        fun getRegions() = areas.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
-
-        fun getCompletedBoard() = solution.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
-
-        fun getOperationsPerRegion(regions: IntArray): MutableMap<Int, KendokuOperation> {
-            val operationResultPerRegion =  getOperationResultPerRegion(regions)
-            val completedBoard = getCompletedBoard()
-            val positionsPerRegion = regions.indices.groupBy { position -> regions[position] }
-            val operationsPerRegion = mutableMapOf<Int, KendokuOperation>()
-            problem.replace("\n", " ").split(" ")
-                .withIndex().filterNot { it.value=="-" || it.value=="." }
-                .forEach { (index, s) ->
-                    val regionID = regions[index]
-                    val operation = if (s.indexOf("+") != -1) KendokuOperation.SUM
-                        else if (s.indexOf("-") != -1) KendokuOperation.SUBTRACT
-                        else if (s.indexOf("x") != -1 || s.indexOf("*") != -1) KendokuOperation.MULTIPLY
-                        else if (s.indexOf("/") != -1) KendokuOperation.DIVIDE
-                        else {
-                            KnownKendokuOperation.entries.find {
-                                it.operate(positionsPerRegion[regionID]!!.map { pos -> completedBoard[pos] }) == operationResultPerRegion[regionID]
-                            }!!.toGeneralEnum().reverse()
-                        }
-                    operationsPerRegion[regionID] = operation
-                }
-            return operationsPerRegion
-        }
-
-        private fun getOperationResultPerRegion(regions: IntArray): MutableMap<Int, Int> {
-            val operationResultPerRegion = mutableMapOf<Int, Int>()
-            problem.replace("\n", " ").split(" ")
-                .withIndex().filterNot { it.value=="-" || it.value=="." }
-                .forEach { (index, s) ->
-                    val regionID = regions[index]
-                    val result = s.toIntOrNull() ?: s.dropLast(1).toInt()
-                    operationResultPerRegion[regionID] = result
-                }
-            return operationResultPerRegion
-        }
-    }
-
-    private fun loadKendokuData(): List<JankoKendokuBoard> {
-        val file = File("src/test/testdata/kendoku-data.json")
-        return Gson().fromJson(file.readText(), object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
-    }
-
-    private val scoreDebug = KendokuStrategy.entries.joinToString(", ") { strat ->
-        strat.name.split("_").joinToString("") { s -> s.replaceFirstChar { it.uppercase() } }
-    }
-
     @Test
     fun testOkJankoBoard() {
         // 47 paso de 1 a 2 brute forces
         val boardId = 67 //38 67 13 74 28 219 414 406 80 224
-        val kendokuBoard = loadKendokuData()
-        println("board, difficulty, score, times, bruteForces, regions, numUnknownOperations, $scoreDebug")
-        val board = kendokuBoard.find { it.boardId == boardId } !!
-        board.addValuesToStart = { }
-
-        val result = testJankoBoard(board)
-        assert(result == "") {
-            print(result)
-        }
+        testOkJankoBoard(boardId)
     }
 
-    @Test
-    fun testOkJankoBoards() {
-        val kendokuBoard = loadKendokuData()
-        println("board, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
-
-        val result = kendokuBoard/*.filter { it.boardId != 50 }*/.map { board ->
-            board.addValuesToStart = { }
-            testJankoBoard(board)
-        }
-        val resultNotOK = result.filter { it != "" }
-        assert(resultNotOK.isEmpty()) {
-            println("\nERRORS:")
-            print(resultNotOK.joinToString(separator = "\n"))
-        }
-    }
-
-    @Test
-    fun testOkSeededBoard() {
-        println("size, seed, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
-        val size = 9
-        val timeout = 1500L
-        val seed: Long = 1034942735
-        val difficulty = Difficulty.MASTER
-        val printBoards = false
-
-        var result: String? = null
-        runBlocking {
-            result = withTimeoutOrNull(timeout) {
-                testBoard(size, difficulty, seed, printBoards)
-            }
-        }
-
-        assert(result == "") {
-            print(result ?: "Timed out")
-        }
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = [3,4,5,6,7,8,9])
-    fun testOkBoards(size: Int) = runBlocking {
-        println("size, seed, difficulty, score, times, brute-forces, regions, numUnknownOperations, $scoreDebug")
-
-        val repeat = 100
-        val timeout = 1500L
-        val difficulty = Difficulty.MASTER
-        val printBoards = false
-
-        val seedsWithTimeout = mutableListOf<Long>()
-        val result = runBlocking { (1..repeat).map {
-            var res: String?
-            do {
-                val seed = (Math.random()*10000000000).toLong()
-                res = withTimeoutOrNull(timeout) { testBoard(size, difficulty, seed, printBoards) }
-                if (res == null) seedsWithTimeout.add(seed)
-            } while (res == null)
-            res
-        } }
-
-        println("${seedsWithTimeout.size} timeouts with timeout: $timeout")
-        println("Seeds: ${seedsWithTimeout.joinToString()}")
-
-        val resultNotOK = result.filter { it != "" }
-        assert(resultNotOK.isEmpty()) {
-            println("\nERRORS:")
-            print(resultNotOK.joinToString(separator = "\n"))
-        }
-    }
-
-
-    private fun testJankoBoard(board: JankoKendokuBoard, seed: Long = (Math.random()*10000000000).toLong()): String {
-        val regions = board.getRegions()
-
-        val startTime = System.currentTimeMillis()
-        val kendoku = Kendoku.solveBoard(
-            seed = seed,
-            size = sqrt(regions.size.toDouble()).toInt(),
-            startBoard = board.getStartBoard(),
-            completedBoard = board.getCompletedBoard(),
-            regions = regions,
-            operationPerRegion = board.getOperationsPerRegion(regions)
-        )
-        val endTime = System.currentTimeMillis()
-
-        val correctBoard = kendoku.startBoard.contentEquals(kendoku.completedBoard)
-        val numBruteForces = kendoku.score.getBruteForceValue()
-
-        println("${board.boardId}, ${board.difficulty}, ${kendoku.getScoreValue()}, ${endTime - startTime}, $numBruteForces, ${kendoku.getRegionStatData().joinToString(separator = "|")}, ${kendoku.operationPerRegion.values.count { it.isUnknown() }}, ${(kendoku.score as KendokuScore)}")
-
-        return if (correctBoard) ""
-        else "\nBoard: ${board.boardId} is incorrect" +
-            "\nActual board:\n${kendoku.printStartBoard()}" +
-            "\nExpected board:\n${kendoku.printCompletedBoard()}"
-    }
-
-    private suspend fun testBoard(size: Int, difficulty: Difficulty, seed: Long, printBoards: Boolean): String {
-        val mainStartTime = System.currentTimeMillis()
-
-        val kendoku = Kendoku.createTesting(
-            size = size,
-            seed = seed,
-            difficulty = difficulty
-        )
-
-        val score = kendoku.getScoreValue()
-        val time = System.currentTimeMillis() - mainStartTime
-        val numBruteForces = kendoku.score.getBruteForceValue()
-        val regions = kendoku.getRegionStatData().joinToString(separator = "|")
-        val numUnknownOps = kendoku.operationPerRegion.values.count { it.isUnknown() }
-        val completeScore = kendoku.score as KendokuScore
-
-        println("${size}x${size}, $seed, $difficulty, $score, $time, $numBruteForces, $regions, $numUnknownOps, $completeScore")
-
-        if (printBoards) println(kendoku.printStartBoardHTML())
-
-        return kendoku.boardMeetsRulesStr()
-    }
 }
