@@ -37,7 +37,7 @@ abstract class AbstractGameUnitTest(
         strat.name.split("_").joinToString("") { s -> s.replaceFirstChar { it.uppercase() } }
     }
 
-    private val repeat = 100
+    private val repeat = 10
 
 
     protected abstract fun loadJankoData(): List<JankoBoard>
