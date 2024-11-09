@@ -35,7 +35,7 @@ abstract class AbstractGame(
 
     protected fun numPositions(): Int = numColumns * numRows
 
-    open fun maxRegionSize(): Int = max(numColumns, numRows)
+    open fun maxRegionSize(): Int = max(numColumns, numRows) + 1
 
     open fun maxValueSize(): Int = maxRegionSize()
 

@@ -10,6 +10,7 @@ import com.example.tfg.common.enums.Direction
 import com.example.tfg.common.utils.Utils
 import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.BoardData
+import com.example.tfg.games.common.CommonStrategies
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.PopulateResult
 import com.example.tfg.games.common.Score
@@ -38,6 +39,10 @@ class Hakyuu @JvmOverloads constructor(
     startBoard = startBoard,
     boardRegions = boardRegions
 ) {
+
+    @delegate:Ignore
+    @get:Ignore
+    private val strategies by lazy { CommonStrategies(this) }
 
     // Helper variables
     @Ignore
@@ -299,23 +304,15 @@ class Hakyuu @JvmOverloads constructor(
         if (score.get() > 0) return PopulateResult.success(score)
 
         for (region in remainingRegions.values) {
-            val positionsPerValue = getPositionsPerValues(region = region, possibleValues = possibleValues)
+            val regionPossibleValues = region.map { possibleValues[it] }.toTypedArray()
+            val numPairs = strategies.cleanNakedPairsInLine(regionPossibleValues)
+            score.addNakedPairs(numPairs)
 
-            //Everytime a SPT is found AND the possible values change the score is properly changed.
-            val singles = cleanHiddenSingles(positionsPerValue = positionsPerValue, possibleValues = possibleValues)
-            score.addScoreHiddenSingle(singles.size)
+            val numTriples = strategies.cleanNakedTriplesInLine(regionPossibleValues)
+            score.addNakedTriples(numTriples)
 
-            var pairs = cleanHiddenPairs(positionsPerValue = positionsPerValue, possibleValues = possibleValues)
-            score.addScoreHiddenPairs(pairs.size/2)
-
-            var triples = cleanHiddenTriples(positionsPerValue = positionsPerValue, possibleValues = possibleValues)
-            score.addScoreHiddenTriples(triples.size/3)
-
-            pairs = cleanObviousPairs(region = region, possibleValues = possibleValues)
-            score.addScoreObviousPairs(pairs.size/2)
-
-            triples = cleanObviousTriples(region = region, possibleValues = possibleValues)
-            score.addScoreObviousTriples(triples.size/3)
+            val numSPT = strategies.cleanHiddenSinglesPairsTriplesInline(regionPossibleValues, maxValueSize())
+            score.addHiddenSPT(numSPT)
         }
 
         // Possible values changed
@@ -332,148 +329,6 @@ class Hakyuu @JvmOverloads constructor(
         return PopulateResult.noChangesFound()
     }
 
-
-    internal fun cleanObviousPairs(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
-        val filteredRegions = region.filter { position -> possibleValues[position].size == 2 }
-
-        val res = mutableListOf<Int>()
-        filteredRegions.forEachIndexed { index, position1 ->
-            val position2 = filteredRegions.drop(index + 1)
-                .find { position2 -> possibleValues[position2] == possibleValues[position1] }
-            if (position2 != null) {
-
-                var possibleValuesChanged = false
-                val values = possibleValues[position1]
-                region.filter { position -> position!=position1 && position!=position2 }
-                    .forEach { position ->
-                        possibleValuesChanged = possibleValuesChanged || possibleValues[position].removeAll(values)
-                    }
-
-                if (possibleValuesChanged){
-                    res.add(position1)
-                    res.add(position2)
-                }
-            }
-        }
-        return res
-    }
-
-    internal fun cleanObviousTriples(region: List<Int>, possibleValues: Array<MutableList<Int>>): List<Int> {
-        // Obvious triples can only have size 2 or 3
-        val filteredRegions = region.filter { position ->
-            (possibleValues[position].size == 2 || possibleValues[position].size == 3)
-        }
-
-        val res = mutableListOf<Int>()
-        filteredRegions.forEachIndexed { index, position1 ->
-            val position1PossibleValues = possibleValues[position1]
-            // Get pairs (position2, possible values of position2 and position1)
-            val union = filteredRegions.drop(index + 1).map { position2 ->
-                Pair(position2, possibleValues[position2].union(position1PossibleValues))
-            }
-            val otherTriples = union.filter { other ->
-                // Different position, same content and sizes 3 or 2 means its a triple
-                union.any { it.first != other.first && it.second == other.second && (it.second.size == 3 || it.second.size == 2) }
-            }
-
-            if (otherTriples.size == 2) {
-                val position2 = otherTriples[0].first
-                val position3 = otherTriples[1].first
-
-                var possibleValuesChanged = false
-                val values = possibleValues[position1].union(possibleValues[position2]).union(possibleValues[position3])
-                region.filter { position -> position!=position1 && position!=position2 && position!=position3 }
-                    .forEach { position ->
-                        possibleValuesChanged = possibleValuesChanged || possibleValues[position].removeAll(values)
-                    }
-
-                if (possibleValuesChanged){
-                    res.add(position1)
-                    res.add(position2)
-                    res.add(position3)
-                }
-            }
-        }
-        return res
-    }
-
-    internal fun getPositionsPerValues(region: List<Int>, possibleValues: Array<MutableList<Int>>): Array<MutableList<Int>> {
-        val maxValue = region.maxOf { possibleValues[it].maxOrNull() ?: 0 }
-        val positionsPerValue = Array(maxValue) { mutableListOf<Int>() }
-        region.forEach { position ->
-            possibleValues[position].forEach { value -> positionsPerValue[value - 1].add(position) }
-        }
-        return positionsPerValue
-    }
-
-    // Delete values to reveal hidden singles
-    internal fun cleanHiddenSingles(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>): List<Int> {
-        val res = mutableListOf<Int>()
-        positionsPerValue.withIndex().filter { (_,positions) -> positions.size == 1 }
-            .forEach { (value, positions) ->
-                // Remove all the possible values but the hidden single
-                val position = positions.first()
-                val possibleValuesChanged = possibleValues[position].removeIf { it != value + 1 }
-                if (possibleValuesChanged) res.add(position)
-            }
-        return res
-    }
-
-    // Delete values to reveal hidden pairs
-    internal fun cleanHiddenPairs(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>): List<Int> {
-        val filteredPossiblePairs = positionsPerValue.withIndex().filter { (_, positions) -> positions.size == 2 }
-
-        val res = mutableListOf<Int>()
-        var drop = 0
-        filteredPossiblePairs.forEach { (index1, value) ->
-            drop++
-            val otherPair = filteredPossiblePairs.drop(drop).find { (_, value2) ->
-                value2 == value
-            }
-
-            if (otherPair != null) { //index1, index2 are pairs
-                val index2 = otherPair.index
-                // Remove from each position the possible values that are not the hidden pairs
-                value.forEach {position ->
-                    val possibleValuesChanged = possibleValues[position]
-                        .removeIf { it != index1+1 && it != index2+1 }
-                    if (possibleValuesChanged) res.add(position)
-                }
-            }
-        }
-        return res
-    }
-
-    // Delete values to reveal hidden triples
-    internal fun cleanHiddenTriples(possibleValues: Array<MutableList<Int>>, positionsPerValue: Array<MutableList<Int>>): List<Int> {
-        val filteredPossibleTriples = positionsPerValue.withIndex().filter { it.value.size == 2 || it.value.size == 3 }
-            .filter { (_, positions) -> (positions.size == 2 || positions.size == 3) }
-
-        val res = mutableListOf<Int>()
-        var drop = 0
-        filteredPossibleTriples.forEach { (index1, value) ->
-            drop++
-            val union = filteredPossibleTriples.drop(drop).map { (i, v) ->
-                IndexedValue(index = i, value = v.union(value))
-            }.filter { it.value.size==3 }
-
-            val otherTriples = union.filter { other ->
-                union.any { it.value == other.value && it.index != other.index }
-            }
-
-            if (otherTriples.size == 2) { //index1, index2 and index3 are triples
-                val index2 = otherTriples[0].index
-                val index3 = otherTriples[1].index
-                // Remove from each position the possible values that are not the hidden triples
-                otherTriples[0].value.forEach { position ->
-                    val possibleValuesChanged = possibleValues[position]
-                        .removeIf { it != index1+1 && it != index2+1 && it != index3+1 }
-                    if (possibleValuesChanged) res.add(position)
-                }
-            }
-        }
-        return res
-    }
 
     companion object {
 
@@ -526,15 +381,16 @@ class Hakyuu @JvmOverloads constructor(
         // For testing
         fun solveBoard(
             seed: Long,
-            size: Int,
+            numColumns: Int,
+            numRows: Int,
             startBoard: IntArray,
             completedBoard: IntArray,
             regions: IntArray
         ): Hakyuu {
             val hakyuu = Hakyuu(
                 id = 0,
-                numColumns = size,
-                numRows = size,
+                numColumns = numColumns,
+                numRows = numRows,
                 seed = seed,
                 boardRegions = regions,
                 startBoard = startBoard,

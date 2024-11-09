@@ -29,12 +29,40 @@ private val difficultyValues = DifficultyValues(
     maxMasterBruteForces = 3,
 )
 
-class HakyuuScore(score: Int = 0, bruteForce: Int = 0) : Score(Games.HAKYUU, score, mutableMapOf(), bruteForce, difficultyValues) {
+enum class HakyuuStrategy {
+    NAKED_PAIRS,
+    NAKED_TRIPLES,
+    HIDDEN_SINGLE,
+    HIDDEN_PAIRS,
+    HIDDEN_TRIPLES;
+
+    companion object {
+        fun fromString(str: String?): HakyuuStrategy? {
+            return entries.find { it.name == str }
+        }
+    }
+}
+
+class HakyuuScore(
+    score: Int = 0,
+    bruteForce: Int = 0,
+    strategies: MutableMap<String, Int> = HakyuuStrategy.entries.associate { it.name to 0 }.toMutableMap(),
+) : Score(Games.HAKYUU, score, strategies, bruteForce, difficultyValues) {
+
+    override fun toString(): String {
+        return HakyuuStrategy.entries.joinToString(", ") { strategies[it.name].toString() }
+    }
 
     override fun add(s: Score?) {
         super.add(s)
-        bruteForce += (s as HakyuuScore).bruteForce
+        if (s == null) return
+        val s = (s as HakyuuScore)
+
+        HakyuuStrategy.entries.forEach { strategy ->
+            strategies[strategy.name] = strategies[strategy.name]!! + s.strategies[strategy.name]!!
+        }
     }
+
 
     override fun serialize(): JsonElement {
         return Gson().toJsonTree(this).asJsonObject
@@ -48,23 +76,24 @@ class HakyuuScore(score: Int = 0, bruteForce: Int = 0) : Score(Games.HAKYUU, sco
         score += 4
     }
 
-    fun addScoreHiddenSingle(numFound: Int) {
-        score += numFound*20
+    fun addHiddenSPT(numSPT: IntArray) {
+        score += numSPT[0]*20
+        score += numSPT[1]*25
+        score += numSPT[2]*30
+
+        numSPT.forEach { score += it }
+        strategies[HakyuuStrategy.HIDDEN_SINGLE.name] = strategies[HakyuuStrategy.HIDDEN_SINGLE.name]!! + numSPT[0]
+        strategies[HakyuuStrategy.HIDDEN_PAIRS.name] = strategies[HakyuuStrategy.HIDDEN_PAIRS.name]!! + numSPT[1]
+        strategies[HakyuuStrategy.HIDDEN_TRIPLES.name] = strategies[HakyuuStrategy.HIDDEN_TRIPLES.name]!! + numSPT[2]
     }
 
-    fun addScoreHiddenPairs(numFound: Int) {
-        score += numFound*25
-    }
-
-    fun addScoreHiddenTriples(numFound: Int) {
-        score += numFound*30
-    }
-
-    fun addScoreObviousPairs(numFound: Int) {
+    fun addNakedPairs(numFound: Int) {
         score += numFound*5
+        strategies[HakyuuStrategy.NAKED_PAIRS.name] = strategies[HakyuuStrategy.NAKED_PAIRS.name]!! + numFound
     }
 
-    fun addScoreObviousTriples(numFound: Int) {
+    fun addNakedTriples(numFound: Int) {
         score += numFound*10
+        strategies[HakyuuStrategy.NAKED_TRIPLES.name] = strategies[HakyuuStrategy.NAKED_TRIPLES.name]!! + numFound
     }
 }
