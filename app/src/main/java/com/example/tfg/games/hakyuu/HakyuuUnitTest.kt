@@ -5,6 +5,7 @@ import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.AbstractGameUnitTest
 import com.example.tfg.games.common.Difficulty
+import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.JankoBoard
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -16,7 +17,8 @@ import kotlin.math.sqrt
 data class JankoHakyuuBoard(
     override val boardId: Int,
     override val difficulty: String,
-    override val size: Int,
+    override val numColumns: Int,
+    override val numRows: Int,
     override val problem: String,
     override val areas: String,
     override val solution: String,
@@ -31,6 +33,9 @@ data class JankoHakyuuBoard(
 @ExtendWith(CustomTestWatcher::class)
 class HakyuuUnitTest : AbstractGameUnitTest(
     enumEntries = HakyuuStrategy.entries,
+    maxSize = Games.HAKYUU.maxSize,
+    minSize = Games.HAKYUU.minSize,
+    canHaveUnequalSize = true,
     getScore = { gameBoard: AbstractGame ->
         (gameBoard.score as HakyuuScore).toString()
     }
@@ -52,10 +57,10 @@ class HakyuuUnitTest : AbstractGameUnitTest(
         )
     }
 
-    override suspend fun getGameBoard(size: Int, seed: Long, difficulty: Difficulty): AbstractGame {
+    override suspend fun getGameBoard(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): AbstractGame {
         return Hakyuu.createTesting(
-            numRows = size,
-            numColumns = size,
+            numRows = numRows,
+            numColumns = numColumns,
             seed = seed,
             difficulty = difficulty
         )
@@ -63,8 +68,17 @@ class HakyuuUnitTest : AbstractGameUnitTest(
 
     @Test
     fun testOkJankoBoard() {
-        val boardId = 1
+        val boardId = 1 // 274
         testOkJankoBoard(boardId)
+    }
+
+    @Test
+    fun testSeededBoard() {
+        val numRows = 13
+        val numColumns = 13
+        val seed: Long = 135252665
+        val difficulty = Difficulty.MASTER
+        testOkSeededBoard(numRows, numColumns, seed, difficulty)
     }
 
     @Test

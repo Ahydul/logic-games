@@ -6,6 +6,7 @@ import com.example.tfg.common.utils.CustomTestWatcher
 import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.AbstractGameUnitTest
 import com.example.tfg.games.common.Difficulty
+import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.JankoBoard
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -20,7 +21,8 @@ import kotlin.random.Random
 data class JankoKendokuBoard(
     override val boardId: Int,
     override val difficulty: String,
-    override val size: Int,
+    override val numColumns: Int,
+    override val numRows: Int,
     override val problem: String,
     override val areas: String,
     override val solution: String,
@@ -66,6 +68,8 @@ data class JankoKendokuBoard(
 @ExtendWith(CustomTestWatcher::class)
 class KendokuUnitTest : AbstractGameUnitTest(
     enumEntries = KendokuStrategy.entries,
+    maxSize = Games.KENDOKU.maxSize,
+    minSize = Games.KENDOKU.minSize,
     getScore = { gameBoard: AbstractGame ->
         (gameBoard.score as KendokuScore).toString()
     }
@@ -77,9 +81,9 @@ class KendokuUnitTest : AbstractGameUnitTest(
         return Gson().fromJson(file.readText(), object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
     }
 
-    override suspend fun getGameBoard(size: Int, seed: Long, difficulty: Difficulty): AbstractGame {
+    override suspend fun getGameBoard(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): AbstractGame {
         return Kendoku.createTesting(
-            size = size,
+            size = numColumns,
             seed = seed,
             difficulty = difficulty
         )
@@ -437,6 +441,14 @@ class KendokuUnitTest : AbstractGameUnitTest(
         // 47 paso de 1 a 2 brute forces
         val boardId = 67 //38 67 13 74 28 219 414 406 80 224
         testOkJankoBoard(boardId)
+    }
+
+    @Test
+    fun testSeededBoard() {
+        val size = 9
+        val seed: Long = 1034942735
+        val difficulty = Difficulty.MASTER
+        testOkSeededBoard(size, size, seed, difficulty)
     }
 
 }
