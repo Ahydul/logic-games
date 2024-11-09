@@ -29,7 +29,8 @@ private val difficultyValues = DifficultyValues(
     maxMasterBruteForces = 3,
 )
 
-enum class KendokuStrategy {
+//TODO: Add values
+enum class KendokuStrategy(val scoreValue: Int = 1) {
     NAKED_PAIRS,
     NAKED_TRIPLES,
     HIDDEN_SINGLE,
@@ -70,57 +71,51 @@ class KendokuScore(
         }
     }
 
-    //TODO: Complete score
+    private fun add(strategy: KendokuStrategy, num: Int = 1) {
+        score += strategy.scoreValue * num
+        addToStrategies(strategy.name)
+    }
+
     fun addNakedPairs(numPairs: Int) {
-        score += numPairs
-        addToStrategies(KendokuStrategy.NAKED_PAIRS.name, numPairs)
+        add(KendokuStrategy.NAKED_PAIRS, numPairs)
     }
 
     fun addNakedTriples(numTriples: Int) {
-        score += numTriples
-        addToStrategies(KendokuStrategy.NAKED_TRIPLES.name, numTriples)
+        add(KendokuStrategy.NAKED_TRIPLES, numTriples)
     }
 
     fun addHiddenSPT(numSPT: IntArray) {
-        numSPT.forEach { score += it }
-        addToStrategies(KendokuStrategy.HIDDEN_SINGLE.name, numSPT[0])
-        addToStrategies(KendokuStrategy.HIDDEN_PAIRS.name, numSPT[1])
-        addToStrategies(KendokuStrategy.HIDDEN_TRIPLES.name, numSPT[2])
+        add(KendokuStrategy.HIDDEN_SINGLE, numSPT[0])
+        add(KendokuStrategy.HIDDEN_PAIRS, numSPT[1])
+        add(KendokuStrategy.HIDDEN_TRIPLES, numSPT[2])
     }
 
     fun addCombinations(numValuesRemoved: Int) {
-        score += numValuesRemoved
-        addToStrategies(KendokuStrategy.MAIN_COMBINATION_REDUCE.name, numValuesRemoved)
+        add(KendokuStrategy.MAIN_COMBINATION_REDUCE, numValuesRemoved)
     }
 
     fun addCageUnitOverlapType2(numCUO: Int) {
-        score += numCUO
-        addToStrategies(KendokuStrategy.CAGE_UNIT_OVERLAPS_2.name, numCUO)
+        add(KendokuStrategy.CAGE_UNIT_OVERLAPS_2, numCUO)
     }
 
     fun addBiValueAttack(numChanges: Int) {
-        score += numChanges
-        addToStrategies(KendokuStrategy.BI_VALUE_ATTACK.name, numChanges)
+        add(KendokuStrategy.BI_VALUE_ATTACK, numChanges)
     }
 
     fun addInniesOuties(numInniesOuties: Int) {
-        score += numInniesOuties
-        addToStrategies(KendokuStrategy.INNIES_OUTIES.name, numInniesOuties)
+        add(KendokuStrategy.INNIES_OUTIES, numInniesOuties)
     }
 
     fun addXWings(numXWings: Int) {
-        score += numXWings
-        addToStrategies(KendokuStrategy.X_WING.name, numXWings)
+        add(KendokuStrategy.X_WING, numXWings)
     }
 
     fun addColoring(numColoring: Int) {
-        score += numColoring
-        addToStrategies(KendokuStrategy.SIMPLE_COLORING.name, numColoring)
+        add(KendokuStrategy.SIMPLE_COLORING, numColoring)
     }
 
     fun addCageUnitOverlapType1(numCUO: Int) {
-        score += numCUO
-        addToStrategies(KendokuStrategy.CAGE_UNIT_OVERLAPS_1.name, numCUO)
+        add(KendokuStrategy.CAGE_UNIT_OVERLAPS_1, numCUO)
     }
 
     override fun serialize(): JsonElement {

@@ -29,14 +29,14 @@ private val difficultyValues = DifficultyValues(
     maxMasterBruteForces = 3,
 )
 
-enum class HakyuuStrategy {
-    RULE_2, //A possible value got deleted because it
-    RULE_3,
-    NAKED_PAIRS,
-    NAKED_TRIPLES,
-    HIDDEN_SINGLE,
-    HIDDEN_PAIRS,
-    HIDDEN_TRIPLES;
+enum class HakyuuStrategy(val scoreValue: Int) {
+    RULE_2(4),
+    RULE_3(4),
+    NAKED_PAIRS(5),
+    NAKED_TRIPLES(10),
+    HIDDEN_SINGLE(20),
+    HIDDEN_PAIRS(25),
+    HIDDEN_TRIPLES(30);
 
     companion object {
         fun fromString(str: String?): HakyuuStrategy? {
@@ -65,38 +65,34 @@ class HakyuuScore(
         }
     }
 
-
-    override fun serialize(): JsonElement {
-        return Gson().toJsonTree(this).asJsonObject
+    private fun add(strategy: HakyuuStrategy, num: Int = 1) {
+        score += strategy.scoreValue * num
+        addToStrategies(strategy.name)
     }
 
     fun addScoreRule3() {
-        score += 4
-        addToStrategies(HakyuuStrategy.RULE_3.name)
+        add(HakyuuStrategy.RULE_3)
     }
 
     fun addScoreRule2() {
-        score += 4
-        addToStrategies(HakyuuStrategy.RULE_2.name)
+        add(HakyuuStrategy.RULE_2)
     }
 
     fun addHiddenSPT(numSPT: IntArray) {
-        score += numSPT[0]*20
-        score += numSPT[1]*25
-        score += numSPT[2]*30
-
-        addToStrategies(HakyuuStrategy.HIDDEN_SINGLE.name, numSPT[0])
-        addToStrategies(HakyuuStrategy.HIDDEN_PAIRS.name, numSPT[1])
-        addToStrategies(HakyuuStrategy.HIDDEN_TRIPLES.name, numSPT[2])
+        add(HakyuuStrategy.HIDDEN_SINGLE, numSPT[0])
+        add(HakyuuStrategy.HIDDEN_PAIRS, numSPT[1])
+        add(HakyuuStrategy.HIDDEN_TRIPLES, numSPT[2])
     }
 
     fun addNakedPairs(numFound: Int) {
-        score += numFound*5
-        addToStrategies(HakyuuStrategy.NAKED_PAIRS.name, numFound)
+        add(HakyuuStrategy.NAKED_PAIRS, numFound)
     }
 
     fun addNakedTriples(numFound: Int) {
-        score += numFound*10
-        addToStrategies(HakyuuStrategy.NAKED_TRIPLES.name, numFound)
+        add(HakyuuStrategy.NAKED_TRIPLES, numFound)
+    }
+
+    override fun serialize(): JsonElement {
+        return Gson().toJsonTree(this).asJsonObject
     }
 }
