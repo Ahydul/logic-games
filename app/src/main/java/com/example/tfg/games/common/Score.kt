@@ -1,9 +1,9 @@
 package com.example.tfg.games.common
 
-import androidx.room.Ignore
 import com.example.tfg.games.hakyuu.HakyuuScore
 import com.example.tfg.games.kendoku.KendokuScore
-import com.google.gson.JsonElement
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 
 class DifficultyValues(
     val minBeginner: Int,
@@ -29,12 +29,12 @@ class DifficultyValues(
 
 
 abstract class Score(
-    val game: Games,
-    var score: Int = 0,
-    val strategies: MutableMap<String, Int>,
-    var bruteForce: Int = 0,
-    @Ignore
-    val difficultyValues: DifficultyValues
+    val game: Games, // This variable is needed in ScoreDeserializer
+    internal var score: Int = 0,
+    internal val strategies: MutableMap<String, Int>,
+    private var bruteForce: Int = 0,
+    @Transient
+    private val difficultyValues: DifficultyValues
 ) {
 
     fun get(): Int {
@@ -105,7 +105,9 @@ abstract class Score(
         strategies[key] = strategies[key]!! + value
     }
 
-    abstract fun serialize(): JsonElement
+    fun serialize(): JsonObject {
+        return Gson().toJsonTree(this).asJsonObject
+    }
 
     companion object {
         fun create(gameType: Games): Score {

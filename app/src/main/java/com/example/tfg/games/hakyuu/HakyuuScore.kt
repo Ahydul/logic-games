@@ -3,8 +3,6 @@ package com.example.tfg.games.hakyuu
 import com.example.tfg.games.common.DifficultyValues
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.common.Score
-import com.google.gson.Gson
-import com.google.gson.JsonElement
 
 
 private val difficultyValues = DifficultyValues(
@@ -90,9 +88,5 @@ class HakyuuScore(
 
     fun addNakedTriples(numFound: Int) {
         add(HakyuuStrategy.NAKED_TRIPLES, numFound)
-    }
-
-    override fun serialize(): JsonElement {
-        return Gson().toJsonTree(this).asJsonObject
     }
 }
