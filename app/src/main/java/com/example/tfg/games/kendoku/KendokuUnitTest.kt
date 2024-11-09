@@ -29,6 +29,12 @@ data class JankoKendokuBoard(
     override var addValuesToStart: (startBoard: IntArray) -> Unit
 ): JankoBoard {
 
+    override fun getStartBoard(): IntArray {
+        val startBoard = IntArray(numColumns*numRows) // Kendoku Janko boards are always empty
+        addValuesToStart(startBoard) // For debug
+        return startBoard
+    }
+
     fun getOperationsPerRegion(regions: IntArray): MutableMap<Int, KendokuOperation> {
         val operationResultPerRegion =  getOperationResultPerRegion(regions)
         val completedBoard = getCompletedBoard()

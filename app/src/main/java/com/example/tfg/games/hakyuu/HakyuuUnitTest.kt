@@ -12,7 +12,6 @@ import com.google.gson.reflect.TypeToken
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.io.File
-import kotlin.math.sqrt
 
 data class JankoHakyuuBoard(
     override val boardId: Int,
@@ -23,7 +22,13 @@ data class JankoHakyuuBoard(
     override val areas: String,
     override val solution: String,
     override var addValuesToStart: (startBoard: IntArray) -> Unit
-): JankoBoard
+): JankoBoard {
+    override fun getStartBoard(): IntArray {
+        val startBoard = problem.replace("\n", " ").split(" ").map { it.toIntOrNull() ?: 0 }.toIntArray()
+        addValuesToStart(startBoard) // For debug
+        return startBoard
+    }
+}
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -50,7 +55,8 @@ class HakyuuUnitTest : AbstractGameUnitTest(
         val regions = jankoBoard.getRegions()
         return Hakyuu.solveBoard(
             seed = seed,
-            size = sqrt(regions.size.toDouble()).toInt(),
+            numColumns = jankoBoard.numColumns,
+            numRows = jankoBoard.numRows,
             startBoard = jankoBoard.getStartBoard(),
             completedBoard = jankoBoard.getCompletedBoard(),
             regions = regions

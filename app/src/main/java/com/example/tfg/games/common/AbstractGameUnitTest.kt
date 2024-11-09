@@ -16,13 +16,9 @@ interface JankoBoard {
     val solution: String
     var addValuesToStart: (startBoard: IntArray) -> Unit
 
-    fun getStartBoard(): IntArray {
-        val startBoard = IntArray(numColumns*numRows) // Janko boards are always empty
-        addValuesToStart(startBoard) // For debug
-        return startBoard
-    }
+    fun getStartBoard(): IntArray
 
-    fun getRegions() = areas.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
+    fun getRegions() = areas.replace("\n"," ").split(" ").filterNot { it=="" }.map { it.toInt() }.toIntArray()
 
     fun getCompletedBoard() = solution.replace("\n"," ").split(" ").map { it.toInt() }.toIntArray()
 }
@@ -98,7 +94,7 @@ abstract class AbstractGameUnitTest(
     @Test
     fun testOkBoardsRandomSizes() {
         if (canHaveUnequalSize) for (numColumns in (minSize..maxSize)) {
-            val numRows = (Math.random()*maxSize).toInt() + minSize
+            val numRows = (Math.random()*(maxSize-minSize)).toInt() + minSize
             testOkBoards(numRows, numColumns)
         }
     }
