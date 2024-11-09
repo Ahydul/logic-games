@@ -30,6 +30,8 @@ private val difficultyValues = DifficultyValues(
 )
 
 enum class HakyuuStrategy {
+    RULE_2, //A possible value got deleted because it
+    RULE_3,
     NAKED_PAIRS,
     NAKED_TRIPLES,
     HIDDEN_SINGLE,
@@ -59,7 +61,7 @@ class HakyuuScore(
         val s = (s as HakyuuScore)
 
         HakyuuStrategy.entries.forEach { strategy ->
-            strategies[strategy.name] = strategies[strategy.name]!! + s.strategies[strategy.name]!!
+            addToStrategies(strategy.name, s.strategies[strategy.name]!!)
         }
     }
 
@@ -70,10 +72,12 @@ class HakyuuScore(
 
     fun addScoreRule3() {
         score += 4
+        addToStrategies(HakyuuStrategy.RULE_3.name)
     }
 
     fun addScoreRule2() {
         score += 4
+        addToStrategies(HakyuuStrategy.RULE_2.name)
     }
 
     fun addHiddenSPT(numSPT: IntArray) {
@@ -81,19 +85,18 @@ class HakyuuScore(
         score += numSPT[1]*25
         score += numSPT[2]*30
 
-        numSPT.forEach { score += it }
-        strategies[HakyuuStrategy.HIDDEN_SINGLE.name] = strategies[HakyuuStrategy.HIDDEN_SINGLE.name]!! + numSPT[0]
-        strategies[HakyuuStrategy.HIDDEN_PAIRS.name] = strategies[HakyuuStrategy.HIDDEN_PAIRS.name]!! + numSPT[1]
-        strategies[HakyuuStrategy.HIDDEN_TRIPLES.name] = strategies[HakyuuStrategy.HIDDEN_TRIPLES.name]!! + numSPT[2]
+        addToStrategies(HakyuuStrategy.HIDDEN_SINGLE.name, numSPT[0])
+        addToStrategies(HakyuuStrategy.HIDDEN_PAIRS.name, numSPT[1])
+        addToStrategies(HakyuuStrategy.HIDDEN_TRIPLES.name, numSPT[2])
     }
 
     fun addNakedPairs(numFound: Int) {
         score += numFound*5
-        strategies[HakyuuStrategy.NAKED_PAIRS.name] = strategies[HakyuuStrategy.NAKED_PAIRS.name]!! + numFound
+        addToStrategies(HakyuuStrategy.NAKED_PAIRS.name, numFound)
     }
 
     fun addNakedTriples(numFound: Int) {
         score += numFound*10
-        strategies[HakyuuStrategy.NAKED_TRIPLES.name] = strategies[HakyuuStrategy.NAKED_TRIPLES.name]!! + numFound
+        addToStrategies(HakyuuStrategy.NAKED_TRIPLES.name, numFound)
     }
 }

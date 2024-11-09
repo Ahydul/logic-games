@@ -101,6 +101,10 @@ abstract class Score(
 
     }
 
+    protected fun addToStrategies(key: String, value: Int = 1) {
+        strategies[key] = strategies[key]!! + value
+    }
+
     abstract fun serialize(): JsonElement
 
     companion object {

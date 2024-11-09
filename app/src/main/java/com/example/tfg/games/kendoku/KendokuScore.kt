@@ -66,61 +66,61 @@ class KendokuScore(
         val s = (s as KendokuScore)
 
         KendokuStrategy.entries.forEach { strategy ->
-            strategies[strategy.name] = strategies[strategy.name]!! + s.strategies[strategy.name]!!
+            addToStrategies(strategy.name, s.strategies[strategy.name]!!)
         }
     }
 
     //TODO: Complete score
     fun addNakedPairs(numPairs: Int) {
         score += numPairs
-        strategies[KendokuStrategy.NAKED_PAIRS.name] = strategies[KendokuStrategy.NAKED_PAIRS.name]!! + numPairs
+        addToStrategies(KendokuStrategy.NAKED_PAIRS.name, numPairs)
     }
 
     fun addNakedTriples(numTriples: Int) {
         score += numTriples
-        strategies[KendokuStrategy.NAKED_TRIPLES.name] = strategies[KendokuStrategy.NAKED_TRIPLES.name]!! + numTriples
+        addToStrategies(KendokuStrategy.NAKED_TRIPLES.name, numTriples)
     }
 
     fun addHiddenSPT(numSPT: IntArray) {
         numSPT.forEach { score += it }
-        strategies[KendokuStrategy.HIDDEN_SINGLE.name] = strategies[KendokuStrategy.HIDDEN_SINGLE.name]!! + numSPT[0]
-        strategies[KendokuStrategy.HIDDEN_PAIRS.name] = strategies[KendokuStrategy.HIDDEN_PAIRS.name]!! + numSPT[1]
-        strategies[KendokuStrategy.HIDDEN_TRIPLES.name] = strategies[KendokuStrategy.HIDDEN_TRIPLES.name]!! + numSPT[2]
+        addToStrategies(KendokuStrategy.HIDDEN_SINGLE.name, numSPT[0])
+        addToStrategies(KendokuStrategy.HIDDEN_PAIRS.name, numSPT[1])
+        addToStrategies(KendokuStrategy.HIDDEN_TRIPLES.name, numSPT[2])
     }
 
     fun addCombinations(numValuesRemoved: Int) {
         score += numValuesRemoved
-        strategies[KendokuStrategy.MAIN_COMBINATION_REDUCE.name] = strategies[KendokuStrategy.MAIN_COMBINATION_REDUCE.name]!! + numValuesRemoved
+        addToStrategies(KendokuStrategy.MAIN_COMBINATION_REDUCE.name, numValuesRemoved)
     }
 
     fun addCageUnitOverlapType2(numCUO: Int) {
         score += numCUO
-        strategies[KendokuStrategy.CAGE_UNIT_OVERLAPS_2.name] = strategies[KendokuStrategy.CAGE_UNIT_OVERLAPS_2.name]!! + numCUO
+        addToStrategies(KendokuStrategy.CAGE_UNIT_OVERLAPS_2.name, numCUO)
     }
 
     fun addBiValueAttack(numChanges: Int) {
         score += numChanges
-        strategies[KendokuStrategy.BI_VALUE_ATTACK.name] = strategies[KendokuStrategy.BI_VALUE_ATTACK.name]!! + numChanges
+        addToStrategies(KendokuStrategy.BI_VALUE_ATTACK.name, numChanges)
     }
 
     fun addInniesOuties(numInniesOuties: Int) {
         score += numInniesOuties
-        strategies[KendokuStrategy.INNIES_OUTIES.name] = strategies[KendokuStrategy.INNIES_OUTIES.name]!! + numInniesOuties
+        addToStrategies(KendokuStrategy.INNIES_OUTIES.name, numInniesOuties)
     }
 
     fun addXWings(numXWings: Int) {
         score += numXWings
-        strategies[KendokuStrategy.X_WING.name] = strategies[KendokuStrategy.X_WING.name]!! + numXWings
+        addToStrategies(KendokuStrategy.X_WING.name, numXWings)
     }
 
     fun addColoring(numColoring: Int) {
         score += numColoring
-        strategies[KendokuStrategy.SIMPLE_COLORING.name] = strategies[KendokuStrategy.SIMPLE_COLORING.name]!! + numColoring
+        addToStrategies(KendokuStrategy.SIMPLE_COLORING.name, numColoring)
     }
 
     fun addCageUnitOverlapType1(numCUO: Int) {
         score += numCUO
-        strategies[KendokuStrategy.CAGE_UNIT_OVERLAPS_1.name] = strategies[KendokuStrategy.CAGE_UNIT_OVERLAPS_1.name]!! + numCUO
+        addToStrategies(KendokuStrategy.CAGE_UNIT_OVERLAPS_1.name, numCUO)
     }
 
     override fun serialize(): JsonElement {
