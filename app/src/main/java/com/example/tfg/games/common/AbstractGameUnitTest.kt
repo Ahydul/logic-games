@@ -4,7 +4,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.jupiter.api.Test
 import kotlin.enums.EnumEntries
-import kotlin.random.Random
 
 interface JankoBoard {
     val boardId: Int
@@ -30,8 +29,6 @@ abstract class AbstractGameUnitTest(
     val canHaveUnequalSize: Boolean = false,
     val getScore: (AbstractGame) -> String
 ) {
-
-    private val random = Random((Math.random()*10000000000).toLong())
 
     private val scoreDebug = enumEntries.joinToString(", ") { strat ->
         strat.name.split("_").joinToString("") { s -> s.replaceFirstChar { it.uppercase() } }
