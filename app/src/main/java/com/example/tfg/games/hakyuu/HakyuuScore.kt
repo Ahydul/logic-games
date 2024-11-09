@@ -35,12 +35,6 @@ enum class HakyuuStrategy(val scoreValue: Int) {
     HIDDEN_SINGLE(20),
     HIDDEN_PAIRS(25),
     HIDDEN_TRIPLES(30);
-
-    companion object {
-        fun fromString(str: String?): HakyuuStrategy? {
-            return entries.find { it.name == str }
-        }
-    }
 }
 
 class HakyuuScore(

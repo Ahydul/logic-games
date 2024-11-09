@@ -41,12 +41,6 @@ enum class KendokuStrategy(val scoreValue: Int = 1) {
     INNIES_OUTIES,
     X_WING,
     SIMPLE_COLORING;
-
-    companion object {
-        fun fromString(str: String?): KendokuStrategy? {
-            return entries.find { it.name == str }
-        }
-    }
 }
 
 class KendokuScore(
