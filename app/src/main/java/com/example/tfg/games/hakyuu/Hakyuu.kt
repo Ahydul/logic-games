@@ -279,12 +279,12 @@ class Hakyuu @JvmOverloads constructor(
 
             possibleValuesInPosition.removeIf { value ->
                 var res = false
-                // Check rule 2
+                // Check rule 2: In each region there must be numbers 1 to size of region
                 if (valuesInRegion != null && valuesInRegion.contains(value)) {
                     score.addScoreRule2()
                     res = true
                 }
-                // Check rule 3
+                // Check rule 3: Between each number K there must be K positions that are not K
                 else if (!checkRule3(value = value, position = position, actualValues = actualValues)) {
                     score.addScoreRule3()
                     res = true
