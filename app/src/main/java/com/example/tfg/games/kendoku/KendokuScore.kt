@@ -126,18 +126,4 @@ class KendokuScore(
     override fun serialize(): JsonElement {
         return Gson().toJsonTree(this).asJsonObject
     }
-
-    companion object {
-        fun create(score: Int, bruteForces: Int, strategies: String): KendokuScore {
-            val strategies = strategies.split(",").associate { s ->
-                s.split("=").let { KendokuStrategy.fromString(it[0])!!.name to it[1].toInt() }
-            }.toMutableMap()
-
-            return KendokuScore(
-                score = score,
-                bruteForce = bruteForces,
-                strategies = strategies
-            )
-        }
-    }
 }
