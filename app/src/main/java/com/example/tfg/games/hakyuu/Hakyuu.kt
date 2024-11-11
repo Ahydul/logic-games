@@ -358,6 +358,25 @@ class Hakyuu @JvmOverloads constructor(
             return hakyuu
         }
 
+        fun createTesting(
+            seed: Long,
+            numColumns: Int,
+            numRows: Int,
+            startBoard: IntArray,
+            completedBoard: IntArray,
+            boardRegions: IntArray
+        ): Hakyuu {
+            return Hakyuu(
+                seed = seed,
+                score = HakyuuScore(500),
+                numColumns = numColumns,
+                numRows = numRows,
+                startBoard = startBoard,
+                completedBoard = completedBoard,
+                boardRegions = boardRegions
+            )
+        }
+
         // For testing
         fun createTesting(numRows: Int, numColumns: Int, seed: Long, startBoard: String, completedBoard: String, boardRegions: String, reverse: Boolean = false): Hakyuu {
             val start = Hakyuu.parseBoardString(startBoard)

@@ -59,7 +59,7 @@ class HakyuuScore(
 
     private fun add(strategy: HakyuuStrategy, num: Int = 1) {
         score += strategy.scoreValue * num
-        addToStrategies(strategy.name)
+        addToStrategies(strategy.name, num)
     }
 
     fun addScoreRule3() {

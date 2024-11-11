@@ -29,18 +29,18 @@ private val difficultyValues = DifficultyValues(
 
 //TODO: Add values
 enum class KendokuStrategy(val scoreValue: Int = 1) {
-    NAKED_PAIRS,
-    NAKED_TRIPLES,
-    HIDDEN_SINGLE,
-    HIDDEN_PAIRS,
-    HIDDEN_TRIPLES,
-    MAIN_COMBINATION_REDUCE,
-    CAGE_UNIT_OVERLAPS_1,
-    CAGE_UNIT_OVERLAPS_2,
-    BI_VALUE_ATTACK,
-    INNIES_OUTIES,
-    X_WING,
-    SIMPLE_COLORING;
+    NAKED_PAIRS(10),
+    NAKED_TRIPLES(15),
+    HIDDEN_SINGLE(30),
+    HIDDEN_PAIRS(40),
+    HIDDEN_TRIPLES(50),
+    MAIN_COMBINATION_REDUCE(10),
+    CAGE_UNIT_OVERLAPS_1(25),
+    CAGE_UNIT_OVERLAPS_2(20),
+    BI_VALUE_ATTACK(100),
+    INNIES_OUTIES(150),
+    X_WING(200),
+    SIMPLE_COLORING(500);
 }
 
 class KendokuScore(
@@ -65,7 +65,7 @@ class KendokuScore(
 
     private fun add(strategy: KendokuStrategy, num: Int = 1) {
         score += strategy.scoreValue * num
-        addToStrategies(strategy.name)
+        addToStrategies(strategy.name, num)
     }
 
     fun addNakedPairs(numPairs: Int) {

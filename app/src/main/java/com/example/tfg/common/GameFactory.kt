@@ -1,5 +1,6 @@
 package com.example.tfg.common
 
+import android.content.Context
 import com.example.tfg.common.entities.Board
 import com.example.tfg.common.entities.Cell
 import com.example.tfg.common.entities.Game
@@ -19,10 +20,16 @@ import com.example.tfg.games.kendoku.KendokuUnitTest
 class GameFactory(private val gameDao: GameDao) {
 
     // For debug
-    fun getJankoBoard(chosenGame: Games, boardID: Int): AbstractGame? {
+    fun getJankoBoard(chosenGame: Games, boardID: Int, context: Context): AbstractGame? {
         return when (chosenGame) {
-            Games.HAKYUU -> KendokuUnitTest().getAbstractGame(boardID)
-            Games.KENDOKU -> HakyuuUnitTest().getAbstractGame(boardID)
+            Games.HAKYUU -> {
+                val data = context.assets.open("hakyuu-data.json").bufferedReader().use { it.readText() }
+                HakyuuUnitTest().getAbstractGame(boardID, data)
+            }
+            Games.KENDOKU -> {
+                val data = context.assets.open("kendoku-data.json").bufferedReader().use { it.readText() }
+                KendokuUnitTest().getAbstractGame(boardID, data)
+            }
             else -> null
         }
     }

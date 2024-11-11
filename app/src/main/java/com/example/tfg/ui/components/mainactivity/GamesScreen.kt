@@ -372,6 +372,8 @@ private fun TextFields(
                 val cols = numColumns.value.toInt()
                 val diff = Difficulty.get(difficulty.value)
                 viewModel.createGame(chosenGame, rows, cols, diff, seed.value, context)
+                // For debug
+                //viewModel.createJankoGame(chosenGame, seed.value.toIntOrNull(), context)
             },
             enabled = !viewModel.isLoading(),
             modifier = mod

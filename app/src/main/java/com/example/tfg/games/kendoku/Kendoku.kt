@@ -17,6 +17,7 @@ import com.example.tfg.games.common.Score
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.coroutineContext
+import kotlin.math.sqrt
 
 @Entity
 open class Kendoku @JvmOverloads constructor(
@@ -1020,6 +1021,27 @@ open class Kendoku @JvmOverloads constructor(
             kendoku.createGame(difficulty)
 
             return kendoku
+        }
+
+        //For debug
+        fun createTesting(
+            seed: Long,
+            startBoard: IntArray,
+            completedBoard: IntArray,
+            regions: IntArray,
+            operationPerRegion: MutableMap<Int, KendokuOperation>
+        ): Kendoku {
+            return Kendoku(
+                seed = seed,
+                score = KendokuScore(500),
+                numRows = sqrt(regions.size.toDouble()).toInt(),
+                numColumns = sqrt(regions.size.toDouble()).toInt(),
+                startBoard = startBoard,
+                completedBoard = completedBoard,
+                boardRegions = regions,
+                operationPerRegion = operationPerRegion
+            )
+
         }
 
         // For testing

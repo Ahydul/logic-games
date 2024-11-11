@@ -13,7 +13,6 @@ interface JankoBoard {
     val problem: String
     val areas: String
     val solution: String
-    var addValuesToStart: (startBoard: IntArray) -> Unit
 
     fun getStartBoard(): IntArray
 
@@ -37,17 +36,17 @@ abstract class AbstractGameUnitTest(
     private val repeat = 10
 
 
-    protected abstract fun loadJankoData(): List<JankoBoard>
+    protected abstract fun loadJankoData(data: String? = null): List<JankoBoard>
 
     protected abstract suspend fun getGameBoard(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): AbstractGame
 
     protected abstract fun getGameBoardJanko(seed: Long, jankoBoard: JankoBoard): AbstractGame
+    protected abstract fun solveGameBoardJanko(seed: Long, jankoBoard: JankoBoard): AbstractGame
 
     protected fun testOkJankoBoard(boardID: Int) {
         val jankoBoards = loadJankoData()
         println("board, size, difficulty, score, times, brute-forces, regions, $scoreDebug")
         val board = jankoBoards.find { it.boardId == boardID } !!
-        board.addValuesToStart = { }
 
         val result = testJankoBoard(board)
         assert(result == "") {
@@ -56,17 +55,14 @@ abstract class AbstractGameUnitTest(
     }
 
     // For debug
-    fun getAbstractGame(boardID: Int): AbstractGame = getGameBoardJanko(0, loadJankoData()[boardID])
+    fun getAbstractGame(boardID: Int, data: String): AbstractGame? = (loadJankoData(data).find { it.boardId == boardID })?.let { getGameBoardJanko(0, it) }
 
     @Test
     fun testOkJankoBoards() {
         val jankoBoards = loadJankoData()
         println("board, size, difficulty, score, times, brute-forces, regions, $scoreDebug")
 
-        val result = jankoBoards.map { board ->
-            board.addValuesToStart = { }
-            testJankoBoard(board)
-        }
+        val result = jankoBoards.map { board -> testJankoBoard(board)}
         val resultNotOK = result.filter { it != "" }
         assert(resultNotOK.isEmpty()) {
             println("\nERRORS:")
@@ -137,7 +133,7 @@ abstract class AbstractGameUnitTest(
 
     open fun testJankoBoard(board: JankoBoard, seed: Long = (Math.random()*10000000000).toLong()): String {
         val startTime = System.currentTimeMillis()
-        val gameBoard = getGameBoardJanko(seed, board)
+        val gameBoard = solveGameBoardJanko(seed, board)
         val endTime = System.currentTimeMillis()
 
         val correctBoard = gameBoard.startBoard.contentEquals(gameBoard.completedBoard)

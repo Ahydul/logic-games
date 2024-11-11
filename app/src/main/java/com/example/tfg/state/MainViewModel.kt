@@ -88,6 +88,21 @@ class MainViewModel(
         createGameJob = null
     }
 
+    fun createJankoGame(chosenGame: Games, boardID: Int?, context: Context) {
+        if (boardID == null) return
+        showLoading()
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val abstractGame = gameFactory.getJankoBoard(chosenGame, boardID, context)
+            if (abstractGame == null) hideLoading()
+            else {
+                val gameID = gameFactory.createGame(abstractGame)
+                Utils.startActiveGameActivity(context, gameID)
+                hideLoading()
+            }
+        }
+    }
+
     fun createGame(chosenGame: Games, numRows: Int, numColumns: Int, difficulty: Difficulty, seed: String, context: Context) {
         showLoading()
 

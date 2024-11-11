@@ -26,14 +26,9 @@ data class JankoKendokuBoard(
     override val problem: String,
     override val areas: String,
     override val solution: String,
-    override var addValuesToStart: (startBoard: IntArray) -> Unit
 ): JankoBoard {
 
-    override fun getStartBoard(): IntArray {
-        val startBoard = IntArray(numColumns*numRows) // Kendoku Janko boards are always empty
-        addValuesToStart(startBoard) // For debug
-        return startBoard
-    }
+    override fun getStartBoard(): IntArray = IntArray(numColumns * numRows)
 
     fun getOperationsPerRegion(regions: IntArray): MutableMap<Int, KendokuOperation> {
         val operationResultPerRegion =  getOperationResultPerRegion(regions)
@@ -82,9 +77,9 @@ class KendokuUnitTest : AbstractGameUnitTest(
 ) {
     private val random = Random((Math.random()*10000000000).toLong())
 
-    override fun loadJankoData(): List<JankoBoard> {
-        val file = File("src/test/testdata/kendoku-data.json")
-        return Gson().fromJson(file.readText(), object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
+    override fun loadJankoData(data: String?): List<JankoBoard> {
+        val json = data ?: File("src/test/testdata/kendoku-data.json").readText()
+        return Gson().fromJson(json, object : TypeToken<List<JankoKendokuBoard?>?>() {}.type)
     }
 
     override suspend fun getGameBoard(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): AbstractGame {
@@ -97,6 +92,17 @@ class KendokuUnitTest : AbstractGameUnitTest(
 
     override fun getGameBoardJanko(seed: Long, jankoBoard: JankoBoard): AbstractGame {
         val regions = jankoBoard.getRegions()
+        return Kendoku.createTesting(
+            seed = seed,
+            startBoard = jankoBoard.getStartBoard(),
+            completedBoard = jankoBoard.getCompletedBoard(),
+            regions = regions,
+            operationPerRegion = (jankoBoard as JankoKendokuBoard).getOperationsPerRegion(regions)
+        )
+    }
+
+    override fun solveGameBoardJanko(seed: Long, jankoBoard: JankoBoard): AbstractGame {
+        val regions = jankoBoard.getRegions()
         return Kendoku.solveBoard(
             seed = seed,
             size = sqrt(regions.size.toDouble()).toInt(),
@@ -106,6 +112,7 @@ class KendokuUnitTest : AbstractGameUnitTest(
             operationPerRegion = (jankoBoard as JankoKendokuBoard).getOperationsPerRegion(regions)
         )
     }
+
 
     @Test
     fun curvesTest() {

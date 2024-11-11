@@ -21,12 +21,9 @@ data class JankoHakyuuBoard(
     override val problem: String,
     override val areas: String,
     override val solution: String,
-    override var addValuesToStart: (startBoard: IntArray) -> Unit
 ): JankoBoard {
     override fun getStartBoard(): IntArray {
-        val startBoard = problem.replace("\n", " ").split(" ").map { it.toIntOrNull() ?: 0 }.toIntArray()
-        addValuesToStart(startBoard) // For debug
-        return startBoard
+        return problem.replace("\n", " ").split(" ").map { it.toIntOrNull() ?: 0 }.toIntArray()
     }
 }
 
@@ -46,12 +43,24 @@ class HakyuuUnitTest : AbstractGameUnitTest(
     }
 ) {
 
-    override fun loadJankoData(): List<JankoBoard> {
-        val file = File("src/test/testdata/hakyuu-data.json")
-        return Gson().fromJson(file.readText(), object : TypeToken<List<JankoHakyuuBoard?>?>() {}.type)
+    override fun loadJankoData(data: String?): List<JankoBoard> {
+        val json = data ?: File("src/test/testdata/hakyuu-data.json").readText()
+        return Gson().fromJson(json, object : TypeToken<List<JankoHakyuuBoard?>?>() {}.type)
     }
 
     override fun getGameBoardJanko(seed: Long, jankoBoard: JankoBoard): AbstractGame {
+        val regions = jankoBoard.getRegions()
+        return Hakyuu.createTesting(
+            seed = seed,
+            numColumns = jankoBoard.numColumns,
+            numRows = jankoBoard.numRows,
+            startBoard = jankoBoard.getStartBoard(),
+            completedBoard = jankoBoard.getCompletedBoard(),
+            boardRegions = regions
+        )
+    }
+
+    override fun solveGameBoardJanko(seed: Long, jankoBoard: JankoBoard): AbstractGame {
         val regions = jankoBoard.getRegions()
         return Hakyuu.solveBoard(
             seed = seed,
@@ -62,6 +71,7 @@ class HakyuuUnitTest : AbstractGameUnitTest(
             regions = regions
         )
     }
+
 
     override suspend fun getGameBoard(numRows: Int, numColumns: Int, seed: Long, difficulty: Difficulty): AbstractGame {
         return Hakyuu.createTesting(

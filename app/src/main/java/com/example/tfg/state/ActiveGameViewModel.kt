@@ -995,17 +995,17 @@ class ActiveGameViewModel(
     Other
      */
 
+    private val boardData = BoardData.create(cellsToPossibleValues(), cellsToIntArrayValues(), getGameType())
     // For debug
     fun solveBoardOneStep() {
+        if (boardData.actualValues.all { it != 0 }) return
         val abstractGame = getAbstractGame()
-        val possibleValues = cellsToPossibleValues()
-        val actualValues = cellsToIntArrayValues()
-        (abstractGame as Hakyuu).solveBoardOneStep(BoardData(possibleValues = possibleValues, actualValues = actualValues))
+        abstractGame.solveBoardOneStep(boardData)
 
-        actualValues.indices.forEach { position ->
+        getPositions().forEach { position ->
             val newCell = getCell(position).copy(
-                value = actualValues[position],
-                notes = possibleValues[position].toIntArray(),
+                value = boardData.actualValues[position],
+                notes = boardData.possibleValues[position].toIntArray(),
                 isError = false,
                 backgroundColor = 0
             )
