@@ -55,6 +55,9 @@ abstract class AbstractGameUnitTest(
         }
     }
 
+    // For debug
+    fun getAbstractGame(boardID: Int): AbstractGame = getGameBoardJanko(0, loadJankoData()[boardID])
+
     @Test
     fun testOkJankoBoards() {
         val jankoBoards = loadJankoData()

@@ -12,9 +12,20 @@ import com.example.tfg.games.common.AbstractGame
 import com.example.tfg.games.common.Difficulty
 import com.example.tfg.games.common.Games
 import com.example.tfg.games.hakyuu.Hakyuu
+import com.example.tfg.games.hakyuu.HakyuuUnitTest
 import com.example.tfg.games.kendoku.Kendoku
+import com.example.tfg.games.kendoku.KendokuUnitTest
 
 class GameFactory(private val gameDao: GameDao) {
+
+    // For debug
+    fun getJankoBoard(chosenGame: Games, boardID: Int): AbstractGame? {
+        return when (chosenGame) {
+            Games.HAKYUU -> KendokuUnitTest().getAbstractGame(boardID)
+            Games.KENDOKU -> HakyuuUnitTest().getAbstractGame(boardID)
+            else -> null
+        }
+    }
 
     suspend fun getAbstractGame(
         chosenGame: Games,
