@@ -45,7 +45,7 @@ abstract class AbstractGameUnitTest(
 
     protected fun testOkJankoBoard(boardID: Int) {
         val jankoBoards = loadJankoData()
-        println("board, difficulty, score, times, bruteForces, regions, $scoreDebug")
+        println("board, size, difficulty, score, times, brute-forces, regions, $scoreDebug")
         val board = jankoBoards.find { it.boardId == boardID } !!
         board.addValuesToStart = { }
 
