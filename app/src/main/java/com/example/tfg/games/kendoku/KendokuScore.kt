@@ -7,40 +7,39 @@ import com.example.tfg.games.common.Score
 
 private val difficultyValues = DifficultyValues(
     minBeginner = 1,
-    maxBeginner = 100,
+    maxBeginner = 200,
 
-    minEasy = 100,
-    maxEasy = 300,
+    minEasy = 200,
+    maxEasy = 400,
 
-    minMedium = 300,
-    maxMedium = 600,
+    minMedium = 400,
+    maxMedium = 800,
 
-    minHard = 600,
-    maxHard = 1400,
+    minHard = 800,
+    maxHard = 1500,
 
-    minExpert = 1100,
+    minExpert = 1500,
     maxExpert = 3000,
     maxExpertBruteForces = 1,
 
-    minMaster = 1900,
+    minMaster = 2500,
     maxMaster = 5000,
     maxMasterBruteForces = 3,
 )
 
-//TODO: Add values
 enum class KendokuStrategy(val scoreValue: Int = 1) {
     NAKED_PAIRS(10),
     NAKED_TRIPLES(15),
-    HIDDEN_SINGLE(30),
-    HIDDEN_PAIRS(40),
-    HIDDEN_TRIPLES(50),
-    MAIN_COMBINATION_REDUCE(10),
+    HIDDEN_SINGLE(20),
+    HIDDEN_PAIRS(25),
+    HIDDEN_TRIPLES(30),
+    MAIN_COMBINATION_REDUCE(15),
     CAGE_UNIT_OVERLAPS_1(25),
-    CAGE_UNIT_OVERLAPS_2(20),
-    BI_VALUE_ATTACK(100),
+    CAGE_UNIT_OVERLAPS_2(25),
+    BI_VALUE_ATTACK(50),
     INNIES_OUTIES(150),
     X_WING(200),
-    SIMPLE_COLORING(500);
+    SIMPLE_COLORING(400);
 }
 
 class KendokuScore(
