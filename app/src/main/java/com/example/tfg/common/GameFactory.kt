@@ -43,8 +43,7 @@ class GameFactory(private val gameDao: GameDao) {
     ): AbstractGame? {
         val seed = if (seed == "") (Math.random() * 10000000000).toLong()
             else seed.toLongOrNull() ?: seed.hashCode().toLong()
-
-        return when (chosenGame) {
+        val res = when (chosenGame) {
             Games.HAKYUU -> Hakyuu.create(
                 numRows = numRows,
                 numColumns = numColumns,
@@ -67,6 +66,11 @@ class GameFactory(private val gameDao: GameDao) {
                 difficulty = difficulty
             )
         }
+
+        // When the size of the board is too big and the difficult too low we may not get a startBoard
+        // We return null when that happens
+        return if (res == null || res.score.get() == 0) null
+            else res
     }
 
     //TODO: Implement a timeout when creating a new board
