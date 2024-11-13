@@ -355,6 +355,13 @@ open class Kendoku @JvmOverloads constructor(
                 regionIndexesPerColumn.getOrPut(coordinate.column) { mutableListOf() }.add(index)
             }
 
+            val numValuesRemoved = reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
+            score.addCombinations(numValuesRemoved)
+
+            // Possible values changed
+            if (numValuesRemoved > 0) return PopulateResult.success(score)
+
+
             // This reduces combinations only
             val numCUO1 = cageUnitOverlapType1(region, combinations, actualValues, possibleValues, regionIndexesPerColumn, regionIndexesPerRow)
             score.addCageUnitOverlapType1(numCUO1)
@@ -366,8 +373,8 @@ open class Kendoku @JvmOverloads constructor(
             val numCUO2 = cleanCageUnitOverlapType2(regionID, region, combinations, possibleValues)
             score.addCageUnitOverlapType2(numCUO2)
 
-            val numValuesRemoved = reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
-            score.addCombinations(numValuesRemoved)
+            val numValuesRemoved2 = reducePossibleValuesUsingCombinations(combinations, region, possibleValues)
+            score.addCombinations(numValuesRemoved2)
         }
 
         // Possible values changed
