@@ -37,6 +37,10 @@ abstract class Score(
     private val difficultyValues: DifficultyValues
 ) {
 
+    fun print(): String {
+        return "$score - " + strategies.filter { it.value != 0 }.toString()
+    }
+
     fun get(): Int {
         return score
     }
@@ -48,6 +52,10 @@ abstract class Score(
     open fun add(s: Score?) {
         score += s?.score ?: 0
         bruteForce += s?.bruteForce ?: 0
+    }
+
+    fun add(value: Int) {
+        score += value
     }
 
     fun addScoreNewValue() {

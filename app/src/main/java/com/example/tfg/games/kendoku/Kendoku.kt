@@ -94,6 +94,7 @@ open class Kendoku @JvmOverloads constructor(
             if (res == null || res.isTooHighForDifficulty(difficulty)) {
                 // Reverse the operation back
                 operationPerRegion[randomRegion] = operationPerRegion[randomRegion]!!.reverse()
+                break
             }
             else {
                 score = res
@@ -245,6 +246,7 @@ open class Kendoku @JvmOverloads constructor(
     override fun fillPossibleValues(possibleValues: Array<MutableList<Int>>, board: IntArray): Score {
         val scoreResult = KendokuScore()
         val checkedRegions = mutableListOf<Int>()
+        var numUnknownOpsSizeOne = 0
 
         for (position in (0..< numPositions())) {
             if (board[position] != 0) continue
@@ -252,6 +254,7 @@ open class Kendoku @JvmOverloads constructor(
             if (!checkedRegions.contains(regionID) && regionIsOneCell(regionID, position)) {
                 board[position] = operationResultPerRegion[regionID]!!
                 scoreResult.addScoreNewValue()
+                numUnknownOpsSizeOne++
             }
             else {
                 checkedRegions.add(regionID)
@@ -264,6 +267,9 @@ open class Kendoku @JvmOverloads constructor(
             getRowPositions(coordinate.row).forEach { possibleValues[it].remove(value) }
             getColumnPositions(coordinate.column).forEach { possibleValues[it].remove(value) }
         }
+
+        val value = operationPerRegion.count { it.value.isUnknown() } - numUnknownOpsSizeOne
+        scoreResult.add(value * 50)
 
         return scoreResult
     }

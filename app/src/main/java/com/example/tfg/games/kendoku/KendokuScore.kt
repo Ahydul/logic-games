@@ -19,11 +19,11 @@ private val difficultyValues = DifficultyValues(
     maxHard = 1500,
 
     minExpert = 1500,
-    maxExpert = 3000,
+    maxExpert = 3500,
     maxExpertBruteForces = 1,
 
-    minMaster = 2500,
-    maxMaster = 5000,
+    minMaster = 3000,
+    maxMaster = 6500,
     maxMasterBruteForces = 3,
 )
 
