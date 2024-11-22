@@ -952,16 +952,14 @@ class ActiveGameViewModel(
 
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
         val coordinates = selectedTiles.filterNot { isReadOnly(it) || isNote() && getCellValue(it) != 0 }.toMutableList()
-        if (coordinates.isEmpty()) return
-
         var previousCells = getCells(coordinates).toMutableList()
 
-        if (isNote()) {
+        if (isNote() && coordinates.isNotEmpty()) {
             setCellsNotes(note = value, coordinates = coordinates, ordered = ordered)
             val newCells = getCells(coordinates)
             addMove(coordinates = coordinates, newCells = newCells, previousCells = previousCells)
         }
-        else if (coordinates.size == 1) {
+        else if (!isNote() && coordinates.size == 1) {
             val position = coordinates.first().toIndex(getNumColumns())
 
             setCellValue(value = value, index = position)
@@ -976,7 +974,10 @@ class ActiveGameViewModel(
             }
             removeSelections()
         }
-        else return
+        else {
+            removeSelections()
+            addSelections(getPositions().filter { getCellValue(it) == value }.map { getCoordinate(it) })
+        }
     }
 
     fun paintAction(colorInt: Int) {
