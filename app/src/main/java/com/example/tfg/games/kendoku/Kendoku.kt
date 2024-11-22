@@ -984,7 +984,8 @@ open class Kendoku @JvmOverloads constructor(
 
         val operation = operationPerRegion[regionID]!!
         val regionPositions = positionsPerRegion[regionID]!!
-        if (operation.isUnknown() && regionPositions.size > 1) return res
+        if (operation.isUnknown() && regionPositions.size > 1 || operation == KendokuOperation.DIVIDE ||
+            operation == KendokuOperation.SUBTRACT) return res
 
         var opResultCalculated = 0
         var missingValues = false
