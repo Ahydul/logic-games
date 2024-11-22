@@ -72,8 +72,8 @@ fun ConfigurationPopup(
                 textColor = textColor,
                 expandedStates = expandedStates
             )
-            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically!!.collectAsState(initial = true)
 
+            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically!!.collectAsState(initial = true)
             CustomSwitchButton(
                 checked = checkErrorsAutomatically,
                 onCheckedChange = { status: Boolean ->
@@ -81,6 +81,26 @@ fun ConfigurationPopup(
                 }
             ){
                 CustomText(mainText = "Check errors Automatically")
+            }
+
+            val markSelectedTileRowAndColumn by viewModel.markSelectedTileRowAndColumn.collectAsState(initial = true)
+            CustomSwitchButton(
+                checked = markSelectedTileRowAndColumn,
+                onCheckedChange = { status: Boolean ->
+                    viewModel.setMarkSelectedTileRowAndColumn(status)
+                }
+            ){
+                CustomText(mainText = "Mark selected tile row and column")
+            }
+
+            val markSelectedTileRegion by viewModel.markSelectedTileRegion.collectAsState(initial = true)
+            CustomSwitchButton(
+                checked = markSelectedTileRegion,
+                onCheckedChange = { status: Boolean ->
+                    viewModel.setMarkSelectedTileRegion(status)
+                }
+            ){
+                CustomText(mainText = "Mark selected tile region")
             }
 
             Text(text = "More configuration options coming soon...", color = textColor)

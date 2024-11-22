@@ -40,6 +40,7 @@ fun Cell(
 
     val isSelected = remember { { viewModel.isTileSelected(coordinate) } }
     val dividersToDraw = remember { viewModel.dividersToDraw(coordinate) }
+    val isSecondarySelected = remember { { viewModel.isTileSecondarySelected(coordinate) } }
 
     val borderColor = colorResource(id = R.color.section_border)
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -113,7 +114,8 @@ fun Cell(
         }
 
         //Paints region borders and selecting UI
-        Canvas(modifier = modifier.matchParentSize()) {
+        val canvasModifier = modifier.matchParentSize()
+        Canvas(modifier = canvasModifier) {
             val bigBorderSize = 2.dp.toPx()
             val smallBorderSize = 0.8.dp.toPx()
 
@@ -146,9 +148,8 @@ fun Cell(
             if (dividersToDraw.left) drawLeftDivider(borderColor, bigBorderSize)
             else drawLeftDivider(gridColor, smallBorderSize)
 
-            if(isSelected()){
-                drawRect(color = selectionColor, alpha = 0.3f)
-            }
+            if(isSelected()) drawRect(color = selectionColor, alpha = 0.35f)
+            if(isSecondarySelected()) drawRect(color = selectionColor, alpha = 0.15f)
         }
     }
 }

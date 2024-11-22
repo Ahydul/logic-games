@@ -44,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -76,6 +77,19 @@ class ActiveGameViewModel(
            preferences[DataStorePreferences.CHECK_ERRORS_AUTOMATICALLY] ?: true
         }
     }
+
+    val markSelectedTileRowAndColumn: Flow<Boolean> = dataStore?.let {
+        it.data.map { preferences ->
+            preferences[DataStorePreferences.MARK_SELECTED_TILE_ROW_COLUMN] ?: true
+        }
+    } ?: flowOf(true)
+
+    val markSelectedTileRegion: Flow<Boolean> = dataStore?.let {
+        it.data.map { preferences ->
+            preferences[DataStorePreferences.MARK_SELECTED_TILE_REGION] ?: true
+        }
+    } ?: flowOf(true)
+
 
     private var actualGameStatePosition = 0
     private val numErrors: MutableIntState
@@ -729,6 +743,13 @@ class ActiveGameViewModel(
 
     fun isTileSelected(coordinate: Coordinate?) = selectedTiles.contains(coordinate)
 
+    fun isTileSecondarySelected(coordinate: Coordinate?): Boolean {
+        if (coordinate == null || selectedTiles.size != 1) return false
+        val coordinate2 = selectedTiles.first()
+        return runBlocking { markSelectedTileRegion.first() } && fromSameRegion(coordinate, coordinate2) ||
+                runBlocking { markSelectedTileRowAndColumn.first() } && (coordinate.sameColumn(coordinate2) || coordinate.sameRow(coordinate2))
+    }
+
     private fun getColumn(x: Float, width: Int) = (x * getNumColumns() / width).toInt()
 
     private fun getRow(y: Float, height: Int) = (y * getNumRows() / height).toInt()
@@ -1119,14 +1140,26 @@ class ActiveGameViewModel(
 
     fun hasMoreThanOneGameState() = getNumberOfGameStates() > 1
 
-    fun setCheckErrorsAutomatically(status: Boolean) {
+    private fun setDataStorePreference(status: Boolean, preference: Preferences.Key<Boolean>) {
         viewModelScope.launch {
             dataStore?.edit { preferences ->
-                preferences[DataStorePreferences.CHECK_ERRORS_AUTOMATICALLY] = status
+                preferences[preference] = status
             }
         }
+    }
+
+    fun setCheckErrorsAutomatically(status: Boolean) {
+        setDataStorePreference(status, DataStorePreferences.CHECK_ERRORS_AUTOMATICALLY)
         // To check possible errors that weren't manually checked
         if (status) checkErrors()
+    }
+
+    fun setMarkSelectedTileRowAndColumn(status: Boolean) {
+        setDataStorePreference(status, DataStorePreferences.MARK_SELECTED_TILE_ROW_COLUMN)
+    }
+
+    fun setMarkSelectedTileRegion(status: Boolean) {
+        setDataStorePreference(status, DataStorePreferences.MARK_SELECTED_TILE_REGION)
     }
 
     fun deleteLastPlayedGameFromDataStore() {
