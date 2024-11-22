@@ -55,7 +55,7 @@ class ActiveGameView : ComponentActivity() {
 
         setContent {
             val initial = if (isSystemInDarkTheme()) Theme.DARK_MODE else Theme.LIGHT_MODE
-            val theme by vm.themeUserSetting!!.collectAsState(initial = initial)
+            val theme by vm.themeUserSetting.collectAsState(initial = initial)
             TFGTheme(theme = theme) {
                 ActiveGameScreen(
                     viewModel = vm,

@@ -60,23 +60,23 @@ class ActiveGameViewModel(
     private val filesDirectory: File?
 ) : ViewModel() {
 
-    val snapshotsAllowed: Flow<Boolean>? = dataStore?.let {
+    val snapshotsAllowed: Flow<Boolean> = dataStore?.let {
         it.data.map { preferences ->
             preferences[DataStorePreferences.SNAPSHOTS_ALLOWED] ?: true
         }
-    }
+    } ?: flowOf(true)
 
-    val themeUserSetting: Flow<Theme>? = dataStore?.let {
+    val themeUserSetting: Flow<Theme> = dataStore?.let {
         it.data.map { preferences ->
             Theme.from(preferences[DataStorePreferences.THEME])
         }
-    }
+    } ?: flowOf(Theme.LIGHT_MODE)
 
-    val checkErrorsAutomatically: Flow<Boolean>? = dataStore?.let {
+    val checkErrorsAutomatically: Flow<Boolean> = dataStore?.let {
         it.data.map { preferences ->
            preferences[DataStorePreferences.CHECK_ERRORS_AUTOMATICALLY] ?: true
         }
-    }
+    } ?: flowOf(true)
 
     val markSelectedTileRowAndColumn: Flow<Boolean> = dataStore?.let {
         it.data.map { preferences ->
@@ -347,7 +347,7 @@ class ActiveGameViewModel(
     }
 
     private fun snapshotAllowed(): Boolean {
-        return runBlocking { snapshotsAllowed?.first() } ?: true
+        return runBlocking { snapshotsAllowed.first() }
     }
 
     fun takeSnapshot() {
@@ -1135,7 +1135,7 @@ class ActiveGameViewModel(
     }
 
     private fun errorsAreCheckedManually(): Boolean {
-        return getNumberOfGameStates() > 1 || !runBlocking { checkErrorsAutomatically?.first() ?: true }
+        return getNumberOfGameStates() > 1 || !runBlocking { checkErrorsAutomatically.first() }
     }
 
     fun hasMoreThanOneGameState() = getNumberOfGameStates() > 1

@@ -73,7 +73,7 @@ fun ConfigurationPopup(
                 expandedStates = expandedStates
             )
 
-            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically!!.collectAsState(initial = true)
+            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically.collectAsState(initial = true)
             CustomSwitchButton(
                 checked = checkErrorsAutomatically,
                 onCheckedChange = { status: Boolean ->
