@@ -73,6 +73,16 @@ fun ConfigurationPopup(
                 expandedStates = expandedStates
             )
 
+            val allowSnapshots by viewModel.snapshotsAllowed.collectAsState(initial = true)
+            CustomSwitchButton(
+                checked = allowSnapshots,
+                onCheckedChange = { status: Boolean ->
+                    viewModel.setSnapshotsAllowed(status)
+                }
+            ){
+                CustomText(mainText = "Allow snapshots")
+            }
+
             val checkErrorsAutomatically by viewModel.checkErrorsAutomatically.collectAsState(initial = true)
             CustomSwitchButton(
                 checked = checkErrorsAutomatically,

@@ -1163,6 +1163,10 @@ class ActiveGameViewModel(
         setDataStorePreference(status, DataStorePreferences.MARK_SELECTED_TILE_REGION)
     }
 
+    fun setSnapshotsAllowed(status: Boolean) {
+        setDataStorePreference(status, DataStorePreferences.SNAPSHOTS_ALLOWED)
+    }
+
     fun deleteLastPlayedGameFromDataStore() {
         viewModelScope.launch {
             dataStore?.edit { preferences ->
