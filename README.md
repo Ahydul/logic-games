@@ -28,13 +28,13 @@ Some of its features are:
 
 ## Planned Features
 
--   Option to mark all cells with the selected value.
+-   ~~Option to mark all cells with the selected value.~~
 
--   Option to mark the region the cell you selected is on.
+-   ~~Option to mark the region the cell you selected is on.~~
 
 -   Option to delete invalid notes when updating a value.
 
--   Option to disallow snapshots.
+-   ~~Option to disallow snapshots.~~
 
 -   Graphs in the statistics section.
 
