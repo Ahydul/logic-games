@@ -169,7 +169,11 @@ fun CustomSwitchButton(
     enabled: Boolean = true,
     label: @Composable RowScope.() -> Unit
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier.fillMaxWidth()
+    ) {
         label()
         Switch(
             checked = checked,

@@ -49,9 +49,7 @@ fun ConfigurationPopup(
     ) {
         val backgroundColor2 = MaterialTheme.colorScheme.primary
         val textColor = MaterialTheme.colorScheme.onPrimary
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally){
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = modifier
@@ -66,56 +64,60 @@ fun ConfigurationPopup(
                 )
             }
 
-            solveBoardButton(
-                modifier = modifier,
-                viewModel = viewModel,
-                textColor = textColor,
-                expandedStates = expandedStates
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier.padding(10.dp)
+            ) {
+                solveBoardButton(
+                    modifier = modifier,
+                    viewModel = viewModel,
+                    textColor = textColor,
+                    expandedStates = expandedStates
+                )
 
-            val allowSnapshots by viewModel.snapshotsAllowed.collectAsState(initial = true)
-            CustomSwitchButton(
-                checked = allowSnapshots,
-                onCheckedChange = { status: Boolean ->
-                    viewModel.setSnapshotsAllowed(status)
+                val allowSnapshots by viewModel.snapshotsAllowed.collectAsState(initial = true)
+                CustomSwitchButton(
+                    checked = allowSnapshots,
+                    onCheckedChange = { status: Boolean ->
+                        viewModel.setSnapshotsAllowed(status)
+                    }
+                ){
+                    CustomText(mainText = "Allow snapshots")
                 }
-            ){
-                CustomText(mainText = "Allow snapshots")
-            }
 
-            val checkErrorsAutomatically by viewModel.checkErrorsAutomatically.collectAsState(initial = true)
-            CustomSwitchButton(
-                checked = checkErrorsAutomatically,
-                onCheckedChange = { status: Boolean ->
-                    viewModel.setCheckErrorsAutomatically(status)
+                val checkErrorsAutomatically by viewModel.checkErrorsAutomatically.collectAsState(initial = true)
+                CustomSwitchButton(
+                    checked = checkErrorsAutomatically,
+                    onCheckedChange = { status: Boolean ->
+                        viewModel.setCheckErrorsAutomatically(status)
+                    }
+                ){
+                    CustomText(mainText = "Check errors Automatically")
                 }
-            ){
-                CustomText(mainText = "Check errors Automatically")
-            }
 
-            val markSelectedTileRowAndColumn by viewModel.markSelectedTileRowAndColumn.collectAsState(initial = true)
-            CustomSwitchButton(
-                checked = markSelectedTileRowAndColumn,
-                onCheckedChange = { status: Boolean ->
-                    viewModel.setMarkSelectedTileRowAndColumn(status)
+                val markSelectedTileRowAndColumn by viewModel.markSelectedTileRowAndColumn.collectAsState(initial = true)
+                CustomSwitchButton(
+                    checked = markSelectedTileRowAndColumn,
+                    onCheckedChange = { status: Boolean ->
+                        viewModel.setMarkSelectedTileRowAndColumn(status)
+                    }
+                ){
+                    CustomText(mainText = "Mark selected tile row and column")
                 }
-            ){
-                CustomText(mainText = "Mark selected tile row and column")
-            }
 
-            val markSelectedTileRegion by viewModel.markSelectedTileRegion.collectAsState(initial = true)
-            CustomSwitchButton(
-                checked = markSelectedTileRegion,
-                onCheckedChange = { status: Boolean ->
-                    viewModel.setMarkSelectedTileRegion(status)
+                val markSelectedTileRegion by viewModel.markSelectedTileRegion.collectAsState(initial = true)
+                CustomSwitchButton(
+                    checked = markSelectedTileRegion,
+                    onCheckedChange = { status: Boolean ->
+                        viewModel.setMarkSelectedTileRegion(status)
+                    }
+                ){
+                    CustomText(mainText = "Mark selected tile region")
                 }
-            ){
-                CustomText(mainText = "Mark selected tile region")
-            }
 
-            Text(text = "More configuration options coming soon...", color = textColor)
+                Text(text = "More configuration options coming soon...", color = textColor)
+            }
         }
-
     }
 }
 
@@ -154,7 +156,6 @@ private fun solveBoardButton(
                 }
             },
             title = { Text(text = stringResource(R.string.solve_board)) },
-            text = { Text(stringResource(R.string.solve_board_confirmation_text)) },
         )
     }
 
