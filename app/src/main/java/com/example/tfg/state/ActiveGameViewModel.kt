@@ -951,7 +951,7 @@ class ActiveGameViewModel(
     }
 
     fun noteOrWriteAction(value: Int, ordered: Boolean = false) {
-        val coordinates = selectedTiles.filter { !isReadOnly(it) && (!isNote() || getCellValue(it) == 0) }.toMutableList()
+        val coordinates = selectedTiles.filterNot { isReadOnly(it) || isNote() && getCellValue(it) != 0 }.toMutableList()
         if (coordinates.isEmpty()) return
 
         var previousCells = getCells(coordinates).toMutableList()
